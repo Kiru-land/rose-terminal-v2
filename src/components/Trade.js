@@ -15,7 +15,7 @@ const TradeContainer = styled.div`
   top: 55%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.9);
   border-radius: 20px;
   padding: 30px;
   z-index: 1000;
@@ -116,8 +116,8 @@ const MaxButton = styled.button`
 `;
 
 const QuoteText = styled.p`
-  color: #00ff00;
-  font-size: 18px;
+  color: ${props => props.isLoading ? 'rgba(0, 255, 0, 0.5)' : '#00ff00'};
+  font-size: 16px;
   text-align: left;
   margin: 0;
 `;
@@ -276,14 +276,10 @@ const Trade = ({ onClose, animateLogo, setAsyncOutput }) => {
         quoteAmount = await roseContract.quoteWithdraw(amountInWei);
       }
 
-      if (quoteAmount === null || quoteAmount === undefined) {
-        return "loading quote...";
-      }
-
       return ethers.formatEther(quoteAmount);
     } catch (error) {
       console.error('Error getting quote:', error);
-      return "loading quote...";
+      return null;
     }
   }, [signer, rose, amount, isEthOnTop]);
 
@@ -367,8 +363,15 @@ const Trade = ({ onClose, animateLogo, setAsyncOutput }) => {
             signer
           );
 
+          // Update: Handle very small values
           const minQuote = parseFloat(quote) * (100 - slippage) / 100;
-          const minQuoteInWei = ethers.parseEther(minQuote.toString());
+          let minQuoteInWei;
+          if (minQuote < 1e-18) {
+            minQuoteInWei = 1n; // Set to 1 wei if the value is too small
+          } else {
+            minQuoteInWei = ethers.parseEther(minQuote.toFixed(18));
+          }
+          
           const tx = await roseContract.deposit(minQuoteInWei, {
             value: amountInWei
           });
@@ -420,8 +423,15 @@ const Trade = ({ onClose, animateLogo, setAsyncOutput }) => {
             signer
           );
 
+          // Update: Handle very small values
           const minQuote = parseFloat(quote) * (100 - slippage) / 100;
-          const minQuoteInWei = ethers.parseEther(minQuote.toString());
+          let minQuoteInWei;
+          if (minQuote < 1e-18) {
+            minQuoteInWei = 1n; // Set to 1 wei if the value is too small
+          } else {
+            minQuoteInWei = ethers.parseEther(minQuote.toFixed(18));
+          }
+          
           const tx = await roseContract.withdraw(amountInWei, minQuoteInWei);
 
           showPopUp('Transaction sent. Waiting for confirmation...');
@@ -489,8 +499,8 @@ const Trade = ({ onClose, animateLogo, setAsyncOutput }) => {
           {isEthOnTop ? '🌹' : <FaEthereum />}
         </IconButton>
         <Panel>
-          <QuoteText>
-            {quote ? parseFloat(quote).toFixed(6) : '0'}
+          <QuoteText isLoading={!quote}>
+            {quote ? parseFloat(quote).toFixed(6) : 'loading quote...'}
           </QuoteText>
         </Panel>
       </TradeRow>

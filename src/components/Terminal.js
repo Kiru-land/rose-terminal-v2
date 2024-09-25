@@ -5,14 +5,12 @@ import { useWeb3 } from '../contexts/Web3Context';
 import Prompt from './Prompt';
 import BottomBar from './BottomBar';
 import asciiArt from '../assets/ascii-art.txt';
-import Chart from './Chart';
 import { FaEthereum, FaGithub } from 'react-icons/fa6';
 import Intro from './Intro';
-import SnakeGame from './SnakeGame';
 import { usePopUp } from '../contexts/PopUpContext';
 import Trade from './Trade';
 import Transfer from './Transfer';
-import Sale from './Sale';
+import Launch from './Launch';
 
 // Add this global style component
 const GlobalStyle = createGlobalStyle`
@@ -39,6 +37,11 @@ const TerminalContainer = styled.div`
   top: 0;
   left: 0;
   overflow: hidden;
+  ${props => props.isMobile && `
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  `}
 `;
 
 const beeMotion = keyframes`
@@ -173,6 +176,14 @@ const MenuContainer = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 10px;  // Add some space between the menu and BottomBar
+  ${props => props.isMobile && `
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+  `}
 `;
 
 const MenuItem = styled.button`
@@ -204,20 +215,23 @@ const MenuItem = styled.button`
       left: 0;
     }
   }
+  ${props => props.isMobile && `
+    padding: 15px;
+    font-size: 18px;
+  `}
 `;
 
-const Terminal = () => {
+const Terminal = ({ isMobile }) => {
   const [history, setHistory] = useState([]);
-  const [chartData, setChartData] = useState([1, 0.8, 1.5, 1.9, 1.8, 2.5, 1.1, 1.5, 1.7, 2.2, 3.3, 3.5, 4.5, 4.8, 4.2, 5.3, 4.1, 4.7, 5.8, 6.3, 6.1, 4.2, 5.1, 6.1, 6.7, 7.8, 8.7, 10, 20, 15, 25, 30, 22, 18, 32, 45, 41, 50, 56, 62, 48, 45, 51, 43, 41, 38, 50, 48,47, 53, 56, 57, 75, 86, 95, 70, 56, 76]);
   const [asyncOutput, setAsyncOutput] = useState(null);
   const [asciiLogo, setAsciiLogo] = useState('');
   const [isAnimating, setIsAnimating] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
-  const [showSnakeGame, setShowSnakeGame] = useState(false);
   const [showTrade, setShowTrade] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
   const [showSale, setShowSale] = useState(false);
   const terminalContentRef = useRef(null);
+  const outputRef = useRef(null);
 
   const { isConnected, signer, provider, balance: nativeBalance, roseBalance, rose, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
@@ -234,6 +248,12 @@ const Terminal = () => {
     }
   }, [history]);
 
+  useEffect(() => {
+    if (outputRef.current) {
+      outputRef.current.scrollTop = outputRef.current.scrollHeight;
+    }
+  }, [history]);
+
   const animateLogo = async (callback) => {
     setIsAnimating(true);
     try {
@@ -244,7 +264,7 @@ const Terminal = () => {
   };
 
   const handleMenuClick = (command) => {
-    if (!isConnected && command !== 'snake') {
+    if (!isConnected) {
       setHistory(prev => [...prev, { type: 'output', content: 'Please connect your wallet.' }]);
       return;
     }
@@ -259,6 +279,11 @@ const Terminal = () => {
 
     setHistory(prev => [...prev, { type: 'command', content: command }]);
 
+    // Close all command interfaces
+    setShowSale(false);
+    setShowTrade(false);
+    setShowTransfer(false);
+
     let output = '';
     switch (command) {
       case 'launch':
@@ -272,10 +297,6 @@ const Terminal = () => {
       case 'transfer':
         setShowTransfer(true);
         output = 'Opening transfer interface...';
-        break;
-      case 'snake':
-        setShowSnakeGame(true);
-        output = 'Starting Snake game...';
         break;
       default:
         output = `Command not found: ${command}`;
@@ -330,7 +351,7 @@ const Terminal = () => {
   return (
     <>
       <GlobalStyle />
-      <TerminalContainer onClick={handleContainerClick}>
+      <TerminalContainer onClick={handleContainerClick} isMobile={isMobile}>
         <GitHubLink 
           href="https://github.com/RedRoseMoney/Rose" 
           target="_blank" 
@@ -355,7 +376,7 @@ const Terminal = () => {
             </GlitterContainer>
           )}
         </AsciiArtWrapper>
-        <OutputDiv>
+        <OutputDiv ref={outputRef}>
           {history.map((item, index) => (
             <div key={index}>
               {item.type === 'command' ? (
@@ -376,10 +397,9 @@ const Terminal = () => {
         <TerminalContent ref={terminalContentRef}>
           {/* Remove the history mapping from here */}
         </TerminalContent>
-        <Chart data={chartData} />
-        <MenuContainer>
-          {['launch', 'trade', 'transfer', 'snake'].map(command => (
-            <MenuItem key={command} onClick={() => handleMenuClick(command)}>
+        <MenuContainer isMobile={isMobile}>
+          {['launch', 'trade', 'transfer'].map(command => (
+            <MenuItem key={command} onClick={() => handleMenuClick(command)} isMobile={isMobile}>
               {command}
             </MenuItem>
           ))}
@@ -400,13 +420,12 @@ const Terminal = () => {
           />
         )}
         {showSale && (
-          <Sale 
+          <Launch 
             onClose={() => setShowSale(false)} 
             animateLogo={animateLogo} 
             setAsyncOutput={setAsyncOutput}
           />
         )}
-        {showSnakeGame && <SnakeGame onClose={() => setShowSnakeGame(false)} />}
       </TerminalContainer>
     </>
   );
