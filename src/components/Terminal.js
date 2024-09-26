@@ -335,6 +335,13 @@ const Terminal = ({ isMobile }) => {
     }
   }, [history]);
 
+  useEffect(() => {
+    if (asyncOutput) {
+      setHistory(prev => [...prev, { type: 'output', content: asyncOutput }]);
+      setAsyncOutput(null);
+    }
+  }, [asyncOutput]);
+
   const animateLogo = async (callback) => {
     setIsAnimating(true);
     try {
@@ -474,6 +481,9 @@ const Terminal = ({ isMobile }) => {
               )}
             </div>
           ))}
+          {asyncOutput && (
+            <div>{asyncOutput}</div>
+          )}
         </OutputDiv>
         <TerminalContent ref={terminalContentRef}>
           {/* Remove the history mapping from here */}
