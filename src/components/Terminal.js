@@ -97,7 +97,7 @@ const OutputDiv = styled.div`
   top: 60px;  // Adjust this value to position below the GitHub icon
   left: 20px;
   max-width: 80%;
-  max-height: 30%;
+  max-height: 20%;
   overflow-y: auto;
   white-space: pre-wrap;
   word-wrap: break-word;

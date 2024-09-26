@@ -272,8 +272,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
     return () => window.removeEventListener('resize', updatePanelWidth);
   }, [updatePanelWidth]);
 
-  const getQuote = useCallback(async () => {
-    if (!signer || !rose || !amount) return null;
+  const getQuote = useCallback(async (inputAmount) => {
+    if (!signer || !rose || !inputAmount) return null;
 
     try {
       const roseContract = new ethers.Contract(
@@ -285,7 +285,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         signer
       );
 
-      const amountInWei = ethers.parseEther(amount);
+      const amountInWei = ethers.parseEther(inputAmount);
       let quoteAmount;
 
       if (isEthOnTop) {
@@ -299,13 +299,13 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       console.error('Error getting quote:', error);
       return null;
     }
-  }, [signer, rose, amount, isEthOnTop]);
+  }, [signer, rose, isEthOnTop]);
 
   const debouncedGetQuote = useCallback(
-    debounce(async () => {
-      if (amount) {
+    debounce(async (inputAmount) => {
+      if (inputAmount) {
         setIsQuoteLoading(true);
-        const newQuote = await getQuote();
+        const newQuote = await getQuote(inputAmount);
         setQuote(newQuote);
         setIsQuoteLoading(false);
       } else {
@@ -318,9 +318,9 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
   const handleAmountChange = (e) => {
     const newAmount = e.target.value.slice(0, 8);
     setAmount(newAmount);
-    setPriceImpact(null);  // Reset price impact
+    setPriceImpact(null);
     setIsQuoteLoading(true);
-    debouncedGetQuote();
+    debouncedGetQuote(newAmount);
   };
 
   const handleKeyPress = (event) => {
@@ -328,10 +328,6 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       handleExecute();
     }
   };
-
-  useEffect(() => {
-    debouncedGetQuote();
-  }, [debouncedGetQuote]);
 
   useEffect(() => {
     const calculatePriceImpact = () => {
@@ -565,13 +561,15 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
           <SliderLabel>{slippage.toFixed(1)}%</SliderLabel>
         </SliderRow>
       </SliderContainer>
-      <PriceImpactText impact={priceImpact || 0}>
-        Price Impact: {
-          isQuoteLoading || priceImpact === null 
-            ? '...' 
-            : priceImpact.toFixed(2) + '%'
-        }
-      </PriceImpactText>
+      {amount && (
+        <PriceImpactText impact={priceImpact || 0}>
+          Price Impact: {
+            isQuoteLoading || priceImpact === null 
+              ? '...' 
+              : priceImpact.toFixed(2) + '%'
+          }
+        </PriceImpactText>
+      )}
       <ExecuteButton 
         onClick={handleExecute} 
         disabled={!amount}
