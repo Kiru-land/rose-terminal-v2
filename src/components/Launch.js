@@ -260,24 +260,33 @@ const HelpIcon = styled(FaInfoCircle)`
 `;
 
 const HelpTooltip = styled.div`
-  position: fixed;
+  position: ${props => props.isMobile ? 'fixed' : 'absolute'};
   background-color: rgba(0, 0, 0, 0.9);
   color: #00ff00;
   padding: 15px;
   border-radius: 15px;
   font-size: 12px;
-  max-width: 90vw;
+  max-width: ${props => props.isMobile ? '90vw' : '380px'};
   width: ${props => props.isMobile ? '90vw' : '380px'};
   z-index: 1001;
   visibility: ${props => props.visible ? 'visible' : 'hidden'};
   opacity: ${props => props.visible ? 1 : 0};
   transition: visibility 0.2s, opacity 0.2s;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   line-height: 1.4;
   border: 1px solid rgba(0, 255, 0, 0.3);
+  
+  ${props => props.isMobile
+    ? css`
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    `
+    : css`
+      top: 0;
+      right: -400px;
+    `
+  }
 `;
 
 const ChartContainer = styled.div`
@@ -523,14 +532,10 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
   };
 
   const handleHelpIconInteraction = (event) => {
-    event.stopPropagation();
     if (isMobile) {
+      event.preventDefault();
       setShowTooltip(!showTooltip);
     }
-  };
-
-  const handleTooltipClick = () => {
-    setShowTooltip(false);
   };
 
   return (
@@ -567,10 +572,10 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
                 <DashboardValue>
                   Fair Launch
                   <HelpIcon 
+                    isMobile={isMobile}
                     onMouseEnter={() => !isMobile && setShowTooltip(true)}
                     onMouseLeave={() => !isMobile && setShowTooltip(false)}
-                    onClick={handleHelpIconInteraction}
-                    onTouchStart={handleHelpIconInteraction}
+                    onClick={isMobile ? handleHelpIconInteraction : undefined}
                   />
                 </DashboardValue>
               </DashboardRow>
@@ -627,7 +632,11 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
       >
         Participate
       </ParticipateButton>
-      <HelpTooltip visible={showTooltip} isMobile={isMobile} onClick={handleTooltipClick}>
+      <HelpTooltip 
+        visible={showTooltip} 
+        isMobile={isMobile}
+        onClick={() => isMobile && setShowTooltip(false)}
+      >
         <strong>Proportional Oversubscribed Capped Sale</strong><br /><br />
         This Fair Launch has a <em>soft</em> and <em>hard</em> cap. <br /> <br />
         1.) If the total amount raised is smaller than the soft cap, all participation gets reimbursed. <br /> <br />
@@ -635,12 +644,6 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
         Participants receive a part of the 75% of ROSE tokens sold based on their proportional share of the total <FaEthereum /> submitted.<br /> <br />
         <em>Note: The Implied Market Cap will increase with the contribution amount until it reaches the Hard Cap of 1000<FaEthereum />. The Implied Market Cap will vary between 800<FaEthereum /> for the Soft Cap until reaching 4000<FaEthereum /> at the Hard Cap.</em>
       </HelpTooltip>
-      {!isMobile && (
-        <ChartTooltip visible={activeTooltip !== null}>
-          <strong>{activeTooltip}</strong><br />
-          {getTooltipContent(activeTooltip)}
-        </ChartTooltip>
-      )}
     </LaunchContainer>
   );
 };
