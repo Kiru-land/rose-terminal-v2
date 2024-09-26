@@ -41,8 +41,8 @@ const CloseButton = styled.button`
 
 const Message = styled.p`
   color: #f0f0f0;
-  font-family: 'Helvetica Neue';
-  // font-family: 'Fira Code', monospace;
+  // font-family: 'Helvetica Neue';
+  font-family: 'Fira Code', monospace;
   font-size: 14px;
   margin: 0;
   padding-right: 20px;

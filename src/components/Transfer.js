@@ -17,7 +17,7 @@ const TransferContainer = styled.div`
   transform: translate(-50%, -50%);
   background-color: rgba(0, 0, 0, 0.9);
   border-radius: 20px;
-  padding: 30px;
+  padding: 20px;
   z-index: 1000;
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   animation: ${fadeIn} 0.3s ease-out;
