@@ -123,7 +123,6 @@ const ExecuteButton = styled.button`
   border: none;
   border-radius: 10px;
   font-size: 16px;
-  cursor: pointer;
   transition: all 0.3s ease;
   text-transform: capitalize;
   letter-spacing: 0px;

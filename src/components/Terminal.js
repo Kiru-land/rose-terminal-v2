@@ -26,7 +26,8 @@ const GlobalStyle = createGlobalStyle`
 const TerminalContainer = styled.div`
   background-color: #000000;
   color: #e0e0e0;
-  font-family: 'Fira Code', monospace;
+  font-family: 'Helvetica Neue';
+  // font-family: 'Fira Code', monospace;
   padding: 20px;
   height: 100%;
   width: 100%;
@@ -203,7 +204,8 @@ const MenuItem = styled.button`
   border: none;
   padding: 10px 20px;
   cursor: pointer;
-  font-family: 'Fira Code', monospace;
+  font-family: 'Helvetica Neue';
+  // font-family: 'Fira Code', monospace;
   font-size: 1em;
   transition: all 0.3s ease;
   position: relative;
