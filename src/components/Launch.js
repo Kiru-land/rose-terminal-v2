@@ -13,7 +13,7 @@ const fadeIn = keyframes`
 
 const LaunchContainer = styled.div`
   position: fixed;
-  top: ${props => props.isDashboardVisible ? '45%' : '55%'};
+  top: ${props => props.isDashboardVisible ? '50%' : '55%'};
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: rgba(0, 0, 0, 0.9);
