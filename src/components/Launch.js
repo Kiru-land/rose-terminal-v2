@@ -260,14 +260,17 @@ const HelpIcon = styled(FaInfoCircle)`
 `;
 
 const HelpTooltip = styled.div`
-  position: ${props => props.isMobile ? 'fixed' : 'absolute'};
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background-color: rgba(0, 0, 0, 0.9);
   color: #00ff00;
   padding: 15px;
   border-radius: 15px;
   font-size: 12px;
-  max-width: ${props => props.isMobile ? '90vw' : '380px'};
-  width: ${props => props.isMobile ? '90vw' : '380px'};
+  max-width: 90vw;
+  width: 380px;
   z-index: 1001;
   visibility: ${props => props.visible ? 'visible' : 'hidden'};
   opacity: ${props => props.visible ? 1 : 0};
@@ -275,18 +278,6 @@ const HelpTooltip = styled.div`
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   line-height: 1.4;
   border: 1px solid rgba(0, 255, 0, 0.3);
-  
-  ${props => props.isMobile
-    ? css`
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    `
-    : css`
-      top: 0;
-      right: -400px;
-    `
-  }
 `;
 
 const ChartContainer = styled.div`
@@ -348,7 +339,6 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
   const [totalRaised, setTotalRaised] = useState('0');
   const [expectedMarketCap, setExpectedMarketCap] = useState('0');
   const [activeTooltip, setActiveTooltip] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
 
   const { showPopUp } = usePopUp();
   const { signer, balance: nativeBalance, sale: saleAddress, provider } = useWeb3();
@@ -357,10 +347,8 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
     const screenWidth = window.innerWidth;
     if (screenWidth <= 600) {
       setPanelWidth(screenWidth * 0.9);
-      setIsMobile(true);
     } else {
       setPanelWidth(380);
-      setIsMobile(false);
     }
   }, []);
 
@@ -512,9 +500,7 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
       return (
         <CustomTooltip>
           <TooltipLabel>{`${data.name}: ${data.value}%`}</TooltipLabel>
-          {isMobile && (
-            <TooltipExplanation>{getTooltipContent(data.name)}</TooltipExplanation>
-          )}
+          <TooltipExplanation>{getTooltipContent(data.name)}</TooltipExplanation>
         </CustomTooltip>
       );
     }
@@ -531,12 +517,27 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
     }
   };
 
-  const handleHelpIconInteraction = (event) => {
-    if (isMobile) {
-      event.preventDefault();
-      setShowTooltip(!showTooltip);
-    }
+  const handleHelpIconClick = (event) => {
+    event.stopPropagation();
+    setShowTooltip(!showTooltip);
   };
+
+  const handleTooltipClick = () => {
+    setShowTooltip(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showTooltip) {
+        setShowTooltip(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showTooltip]);
 
   return (
     <LaunchContainer width={panelWidth}>
@@ -571,12 +572,7 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
                 <DashboardLabel>Type:</DashboardLabel>
                 <DashboardValue>
                   Fair Launch
-                  <HelpIcon 
-                    isMobile={isMobile}
-                    onMouseEnter={() => !isMobile && setShowTooltip(true)}
-                    onMouseLeave={() => !isMobile && setShowTooltip(false)}
-                    onClick={isMobile ? handleHelpIconInteraction : undefined}
-                  />
+                  <HelpIcon onClick={handleHelpIconClick} />
                 </DashboardValue>
               </DashboardRow>
               <DashboardRow isVisible={isContentVisible} delay={0.2}>
@@ -634,8 +630,7 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
       </ParticipateButton>
       <HelpTooltip 
         visible={showTooltip} 
-        isMobile={isMobile}
-        onClick={() => isMobile && setShowTooltip(false)}
+        onClick={handleTooltipClick}
       >
         <strong>Proportional Oversubscribed Capped Sale</strong><br /><br />
         This Fair Launch has a <em>soft</em> and <em>hard</em> cap. <br /> <br />
