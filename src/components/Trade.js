@@ -4,6 +4,7 @@ import { useWeb3 } from '../contexts/Web3Context';
 import { usePopUp } from '../contexts/PopUpContext';
 import { FaEthereum } from 'react-icons/fa6';
 import { ethers } from 'ethers';
+import { debounce } from 'lodash';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -109,7 +110,7 @@ const MaxButton = styled.button`
 
 const QuoteText = styled.p`
   color: ${props => props.isLoading ? 'rgba(0, 255, 0, 0.5)' : '#00ff00'};
-  font-size: 16px;
+  font-size: ${props => props.isLoading ? '15px' : '16px'};
   text-align: left;
   margin: 0;
 `;
@@ -237,15 +238,23 @@ const ArrowIcon = styled.span`
   transform: ${props => props.isOpen ? 'rotate(-90deg)' : 'rotate(90deg)'};
 `;
 
+const PriceImpactText = styled.div`
+  color: ${props => props.impact > 5 ? '#ff4136' : 'rgba(0, 255, 0, 0.6)'};
+  font-size: 13px;
+  margin-top: 8px;
+`;
+
 const Trade = ({ animateLogo, setAsyncOutput }) => {
   const [amount, setAmount] = useState('');
   const [quote, setQuote] = useState(null);
   const [isEthOnTop, setIsEthOnTop] = useState(true);
   const { showPopUp } = usePopUp();
-  const { signer, rose, balance: nativeBalance, roseBalance, reserve1 } = useWeb3();
+  const { signer, rose, balance: nativeBalance, roseBalance, reserve0, reserve1 } = useWeb3();
   const [slippage, setSlippage] = useState(3);
   const [isSliderVisible, setIsSliderVisible] = useState(false);
   const [panelWidth, setPanelWidth] = useState(350);
+  const [priceImpact, setPriceImpact] = useState(null);
+  const [isQuoteLoading, setIsQuoteLoading] = useState(false);
 
   const updatePanelWidth = useCallback(() => {
     const screenWidth = window.innerWidth;
@@ -291,27 +300,26 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
     }
   }, [signer, rose, amount, isEthOnTop]);
 
-  const fetchQuote = useCallback(async () => {
-    if (amount) {
-      const newQuote = await getQuote();
-      setQuote(newQuote);
-      console.log(`Quote updated`);
-    }
-  }, [amount, getQuote]);
+  const debouncedGetQuote = useCallback(
+    debounce(async () => {
+      if (amount) {
+        setIsQuoteLoading(true);
+        const newQuote = await getQuote();
+        setQuote(newQuote);
+        setIsQuoteLoading(false);
+      } else {
+        setQuote(null);
+      }
+    }, 500),
+    [getQuote]
+  );
 
-  useEffect(() => {
-    if (amount) {
-      const intervalId = setInterval(fetchQuote, 5000);
-      return () => clearInterval(intervalId);
-    }
-  }, [amount, fetchQuote]);
-
-  const handleAmountChange = async (e) => {
+  const handleAmountChange = (e) => {
     const newAmount = e.target.value.slice(0, 8);
     setAmount(newAmount);
-    const newQuote = await getQuote();
-    setQuote(newQuote);
-    console.log(`Quote updated`);
+    setPriceImpact(null);  // Reset price impact
+    setIsQuoteLoading(true);
+    debouncedGetQuote();
   };
 
   const handleKeyPress = (event) => {
@@ -321,12 +329,34 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
   };
 
   useEffect(() => {
-    const updateQuote = async () => {
-      const newQuote = await getQuote();
-      setQuote(newQuote);
+    debouncedGetQuote();
+  }, [debouncedGetQuote]);
+
+  useEffect(() => {
+    const calculatePriceImpact = () => {
+      if (amount && quote && reserve0 && reserve1 && !isQuoteLoading) {
+        const spotQuote = isEthOnTop
+          ? (parseFloat(reserve1) / parseFloat(reserve0)) * parseFloat(amount)
+          : (parseFloat(reserve0) / parseFloat(reserve1)) * parseFloat(amount);
+        const actualQuote = parseFloat(quote);
+        let impact;
+        if (isEthOnTop) {
+          impact = ((spotQuote / actualQuote) - 1) * 100;
+        } else {
+          impact = -(((actualQuote / spotQuote) - 1) * 100) - 1;
+        }
+        if (isNaN(impact)) {
+          setPriceImpact(null);
+        } else {
+          setPriceImpact(impact);
+        }
+      } else {
+        setPriceImpact(null);
+      }
     };
-    updateQuote();
-  }, [isEthOnTop]);
+
+    calculatePriceImpact();
+  }, [amount, quote, reserve0, reserve1, isEthOnTop, isQuoteLoading]);
 
   const handleSlippageChange = (e) => {
     const value = parseFloat(e.target.value);
@@ -506,8 +536,12 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
           {isEthOnTop ? '🌹' : <FaEthereum />}
         </IconButton>
         <Panel>
-          <QuoteText isLoading={!quote}>
-            {quote ? parseFloat(quote).toFixed(6) : 'loading quote...'}
+          <QuoteText isLoading={!quote && amount !== ''}>
+            {amount 
+              ? (quote 
+                  ? parseFloat(quote).toFixed(10) 
+                  : 'loading quote...') 
+              : ''}
           </QuoteText>
         </Panel>
       </TradeRow>
@@ -530,6 +564,13 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
           <SliderLabel>{slippage.toFixed(1)}%</SliderLabel>
         </SliderRow>
       </SliderContainer>
+      <PriceImpactText impact={priceImpact || 0}>
+        Price Impact: {
+          isQuoteLoading || priceImpact === null 
+            ? '...' 
+            : priceImpact.toFixed(2) + '%'
+        }
+      </PriceImpactText>
       <ExecuteButton 
         onClick={handleExecute} 
         disabled={!amount}

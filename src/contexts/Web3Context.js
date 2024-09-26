@@ -108,7 +108,7 @@ export const Web3Provider = ({ children }) => {
   useEffect(() => {
     if (isConnected) {
       updateWeb3State();
-      const intervalId = setInterval(updateWeb3State, 5000);
+      const intervalId = setInterval(updateWeb3State, 2000);
       return () => clearInterval(intervalId);
     }
   }, [isConnected, updateWeb3State]);
