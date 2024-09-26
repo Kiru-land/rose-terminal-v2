@@ -226,6 +226,15 @@ const MenuItem = styled.button`
       left: 0;
     }
   }
+
+  ${props => props.isSelected && `
+    color: #00ff00;
+    &:after {
+      width: 100%;
+      left: 0;
+    }
+  `}
+
   ${props => props.isMobile && `
     padding: 15px;
     font-size: 18px;
@@ -255,7 +264,7 @@ const Ripple = styled.span`
   animation: ${rippleEffect} 1s;
 `;
 
-const RippleButton = ({ children, onClick, isMobile }) => {
+const RippleButton = ({ children, onClick, isMobile, isSelected }) => {
   const [ripples, setRipples] = useState([]);
   const buttonRef = useRef(null);
 
@@ -283,7 +292,12 @@ const RippleButton = ({ children, onClick, isMobile }) => {
   }, [ripples]);
 
   return (
-    <MenuItem ref={buttonRef} onClick={handleClick} isMobile={isMobile}>
+    <MenuItem 
+      ref={buttonRef} 
+      onClick={handleClick} 
+      isMobile={isMobile}
+      isSelected={isSelected}
+    >
       {children}
       {isMobile && (
         <RippleContainer>
@@ -311,6 +325,7 @@ const Terminal = ({ isMobile }) => {
   const [showTrade, setShowTrade] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
   const [showLaunch, setShowLaunch] = useState(false);
+  const [selectedCommand, setSelectedCommand] = useState(null);
   const terminalContentRef = useRef(null);
   const outputRef = useRef(null);
 
@@ -377,33 +392,39 @@ const Terminal = ({ isMobile }) => {
       case 'launch':
         if (showLaunch) {
           setShowLaunch(false);
+          setSelectedCommand(null);
           output = 'Closing launch interface...';
         } else {
           setShowLaunch(true);
           setShowTrade(false);
           setShowTransfer(false);
+          setSelectedCommand('launch');
           output = 'Opening launch interface...';
         }
         break;
       case 'trade':
         if (showTrade) {
           setShowTrade(false);
+          setSelectedCommand(null);
           output = 'Closing trade interface...';
         } else {
           setShowTrade(true);
           setShowLaunch(false);
           setShowTransfer(false);
+          setSelectedCommand('trade');
           output = 'Opening trade interface...';
         }
         break;
       case 'transfer':
         if (showTransfer) {
           setShowTransfer(false);
+          setSelectedCommand(null);
           output = 'Closing transfer interface...';
         } else {
           setShowTransfer(true);
           setShowLaunch(false);
           setShowTrade(false);
+          setSelectedCommand('transfer');
           output = 'Opening transfer interface...';
         }
         break;
@@ -515,6 +536,7 @@ const Terminal = ({ isMobile }) => {
               key={command}
               onClick={() => handleMenuClick(command)}
               isMobile={isMobile}
+              isSelected={selectedCommand === command}
             >
               {command}
             </RippleButton>
