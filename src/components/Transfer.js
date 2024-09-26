@@ -31,29 +31,11 @@ const TransferContainer = styled.div`
     padding: 20px;
   }
 `;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  color: #00ff00;
-  cursor: pointer;
-  font-size: 20px;
-  transition: transform 0.2s ease-in-out;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-`;
-
 const TransferRow = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 15px;
 `;
-
 const IconButton = styled.button`
   background: none;
   border: none;
@@ -89,7 +71,7 @@ const Input = styled.input`
   border: none;
   background-color: transparent;
   color: #00ff00;
-  font-size: 18px;
+  font-size: 16px;
   outline: none;
   text-align: left;
   font-family: inherit;
@@ -267,7 +249,6 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
 
     return (
         <TransferContainer width={panelWidth}>
-            <CloseButton onClick={onClose}>&times;</CloseButton>
             <TransferRow>
                 <IconButton>⊡⚃</IconButton>
                 <Panel>

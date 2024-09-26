@@ -32,22 +32,6 @@ const TradeContainer = styled.div`
   }
 `;
 
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  color: #00ff00;
-  cursor: pointer;
-  font-size: 20px;
-  transition: transform 0.2s ease-in-out;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-`;
-
 const TradeRow = styled.div`
   display: flex;
   align-items: center;
@@ -89,7 +73,7 @@ const Input = styled.input`
   border: none;
   background-color: transparent;
   color: #00ff00;
-  font-size: 18px;
+  font-size: 16px;
   outline: none;
   text-align: left;
   font-family: inherit;
@@ -253,7 +237,7 @@ const ArrowIcon = styled.span`
   transform: ${props => props.isOpen ? 'rotate(-90deg)' : 'rotate(90deg)'};
 `;
 
-const Trade = ({ onClose, animateLogo, setAsyncOutput }) => {
+const Trade = ({ animateLogo, setAsyncOutput }) => {
   const [amount, setAmount] = useState('');
   const [quote, setQuote] = useState(null);
   const [isEthOnTop, setIsEthOnTop] = useState(true);
@@ -500,7 +484,6 @@ const Trade = ({ onClose, animateLogo, setAsyncOutput }) => {
 
   return (
     <TradeContainer width={panelWidth}>
-      <CloseButton onClick={onClose}>&times;</CloseButton>
       <TradeRow>
         <IconButton onClick={handleIconClick}>
           {isEthOnTop ? <FaEthereum /> : '🌹'}

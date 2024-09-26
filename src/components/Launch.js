@@ -49,22 +49,6 @@ const ContentWrapper = styled.div`
   scrollbar-width: none;  /* Firefox */
 `;
 
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  color: #00ff00;
-  cursor: pointer;
-  font-size: 20px;
-  transition: transform 0.2s ease-in-out;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-`;
-
 const SaleRow = styled.div`
   display: flex;
   align-items: center;
@@ -106,7 +90,7 @@ const Input = styled.input`
   border: none;
   background-color: transparent;
   color: #00ff00;
-  font-size: 18px;
+  font-size: 16px;
   outline: none;
   text-align: left;
   font-family: inherit;
@@ -330,7 +314,7 @@ const ChartTooltip = styled.div`
   border: 1px solid rgba(0, 255, 0, 0.3);
 `;
 
-const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
+const Launch = ({ animateLogo, setAsyncOutput }) => {
   const [panelWidth, setPanelWidth] = useState(380);
   const [amount, setAmount] = useState('');
   const [isDashboardVisible, setIsDashboardVisible] = useState(false);
@@ -384,7 +368,7 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
   }, [provider, saleAddress]);
 
   const softCap = "200";
-  const hardCap = "1000";
+  const hardCap = "500";
 
   const data = [
     { name: 'Fair Launch', value: 62 },
@@ -541,7 +525,6 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
 
   return (
     <LaunchContainer width={panelWidth}>
-      <CloseButton onClick={onClose}>&times;</CloseButton>
       <ContentWrapper>
         <SaleRow>
           <IconButton>
@@ -561,7 +544,7 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
         </SaleRow>
         <DashboardContainer>
           <DashboardTitle onClick={toggleDashboardVisibility} isOpen={isDashboardVisible}>
-            Sale Details
+            Details
             <ArrowIcon isOpen={isDashboardVisible}>
               &#10095;
             </ArrowIcon>
@@ -636,8 +619,8 @@ const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
         This Fair Launch has a <em>soft</em> and <em>hard</em> cap. <br /> <br />
         1.) If the total amount raised is smaller than the soft cap, all participation gets reimbursed. <br /> <br />
         2.) If the amount raised is bigger than the hard cap, the excess tokens get proportionally reimbursed to every user.<br /> <br />
-        Participants receive a part of the 75% of ROSE tokens sold based on their proportional share of the total <FaEthereum /> submitted.<br /> <br />
-        <em>Note: The Implied Market Cap will increase with the contribution amount until it reaches the Hard Cap of 1000<FaEthereum />. The Implied Market Cap will vary between 800<FaEthereum /> for the Soft Cap until reaching 4000<FaEthereum /> at the Hard Cap.</em>
+        Participants receive a part of the 62% of ROSE tokens sold based on their proportional share of the total <FaEthereum /> submitted.<br /> <br />
+        <em>Note: The Implied Market Cap will increase linearly with the contribution amount until it reaches the Hard Cap of 500<FaEthereum />. <br /> The Implied Market Cap will vary between 800<FaEthereum /> at the Soft Cap and 2000<FaEthereum /> at the Hard Cap.</em>
       </HelpTooltip>
     </LaunchContainer>
   );
