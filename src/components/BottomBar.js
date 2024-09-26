@@ -113,7 +113,7 @@ const BottomBar = () => {
 
   return (
     <BarContainer>
-      <AlphaValue>α: {alpha !== undefined ? parseFloat(alpha).toFixed(4) : 'N/A'}</AlphaValue>
+      <AlphaValue>α: {alpha !== undefined ? parseFloat(1-alpha).toFixed(4) : 'N/A'}</AlphaValue>
       <ConnectButton $isConnected={isConnected} onClick={handleConnect}>
         {isConnected ? 'Disconnect' : 'Connect'}
       </ConnectButton>
