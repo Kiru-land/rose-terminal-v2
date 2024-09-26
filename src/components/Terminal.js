@@ -410,11 +410,6 @@ const Terminal = ({ isMobile }) => {
 
   const handleIntroComplete = () => {
     setShowIntro(false);
-    setShowLaunch(true);  // Open Launch component after intro
-    setHistory(prev => [...prev, 
-      { type: 'command', content: 'launch' },
-      { type: 'output', content: 'Opening launch interface...' }
-    ]);
   };
 
   const handleContainerClick = (e) => {
