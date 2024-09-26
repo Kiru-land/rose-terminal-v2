@@ -240,8 +240,9 @@ const ArrowIcon = styled.span`
 
 const PriceImpactText = styled.div`
   color: ${props => props.impact > 5 ? '#ff4136' : 'rgba(0, 255, 0, 0.6)'};
-  font-size: 13px;
-  margin-top: 8px;
+  font-size: 12px;
+  margin-top: 6px;
+  text-align: center;
 `;
 
 const Trade = ({ animateLogo, setAsyncOutput }) => {

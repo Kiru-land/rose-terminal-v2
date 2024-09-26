@@ -375,16 +375,37 @@ const Terminal = ({ isMobile }) => {
     let output = '';
     switch (command) {
       case 'launch':
-        setShowLaunch(true);
-        output = 'Opening launch interface...';
+        if (showLaunch) {
+          setShowLaunch(false);
+          output = 'Closing launch interface...';
+        } else {
+          setShowLaunch(true);
+          setShowTrade(false);
+          setShowTransfer(false);
+          output = 'Opening launch interface...';
+        }
         break;
       case 'trade':
-        setShowTrade(true);
-        output = 'Opening trade interface...';
+        if (showTrade) {
+          setShowTrade(false);
+          output = 'Closing trade interface...';
+        } else {
+          setShowTrade(true);
+          setShowLaunch(false);
+          setShowTransfer(false);
+          output = 'Opening trade interface...';
+        }
         break;
       case 'transfer':
-        setShowTransfer(true);
-        output = 'Opening transfer interface...';
+        if (showTransfer) {
+          setShowTransfer(false);
+          output = 'Closing transfer interface...';
+        } else {
+          setShowTransfer(true);
+          setShowLaunch(false);
+          setShowTrade(false);
+          output = 'Opening transfer interface...';
+        }
         break;
       default:
         output = `Command not found: ${command}`;

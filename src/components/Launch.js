@@ -13,7 +13,7 @@ const fadeIn = keyframes`
 
 const LaunchContainer = styled.div`
   position: fixed;
-  top: 50%;
+  top: ${props => props.isDashboardVisible ? '45%' : '55%'};
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: rgba(0, 0, 0, 0.9);
@@ -27,6 +27,7 @@ const LaunchContainer = styled.div`
   max-height: 90vh;
   display: flex;
   flex-direction: column;
+  transition: top 0.3s ease-out;
 
   @media (max-width: 600px) {
     width: 90vw;
@@ -197,7 +198,7 @@ const ArrowIcon = styled.span`
 
 const DashboardContent = styled.div`
   max-height: ${props => props.isVisible ? '1000px' : '0'};
-  opacity: ${props => props.isVisible ? '1' : '0'};
+  opacity: ${props => props.isVisible ? 1 : 0};
   overflow: hidden;
   transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
 `;
@@ -491,7 +492,7 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
     return null;
   };
 
-  const toggleDashboardVisibility = () => {
+  const toggleDashboard = () => {
     setIsDashboardVisible(!isDashboardVisible);
     if (!isDashboardVisible) {
       // Set a small delay before showing content to allow for the expand animation
@@ -524,7 +525,7 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
   }, [showTooltip]);
 
   return (
-    <LaunchContainer width={panelWidth}>
+    <LaunchContainer width={panelWidth} isDashboardVisible={isDashboardVisible}>
       <ContentWrapper>
         <SaleRow>
           <IconButton>
@@ -543,7 +544,7 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
           </Panel>
         </SaleRow>
         <DashboardContainer>
-          <DashboardTitle onClick={toggleDashboardVisibility} isOpen={isDashboardVisible}>
+          <DashboardTitle onClick={toggleDashboard} isOpen={isDashboardVisible}>
             Details
             <ArrowIcon isOpen={isDashboardVisible}>
               &#10095;
