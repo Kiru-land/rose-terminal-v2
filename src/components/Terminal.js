@@ -310,7 +310,7 @@ const Terminal = ({ isMobile }) => {
   const [showIntro, setShowIntro] = useState(true);
   const [showTrade, setShowTrade] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
-  const [showSale, setShowSale] = useState(false);
+  const [showLaunch, setShowLaunch] = useState(false);
   const terminalContentRef = useRef(null);
   const outputRef = useRef(null);
 
@@ -368,14 +368,14 @@ const Terminal = ({ isMobile }) => {
     setHistory(prev => [...prev, { type: 'command', content: command }]);
 
     // Close all command interfaces
-    setShowSale(false);
+    setShowLaunch(false);
     setShowTrade(false);
     setShowTransfer(false);
 
     let output = '';
     switch (command) {
       case 'launch':
-        setShowSale(true);
+        setShowLaunch(true);
         output = 'Opening launch interface...';
         break;
       case 'trade':
@@ -410,6 +410,11 @@ const Terminal = ({ isMobile }) => {
 
   const handleIntroComplete = () => {
     setShowIntro(false);
+    setShowLaunch(true);  // Open Launch component after intro
+    setHistory(prev => [...prev, 
+      { type: 'command', content: 'launch' },
+      { type: 'output', content: 'Opening launch interface...' }
+    ]);
   };
 
   const handleContainerClick = (e) => {
@@ -514,9 +519,9 @@ const Terminal = ({ isMobile }) => {
             setAsyncOutput={setAsyncOutput}
           />
         )}
-        {showSale && (
+        {showLaunch && (
           <Launch 
-            onClose={() => setShowSale(false)} 
+            onClose={() => setShowLaunch(false)} 
             animateLogo={animateLogo} 
             setAsyncOutput={setAsyncOutput}
           />
