@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useWeb3 } from '../contexts/Web3Context';
 import { usePopUp } from '../contexts/PopUpContext';
@@ -21,7 +21,15 @@ const TransferContainer = styled.div`
   z-index: 1000;
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   animation: ${fadeIn} 0.3s ease-out;
-  width: 350px;
+  width: ${props => props.width}px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  @media (max-width: 600px) {
+    width: 90vw;
+    padding: 20px;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -165,10 +173,26 @@ const formatAddress = (address) => {
 };
 
 const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
+    const [panelWidth, setPanelWidth] = useState(350);
     const [amount, setAmount] = useState('');
     const [recipient, setRecipient] = useState('');
     const { showPopUp } = usePopUp();
     const { signer, rose, roseBalance } = useWeb3();
+
+    const updatePanelWidth = useCallback(() => {
+        const screenWidth = window.innerWidth;
+        if (screenWidth <= 600) {
+            setPanelWidth(screenWidth * 0.9);
+        } else {
+            setPanelWidth(350);
+        }
+    }, []);
+
+    useEffect(() => {
+        updatePanelWidth();
+        window.addEventListener('resize', updatePanelWidth);
+        return () => window.removeEventListener('resize', updatePanelWidth);
+    }, [updatePanelWidth]);
 
     const handleAmountChange = (e) => {
         const newAmount = e.target.value.slice(0, 8);
@@ -242,7 +266,7 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
     };
 
     return (
-        <TransferContainer>
+        <TransferContainer width={panelWidth}>
             <CloseButton onClick={onClose}>&times;</CloseButton>
             <TransferRow>
                 <IconButton>⊡⚃</IconButton>

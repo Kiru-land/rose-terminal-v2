@@ -21,7 +21,15 @@ const TradeContainer = styled.div`
   z-index: 1000;
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   animation: ${fadeIn} 0.3s ease-out;
-  width: 350px;
+  width: ${props => props.width}px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  @media (max-width: 600px) {
+    width: 90vw;
+    padding: 20px;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -253,6 +261,22 @@ const Trade = ({ onClose, animateLogo, setAsyncOutput }) => {
   const { signer, rose, balance: nativeBalance, roseBalance, reserve1 } = useWeb3();
   const [slippage, setSlippage] = useState(3);
   const [isSliderVisible, setIsSliderVisible] = useState(false);
+  const [panelWidth, setPanelWidth] = useState(350);
+
+  const updatePanelWidth = useCallback(() => {
+    const screenWidth = window.innerWidth;
+    if (screenWidth <= 600) {
+      setPanelWidth(screenWidth * 0.9);
+    } else {
+      setPanelWidth(350);
+    }
+  }, []);
+
+  useEffect(() => {
+    updatePanelWidth();
+    window.addEventListener('resize', updatePanelWidth);
+    return () => window.removeEventListener('resize', updatePanelWidth);
+  }, [updatePanelWidth]);
 
   const getQuote = useCallback(async () => {
     if (!signer || !rose || !amount) return null;
@@ -475,7 +499,7 @@ const Trade = ({ onClose, animateLogo, setAsyncOutput }) => {
   };
 
   return (
-    <TradeContainer>
+    <TradeContainer width={panelWidth}>
       <CloseButton onClick={onClose}>&times;</CloseButton>
       <TradeRow>
         <IconButton onClick={handleIconClick}>

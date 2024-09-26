@@ -97,7 +97,7 @@ const OutputDiv = styled.div`
   top: 60px;  // Adjust this value to position below the GitHub icon
   left: 20px;
   max-width: 80%;
-  max-height: 40%;
+  max-height: 30%;
   overflow-y: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -186,6 +186,17 @@ const MenuContainer = styled.div`
   `}
 `;
 
+const rippleEffect = keyframes`
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+`;
+
 const MenuItem = styled.button`
   background-color: transparent;
   color: #f0f0f0;
@@ -218,8 +229,78 @@ const MenuItem = styled.button`
   ${props => props.isMobile && `
     padding: 15px;
     font-size: 18px;
+    position: relative;
+    overflow: hidden;
+    transform: translate3d(0, 0, 0);
   `}
 `;
+
+const RippleContainer = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+`;
+
+const Ripple = styled.span`
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  width: 100px;
+  height: 100px;
+  margin-top: -50px;
+  margin-left: -50px;
+  animation: ${rippleEffect} 1s;
+`;
+
+const RippleButton = ({ children, onClick, isMobile }) => {
+  const [ripples, setRipples] = useState([]);
+  const buttonRef = useRef(null);
+
+  const addRipple = (event) => {
+    const button = buttonRef.current;
+    const rect = button.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const ripple = { x, y, key: Date.now() };
+    setRipples((prevRipples) => [...prevRipples, ripple]);
+  };
+
+  const handleClick = (event) => {
+    if (isMobile) {
+      addRipple(event);
+    }
+    onClick(event);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setRipples([]);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [ripples]);
+
+  return (
+    <MenuItem ref={buttonRef} onClick={handleClick} isMobile={isMobile}>
+      {children}
+      {isMobile && (
+        <RippleContainer>
+          {ripples.map((ripple) => (
+            <Ripple
+              key={ripple.key}
+              style={{
+                left: ripple.x,
+                top: ripple.y,
+              }}
+            />
+          ))}
+        </RippleContainer>
+      )}
+    </MenuItem>
+  );
+};
 
 const Terminal = ({ isMobile }) => {
   const [history, setHistory] = useState([]);
@@ -399,9 +480,13 @@ const Terminal = ({ isMobile }) => {
         </TerminalContent>
         <MenuContainer isMobile={isMobile}>
           {['launch', 'trade', 'transfer'].map(command => (
-            <MenuItem key={command} onClick={() => handleMenuClick(command)} isMobile={isMobile}>
+            <RippleButton
+              key={command}
+              onClick={() => handleMenuClick(command)}
+              isMobile={isMobile}
+            >
               {command}
-            </MenuItem>
+            </RippleButton>
           ))}
         </MenuContainer>
         <BottomBar />

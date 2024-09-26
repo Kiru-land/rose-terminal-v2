@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import styled, { keyframes } from 'styled-components';
+import React, { useState, useEffect, useCallback } from 'react';
+import styled, { keyframes, css } from 'styled-components';
 import { useWeb3 } from '../contexts/Web3Context';
 import { usePopUp } from '../contexts/PopUpContext';
 import { FaEthereum, FaInfoCircle } from 'react-icons/fa';
@@ -11,9 +11,9 @@ const fadeIn = keyframes`
   to { opacity: 1; }
 `;
 
-const SaleContainer = styled.div`
-  position: absolute;
-  top: 55%;
+const LaunchContainer = styled.div`
+  position: fixed;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: rgba(0, 0, 0, 0.9);
@@ -22,7 +22,31 @@ const SaleContainer = styled.div`
   z-index: 1000;
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   animation: ${fadeIn} 0.3s ease-out;
-  width: 380px;
+  width: ${props => props.width}px;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 600px) {
+    width: 90vw;
+    padding: 20px;
+  }
+`;
+
+const ContentWrapper = styled.div`
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 `;
 
 const CloseButton = styled.button`
@@ -116,7 +140,7 @@ const MaxButton = styled.button`
   }
 `;
 
-const ExecuteButton = styled.button`
+const ParticipateButton = styled.button`
   width: 100%;
   padding: 14px;
   background-color: #000000;
@@ -236,20 +260,21 @@ const HelpIcon = styled(FaInfoCircle)`
 `;
 
 const HelpTooltip = styled.div`
-  position: absolute;
+  position: fixed;
   background-color: rgba(0, 0, 0, 0.9);
   color: #00ff00;
   padding: 15px;
   border-radius: 15px;
   font-size: 12px;
-  max-width: 380px;
-  width: 380px;
-  z-index: 1000;
+  max-width: 90vw;
+  width: ${props => props.isMobile ? '90vw' : '380px'};
+  z-index: 1001;
   visibility: ${props => props.visible ? 'visible' : 'hidden'};
   opacity: ${props => props.visible ? 1 : 0};
   transition: visibility 0.2s, opacity 0.2s;
-  right: -400px;
-  top: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   line-height: 1.4;
   border: 1px solid rgba(0, 255, 0, 0.3);
@@ -279,6 +304,12 @@ const TooltipLabel = styled.p`
   margin: 0;
 `;
 
+const TooltipExplanation = styled.p`
+  color: rgba(0, 255, 0, 0.8);
+  font-size: 12px;
+  margin: 5px 0 0;
+`;
+
 const ChartTooltip = styled.div`
   position: absolute;
   background-color: rgba(0, 0, 0, 0.9);
@@ -299,7 +330,8 @@ const ChartTooltip = styled.div`
   border: 1px solid rgba(0, 255, 0, 0.3);
 `;
 
-const Sale = ({ onClose, animateLogo, setAsyncOutput }) => {
+const Launch = ({ onClose, animateLogo, setAsyncOutput }) => {
+  const [panelWidth, setPanelWidth] = useState(380);
   const [amount, setAmount] = useState('');
   const [isDashboardVisible, setIsDashboardVisible] = useState(false);
   const [isContentVisible, setIsContentVisible] = useState(false);
@@ -307,9 +339,27 @@ const Sale = ({ onClose, animateLogo, setAsyncOutput }) => {
   const [totalRaised, setTotalRaised] = useState('0');
   const [expectedMarketCap, setExpectedMarketCap] = useState('0');
   const [activeTooltip, setActiveTooltip] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const { showPopUp } = usePopUp();
   const { signer, balance: nativeBalance, sale: saleAddress, provider } = useWeb3();
+
+  const updatePanelWidth = useCallback(() => {
+    const screenWidth = window.innerWidth;
+    if (screenWidth <= 600) {
+      setPanelWidth(screenWidth * 0.9);
+      setIsMobile(true);
+    } else {
+      setPanelWidth(380);
+      setIsMobile(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    updatePanelWidth();
+    window.addEventListener('resize', updatePanelWidth);
+    return () => window.removeEventListener('resize', updatePanelWidth);
+  }, [updatePanelWidth]);
 
   const fetchSaleData = async () => {
     if (provider && saleAddress) {
@@ -340,23 +390,20 @@ const Sale = ({ onClose, animateLogo, setAsyncOutput }) => {
   const hardCap = "1000";
 
   const data = [
-    { name: 'Fair Launch', value: 75 },
+    { name: 'Fair Launch', value: 62 },
     { name: 'Liquidity', value: 20 },
-    { name: 'Treasury', value: 5 },
+    { name: 'Clawback', value: 10 },
+    { name: 'Treasury', value: 8 },
   ];
 
-  const COLORS = ['rgba(0, 255, 0, 0.4)', 'rgba(0, 204, 255, 0.4)', 'rgba(255, 0, 255, 0.4)'];
-  const HOVER_COLORS = ['rgba(0, 255, 0, 0.8)', 'rgba(0, 204, 255, 0.8)', 'rgba(255, 0, 255, 0.8)'];
-
-  const [activeIndex, setActiveIndex] = useState(null);
+  const COLORS = ['rgba(0, 255, 0, 0.4)', 'rgba(0, 204, 255, 0.4)', 'rgba(255, 0, 255, 0.4)', 'rgba(255, 165, 0, 0.4)'];
+  const HOVER_COLORS = ['rgba(0, 255, 0, 0.8)', 'rgba(0, 204, 255, 0.8)', 'rgba(255, 0, 255, 0.8)', 'rgba(255, 165, 0, 0.8)'];
 
   const handlePieEnter = (_, index) => {
-    setActiveIndex(index);
     setActiveTooltip(data[index].name);
   };
 
   const handlePieLeave = () => {
-    setActiveIndex(null);
     setActiveTooltip(null);
   };
 
@@ -368,6 +415,8 @@ const Sale = ({ onClose, animateLogo, setAsyncOutput }) => {
         return 'Percentage of ROSE going into the custom aAMM liquidity pool';
       case 'Treasury':
         return 'Funds reserved for future incentivisation, strategic investing, fund development';
+      case 'Clawback':
+        return 'Allocation for cool Ethereum communities';
       default:
         return '';
     }
@@ -454,6 +503,9 @@ const Sale = ({ onClose, animateLogo, setAsyncOutput }) => {
       return (
         <CustomTooltip>
           <TooltipLabel>{`${data.name}: ${data.value}%`}</TooltipLabel>
+          {isMobile && (
+            <TooltipExplanation>{getTooltipContent(data.name)}</TooltipExplanation>
+          )}
         </CustomTooltip>
       );
     }
@@ -470,100 +522,112 @@ const Sale = ({ onClose, animateLogo, setAsyncOutput }) => {
     }
   };
 
+  const handleHelpIconInteraction = (event) => {
+    event.stopPropagation();
+    if (isMobile) {
+      setShowTooltip(!showTooltip);
+    }
+  };
+
+  const handleTooltipClick = () => {
+    setShowTooltip(false);
+  };
+
   return (
-    <SaleContainer>
+    <LaunchContainer width={panelWidth}>
       <CloseButton onClick={onClose}>&times;</CloseButton>
-      <SaleRow>
-        <IconButton>
-          <FaEthereum />
-        </IconButton>
-        <Panel>
-          <InputWrapper>
-            <Input 
-              type="text" 
-              value={amount} 
-              onChange={handleAmountChange} 
-              placeholder="Enter amount"
-            />
-            <MaxButton onClick={handleMaxClick}>max</MaxButton>
-          </InputWrapper>
-        </Panel>
-      </SaleRow>
-      <DashboardContainer>
-        <DashboardTitle onClick={toggleDashboardVisibility} isOpen={isDashboardVisible}>
-          Sale Details
-          <ArrowIcon isOpen={isDashboardVisible}>
-            &#10095;
-          </ArrowIcon>
-        </DashboardTitle>
-        <DashboardContent isVisible={isDashboardVisible}>
-          <Dashboard>
-            <DashboardRow isVisible={isContentVisible} delay={0.1}>
-              <DashboardLabel>Type:</DashboardLabel>
-              <DashboardValue>
-                Fair Launch
-                <HelpIcon 
-                  onMouseEnter={() => setShowTooltip(true)}
-                  onMouseLeave={() => setShowTooltip(false)}
-                />
-              </DashboardValue>
-            </DashboardRow>
-            <DashboardRow isVisible={isContentVisible} delay={0.2}>
-              <DashboardLabel>Soft Cap:</DashboardLabel>
-              <DashboardValue>{softCap}<FaEthereum /></DashboardValue>
-            </DashboardRow>
-            <DashboardRow isVisible={isContentVisible} delay={0.3}>
-              <DashboardLabel>Hard Cap:</DashboardLabel>
-              <DashboardValue>{hardCap}<FaEthereum /></DashboardValue>
-            </DashboardRow>
-            <DashboardRow isVisible={isContentVisible} delay={0.4}>
-              <DashboardLabel>Amount Raised:</DashboardLabel>
-              <DashboardValue>{totalRaised}<FaEthereum /></DashboardValue>
-            </DashboardRow>
-            <DashboardRow isVisible={isContentVisible} delay={0.5}>
-              <DashboardLabel>Implied Market Cap:</DashboardLabel>
-              <DashboardValue>{expectedMarketCap}<FaEthereum /></DashboardValue>
-            </DashboardRow>
-            <ChartContainer isVisible={isContentVisible}>
-              <PieChart width={240} height={240}>
-                <Pie
-                  data={data}
-                  cx={120}
-                  cy={110}
-                  innerRadius={75}
-                  outerRadius={105}
-                  paddingAngle={4}
-                  dataKey="value"
-                  strokeWidth={0}
-                  cornerRadius={8}
-                  onMouseEnter={handlePieEnter}
-                  onMouseLeave={handlePieLeave}
-                >
-                  {data.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={index === activeIndex ? HOVER_COLORS[index % HOVER_COLORS.length] : COLORS[index % COLORS.length]}
-                      stroke="rgba(0, 0, 0, 0.2)"
-                      strokeWidth={1}
-                      style={{
-                        filter: `drop-shadow(0 0 ${index === activeIndex ? '4px' : '2px'} ${COLORS[index % COLORS.length]})`
-                      }}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltipContent />} />
-              </PieChart>
-            </ChartContainer>
-          </Dashboard>
-        </DashboardContent>
-      </DashboardContainer>
-      <ExecuteButton 
+      <ContentWrapper>
+        <SaleRow>
+          <IconButton>
+            <FaEthereum />
+          </IconButton>
+          <Panel>
+            <InputWrapper>
+              <Input 
+                type="text" 
+                value={amount} 
+                onChange={handleAmountChange} 
+                placeholder="Enter amount"
+              />
+              <MaxButton onClick={handleMaxClick}>max</MaxButton>
+            </InputWrapper>
+          </Panel>
+        </SaleRow>
+        <DashboardContainer>
+          <DashboardTitle onClick={toggleDashboardVisibility} isOpen={isDashboardVisible}>
+            Sale Details
+            <ArrowIcon isOpen={isDashboardVisible}>
+              &#10095;
+            </ArrowIcon>
+          </DashboardTitle>
+          <DashboardContent isVisible={isDashboardVisible}>
+            <Dashboard>
+              <DashboardRow isVisible={isContentVisible} delay={0.1}>
+                <DashboardLabel>Type:</DashboardLabel>
+                <DashboardValue>
+                  Fair Launch
+                  <HelpIcon 
+                    onMouseEnter={() => !isMobile && setShowTooltip(true)}
+                    onMouseLeave={() => !isMobile && setShowTooltip(false)}
+                    onClick={handleHelpIconInteraction}
+                    onTouchStart={handleHelpIconInteraction}
+                  />
+                </DashboardValue>
+              </DashboardRow>
+              <DashboardRow isVisible={isContentVisible} delay={0.2}>
+                <DashboardLabel>Soft Cap:</DashboardLabel>
+                <DashboardValue>{softCap}<FaEthereum /></DashboardValue>
+              </DashboardRow>
+              <DashboardRow isVisible={isContentVisible} delay={0.3}>
+                <DashboardLabel>Hard Cap:</DashboardLabel>
+                <DashboardValue>{hardCap}<FaEthereum /></DashboardValue>
+              </DashboardRow>
+              <DashboardRow isVisible={isContentVisible} delay={0.4}>
+                <DashboardLabel>Amount Raised:</DashboardLabel>
+                <DashboardValue>{totalRaised}<FaEthereum /></DashboardValue>
+              </DashboardRow>
+              <DashboardRow isVisible={isContentVisible} delay={0.5}>
+                <DashboardLabel>Implied Market Cap:</DashboardLabel>
+                <DashboardValue>{expectedMarketCap}<FaEthereum /></DashboardValue>
+              </DashboardRow>
+              <ChartContainer isVisible={isContentVisible}>
+                <PieChart width={240} height={240}>
+                  <Pie
+                    data={data}
+                    cx={120}
+                    cy={110}
+                    innerRadius={75}
+                    outerRadius={105}
+                    paddingAngle={4}
+                    dataKey="value"
+                    strokeWidth={0}
+                    cornerRadius={8}
+                    onMouseEnter={handlePieEnter}
+                    onMouseLeave={handlePieLeave}
+                  >
+                    {data.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={activeTooltip === entry.name ? HOVER_COLORS[index % HOVER_COLORS.length] : COLORS[index % COLORS.length]}
+                        stroke="rgba(0, 0, 0, 0.2)"
+                        strokeWidth={1}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltipContent />} />
+                </PieChart>
+              </ChartContainer>
+            </Dashboard>
+          </DashboardContent>
+        </DashboardContainer>
+      </ContentWrapper>
+      <ParticipateButton 
         onClick={handleExecute} 
         disabled={!amount}
       >
         Participate
-      </ExecuteButton>
-      <HelpTooltip visible={showTooltip}>
+      </ParticipateButton>
+      <HelpTooltip visible={showTooltip} isMobile={isMobile} onClick={handleTooltipClick}>
         <strong>Proportional Oversubscribed Capped Sale</strong><br /><br />
         This Fair Launch has a <em>soft</em> and <em>hard</em> cap. <br /> <br />
         1.) If the total amount raised is smaller than the soft cap, all participation gets reimbursed. <br /> <br />
@@ -571,12 +635,14 @@ const Sale = ({ onClose, animateLogo, setAsyncOutput }) => {
         Participants receive a part of the 75% of ROSE tokens sold based on their proportional share of the total <FaEthereum /> submitted.<br /> <br />
         <em>Note: The Implied Market Cap will increase with the contribution amount until it reaches the Hard Cap of 1000<FaEthereum />. The Implied Market Cap will vary between 800<FaEthereum /> for the Soft Cap until reaching 4000<FaEthereum /> at the Hard Cap.</em>
       </HelpTooltip>
-      <ChartTooltip visible={activeTooltip !== null}>
-        <strong>{activeTooltip}</strong><br />
-        {getTooltipContent(activeTooltip)}
-      </ChartTooltip>
-    </SaleContainer>
+      {!isMobile && (
+        <ChartTooltip visible={activeTooltip !== null}>
+          <strong>{activeTooltip}</strong><br />
+          {getTooltipContent(activeTooltip)}
+        </ChartTooltip>
+      )}
+    </LaunchContainer>
   );
 };
 
-export default Sale;
+export default Launch;
