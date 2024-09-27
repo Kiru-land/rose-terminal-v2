@@ -392,12 +392,25 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
     }
   };
 
+  const handleArrowClick = () => {
+    if (signer) {
+      signer.getAddress().then(signerAddress => {
+        setAddress(signerAddress);
+        handleAddressChange({ target: { value: signerAddress } });
+      }).catch(error => {
+        console.error('Error getting signer address:', error);
+        showPopUp('Error fetching connected wallet address. Please try again.');
+      });
+    } else {
+      showPopUp('Please connect your wallet first.');
+    }
+  };
 
   return (
     <ClawbackContainer width={panelWidth} isDashboardVisible={isDashboardVisible}>
       <ContentWrapper>
         <ClawbackRow>
-          <IconButton>⟼</IconButton>
+          <IconButton onClick={handleArrowClick}>⟼</IconButton>
           <Panel>
             <InputWrapper>
               <Input
