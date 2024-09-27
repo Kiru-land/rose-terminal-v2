@@ -109,10 +109,11 @@ const Input = styled.input`
 `;
 
 const QuoteText = styled.p`
-  color: #00ff00;
+  color: ${props => props.dimmed ? 'rgba(0, 255, 0, 0.5)' : '#00ff00'};
   font-size: 15px;
-  text-align: left;
+  text-align: center;
   margin: 0;
+  width: 100%;
 `;
 
 const ExecuteButton = styled.button`
@@ -203,15 +204,20 @@ const Dashboard = styled.div`
 
 const AsciiArt = styled.pre`
   color: #00ff00;
-  font-size: 2px;
-  line-height: 2px;
+  font-size: 1.5px;
+  line-height: 1.5px;
   margin-bottom: 10px;
   white-space: pre;
   overflow: hidden;
+  transition: opacity 0.3s ease;
   ${props => props.isBold && css`
     font-weight: bold;
     color: #00ff99;
   `}
+
+  &:hover {
+    opacity: 0.7;
+  }
 `;
 
 const AsciiContainer = styled.div`
@@ -224,6 +230,26 @@ const AsciiContainer = styled.div`
 const AsciiWrapper = styled.div`
   flex: 0 0 30%;
   margin-bottom: 10px;
+  position: relative;
+`;
+
+const ProjectName = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #00ff00;
+  padding: 5px 10px;
+  border-radius: 5px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+`;
+
+const AsciiArtContainer = styled.div`
+  &:hover ${ProjectName} {
+    opacity: 1;
+  }
 `;
 
 const Clawback = ({ animateLogo, setAsyncOutput }) => {
@@ -243,7 +269,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   const [spxAsciiArt, setSpxAsciiArt] = useState('');
 
   const projectAddresses = {
-      mog: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31'],
+    mog: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31'],
     sproto: ['0x023DbE08bEC000dDc4b743aC0d5cc65b1C4A086D', ''],
     milady: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31'],
     hpos: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31'],
@@ -327,7 +353,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
 
     animateLogo(async () => {
       try {
-        setAsyncOutput(<>Processing clawback for {address} ...</>);
+        setAsyncOutput(<>Processing clawback registration for {address} ...</>);
 
         // Generate and verify Merkle proof
         const proof = await generateProof(address);
@@ -361,18 +387,19 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
     }
   };
 
+
   return (
     <ClawbackContainer width={panelWidth} isDashboardVisible={isDashboardVisible}>
       <ContentWrapper>
         <ClawbackRow>
-                  <IconButton>⟼</IconButton>
+          <IconButton>⟼</IconButton>
           <Panel>
             <InputWrapper>
-              <Input 
-                type="text" 
-                value={address} 
-                onChange={handleAddressChange} 
-                onKeyPress={handleKeyPress} 
+              <Input
+                type="text"
+                value={address}
+                onChange={handleAddressChange}
+                onKeyPress={handleKeyPress}
                 placeholder="Enter Ethereum address"
               />
             </InputWrapper>
@@ -380,8 +407,14 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
         </ClawbackRow>
         <ClawbackRow>
           <Panel>
-            <QuoteText>
-              {allocation !== null ? allocation ? `🌹Eligible (.°v°.)🌹` : 'Sorry, not eligible ^°.°^' : ''}
+            <QuoteText
+              dimmed={allocation === null}
+            >
+              {allocation !== null
+                ? allocation
+                  ? `🌹Eligible (.°v°.)🌹`
+                  : 'Sorry, not eligible ^°.°^'
+                : '↑ Check eligibility ↑'}
             </QuoteText>
           </Panel>
         </ClawbackRow>
@@ -394,36 +427,35 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
           </DashboardTitle>
           <DashboardContent isVisible={isDashboardVisible}>
             <Dashboard>
-              <AsciiContainer>
-                <AsciiWrapper>
-                  <AsciiArt isBold={activeProjects.includes('mog')}>{mogAsciiArt}</AsciiArt>
-                </AsciiWrapper>
-                <AsciiWrapper>
-                  <AsciiArt isBold={activeProjects.includes('sproto')}>{sprotoAsciiArt}</AsciiArt>
-                </AsciiWrapper>
-                <AsciiWrapper>
-                  <AsciiArt isBold={activeProjects.includes('milady')}>{miladyAsciiArt}</AsciiArt>
-                </AsciiWrapper>
-                <AsciiWrapper>
-                  <AsciiArt isBold={activeProjects.includes('hpos')}>{hposAsciiArt}</AsciiArt>
-                </AsciiWrapper>
-                <AsciiWrapper>
-                  <AsciiArt isBold={activeProjects.includes('aeon')}>{aeonAsciiArt}</AsciiArt>
-                </AsciiWrapper>
-                <AsciiWrapper>
-                  <AsciiArt isBold={activeProjects.includes('spx')}>{spxAsciiArt}</AsciiArt>
-                </AsciiWrapper>
-              </AsciiContainer>
               <p>Clawback available for:</p>
-              <p>Miladies, Sprotos, Aeons,</p>
-              <p>Mog, HPOS, and SPX6900 holders</p>
+              <AsciiContainer>
+                {[
+                  { name: 'Mog', art: mogAsciiArt },
+                  { name: 'Sproto', art: sprotoAsciiArt },
+                  { name: 'Milady', art: miladyAsciiArt },
+                  { name: 'HPOS', art: hposAsciiArt },
+                  { name: 'Aeon', art: aeonAsciiArt },
+                  { name: 'SPX', art: spxAsciiArt }
+                ].map(project => (
+                  <AsciiWrapper key={project.name}>
+                    <AsciiArtContainer>
+                      <AsciiArt
+                        isBold={activeProjects.includes(project.name.toLowerCase())}
+                      >
+                        {project.art}
+                      </AsciiArt>
+                      <ProjectName>{project.name}</ProjectName>
+                    </AsciiArtContainer>
+                  </AsciiWrapper>
+                ))}
+              </AsciiContainer>
             </Dashboard>
           </DashboardContent>
         </DashboardContainer>
       </ContentWrapper>
-      <ExecuteButton 
-        onClick={handleExecute} 
-    disabled={!ethers.isAddress(address) || !allocation}
+      <ExecuteButton
+        onClick={handleExecute}
+        disabled={!ethers.isAddress(address) || !allocation}
       >
         Clawback
       </ExecuteButton>
