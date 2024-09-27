@@ -333,7 +333,7 @@ const Terminal = ({ isMobile }) => {
   const terminalContentRef = useRef(null);
   const outputRef = useRef(null);
 
-  const { isConnected, signer, provider, balance: nativeBalance, roseBalance, rose, reserve0, reserve1, alpha } = useWeb3();
+  const { isConnected, signer, provider, balance: nativeBalance, roseBalance, chainId, rose, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
 
   useEffect(() => {
@@ -500,6 +500,44 @@ const Terminal = ({ isMobile }) => {
     }
   };
 
+  const renderMenuItems = () => {
+    console.log('Current network chainId:', chainId);
+
+    if (!isConnected) {
+      return null;
+    }
+
+    if (chainId === 1n) {
+      // Mainnet options
+      return ['launch', 'clawback'].map(command => (
+        <RippleButton
+          key={command}
+          onClick={() => handleMenuClick(command)}
+          isMobile={isMobile}
+          isSelected={selectedCommand === command}
+        >
+          {command}
+        </RippleButton>
+      ));
+    } else if (chainId === 17000n) {
+      // Holesky Testnet options
+      return ['launch', 'trade', 'transfer'].map(command => (
+        <RippleButton
+          key={command}
+          onClick={() => handleMenuClick(command)}
+          isMobile={isMobile}
+          isSelected={selectedCommand === command}
+        >
+          {command}
+        </RippleButton>
+      ));
+    } else {
+      // Unsupported network
+      showPopUp("Unsupported network. Please go to mainnet or Holesky testnet");
+      return null;
+    }
+  };
+
   return (
     <>
       <GlobalStyle />
@@ -553,31 +591,7 @@ const Terminal = ({ isMobile }) => {
           {/* Remove the history mapping from here */}
         </TerminalContent>
         <MenuContainer isMobile={isMobile}>
-          {provider && provider.network && provider.network.chainId === 1n ? (
-            // Mainnet options
-            ['launch', 'clawback'].map(command => (
-              <RippleButton
-                key={command}
-                onClick={() => handleMenuClick(command)}
-                isMobile={isMobile}
-                isSelected={selectedCommand === command}
-              >
-                {command}
-              </RippleButton>
-            ))
-          ) : (
-            // Testnet options
-            ['launch', 'trade', 'transfer'].map(command => (
-              <RippleButton
-                key={command}
-                onClick={() => handleMenuClick(command)}
-                isMobile={isMobile}
-                isSelected={selectedCommand === command}
-              >
-                {command}
-              </RippleButton>
-            ))
-          )}
+          {renderMenuItems()}
         </MenuContainer>
         <BottomBar />
         {showTrade && (
