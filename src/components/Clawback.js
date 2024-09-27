@@ -414,7 +414,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
                 ? allocation
                   ? `🌹Eligible (.°v°.)🌹`
                   : 'Sorry, not eligible ^°.°^'
-                : '↑ Check eligibility ↑'}
+                : '↑↑↑ Check eligibility ↑↑↑'}
             </QuoteText>
           </Panel>
         </ClawbackRow>
