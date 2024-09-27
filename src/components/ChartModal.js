@@ -1,19 +1,23 @@
 // src/components/ChartModal.js
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { createChart, CrosshairMode } from 'lightweight-charts';
 // Import icons (you need to have these icons in your assets)
 import { ReactComponent as LineChartIcon } from '../assets/line-chart-icon.svg';
 import { ReactComponent as CandlestickIcon } from '../assets/candlestick-icon.svg';
 
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
 const ModalOverlay = styled.div`
-  /* Adjusted styles to match app's background */
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Adjust if needed to match app's style */
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -21,26 +25,53 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  /* Adjusted styles to match app's background */
-  background-color: #222; /* Replace with your app's background color */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.9);
+  border-radius: 20px;
   padding: 20px;
-  border-radius: 4px;
   width: 90%;
   max-width: 800px;
-  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+  animation: ${fadeIn} 0.3s ease-out;
+
+  @media (max-width: 600px) {
+    width: 90vw;
+    padding: 20px;
+  }
+`;
+
+const ContentWrapper = styled.div`
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 `;
 
 const ChartContainer = styled.div`
   height: 400px;
+  margin-top: 20px;
 `;
 
 const CloseButton = styled.div`
   position: absolute;
-  top: 20px; // Lowered from 15px to 20px
-  right: 20px; // Adjusted right position for consistency
+  top: 20px;
+  right: 20px;
   width: 20px;
   height: 3px;
-  background-color: #00FF00; // The green color used in your app
+  background-color: #00FF00;
   cursor: pointer;
   transition: opacity 0.3s ease;
 
@@ -77,8 +108,8 @@ const Select = styled.select`
   border: none;
   cursor: pointer;
   font-size: 14px;
-  appearance: none; // This removes the default styling
-  padding-right: 20px; // Add some padding to the right for the custom arrow
+  appearance: none;
+  padding-right: 20px;
   background-image: url("data:image/svg+xml;utf8,<svg fill='%2300FF00' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
   background-repeat: no-repeat;
   background-position: right 0px top 50%;
@@ -245,21 +276,23 @@ const ChartModal = ({ onClose }) => {
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={e => e.stopPropagation()}>
-        <CloseButton onClick={onClose} />
-        <ControlsContainer>
-          <ControlIcon onClick={() => setChartType('line')}>
-            <LineChartIcon />
-          </ControlIcon>
-          <ControlIcon onClick={() => setChartType('candlestick')}>
-            <CandlestickIcon />
-          </ControlIcon>
-          <Select value={timeframe} onChange={handleTimeframeChange}>
-            {timeframeOptions.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </Select>
-        </ControlsContainer>
-        <ChartContainer ref={chartContainerRef} />
+        <ContentWrapper>
+          <CloseButton onClick={onClose} />
+          <ControlsContainer>
+            <ControlIcon onClick={() => setChartType('line')}>
+              <LineChartIcon />
+            </ControlIcon>
+            <ControlIcon onClick={() => setChartType('candlestick')}>
+              <CandlestickIcon />
+            </ControlIcon>
+            <Select value={timeframe} onChange={handleTimeframeChange}>
+              {timeframeOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </Select>
+          </ControlsContainer>
+          <ChartContainer ref={chartContainerRef} />
+        </ContentWrapper>
       </ModalContent>
     </ModalOverlay>
   );
