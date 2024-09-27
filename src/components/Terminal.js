@@ -11,6 +11,7 @@ import { usePopUp } from '../contexts/PopUpContext';
 import Trade from './Trade';
 import Transfer from './Transfer';
 import Launch from './Launch';
+import Clawback from './Clawback';  // Add this import
 
 // Add this global style component
 const GlobalStyle = createGlobalStyle`
@@ -327,11 +328,12 @@ const Terminal = ({ isMobile }) => {
   const [showTrade, setShowTrade] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
   const [showLaunch, setShowLaunch] = useState(false);
+  const [showClawback, setShowClawback] = useState(false);  // Add this state
   const [selectedCommand, setSelectedCommand] = useState(null);
   const terminalContentRef = useRef(null);
   const outputRef = useRef(null);
 
-  const { isConnected, signer, provider, balance: nativeBalance, roseBalance, rose, reserve0, reserve1, alpha } = useWeb3();
+  const { isConnected, signer, provider, balance: nativeBalance, roseBalance, chainId, rose, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
 
   useEffect(() => {
@@ -388,6 +390,7 @@ const Terminal = ({ isMobile }) => {
     setShowLaunch(false);
     setShowTrade(false);
     setShowTransfer(false);
+    setShowClawback(false);  // Add this line
 
     let output = '';
     switch (command) {
@@ -400,6 +403,7 @@ const Terminal = ({ isMobile }) => {
           setShowLaunch(true);
           setShowTrade(false);
           setShowTransfer(false);
+          setShowClawback(false);  // Add this line
           setSelectedCommand('launch');
           output = 'Opening launch interface...';
         }
@@ -413,6 +417,7 @@ const Terminal = ({ isMobile }) => {
           setShowTrade(true);
           setShowLaunch(false);
           setShowTransfer(false);
+          setShowClawback(false);  // Add this line
           setSelectedCommand('trade');
           output = 'Opening trade interface...';
         }
@@ -426,8 +431,23 @@ const Terminal = ({ isMobile }) => {
           setShowTransfer(true);
           setShowLaunch(false);
           setShowTrade(false);
+          setShowClawback(false);  // Add this line
           setSelectedCommand('transfer');
           output = 'Opening transfer interface...';
+        }
+        break;
+      case 'clawback':  // Add this case
+        if (showClawback) {
+          setShowClawback(false);
+          setSelectedCommand(null);
+          output = 'Closing clawback interface...';
+        } else {
+          setShowClawback(true);
+          setShowLaunch(false);
+          setShowTrade(false);
+          setShowTransfer(false);
+          setSelectedCommand('clawback');
+          output = 'Opening clawback interface...';
         }
         break;
       default:
@@ -479,6 +499,40 @@ const Terminal = ({ isMobile }) => {
       showPopUp('Rose address not available');
     }
   };
+
+  const renderMenuItems = () => {
+    console.log('Current network chainId:', chainId);
+
+    if (!isConnected) {
+      return null;
+    }
+
+    if (chainId === 1n) {
+      // Mainnet options
+      return ['launch', 'clawback'].map(command => (
+        <RippleButton
+          key={command}
+          onClick={() => handleMenuClick(command)}
+          isMobile={isMobile}
+          isSelected={selectedCommand === command}
+        >
+          {command}
+        </RippleButton>
+      ));
+    } else if (chainId === 17000n) {
+      // Holesky Testnet options
+      return ['launch', 'trade', 'transfer'].map(command => (
+        <RippleButton
+          key={command}
+          onClick={() => handleMenuClick(command)}
+          isMobile={isMobile}
+          isSelected={selectedCommand === command}
+        >
+          {command}
+        </RippleButton>
+      ));
+    };
+  }
 
   return (
     <>
@@ -533,16 +587,7 @@ const Terminal = ({ isMobile }) => {
           {/* Remove the history mapping from here */}
         </TerminalContent>
         <MenuContainer isMobile={isMobile}>
-          {['launch', 'trade', 'transfer'].map(command => (
-            <RippleButton
-              key={command}
-              onClick={() => handleMenuClick(command)}
-              isMobile={isMobile}
-              isSelected={selectedCommand === command}
-            >
-              {command}
-            </RippleButton>
-          ))}
+          {renderMenuItems()}
         </MenuContainer>
         <BottomBar />
         {showTrade && (
@@ -562,6 +607,13 @@ const Terminal = ({ isMobile }) => {
         {showLaunch && (
           <Launch 
             onClose={() => setShowLaunch(false)} 
+            animateLogo={animateLogo} 
+            setAsyncOutput={setAsyncOutput}
+          />
+        )}
+        {showClawback && (  // Add this block
+          <Clawback 
+            onClose={() => setShowClawback(false)} 
             animateLogo={animateLogo} 
             setAsyncOutput={setAsyncOutput}
           />
