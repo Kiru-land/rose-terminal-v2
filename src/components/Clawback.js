@@ -204,8 +204,8 @@ const Dashboard = styled.div`
 
 const AsciiArt = styled.pre`
   color: #00ff00;
-  font-size: 1.5px;
-  line-height: 1.5px;
+  font-size: 2px;
+  line-height: 2px;
   margin-bottom: 10px;
   white-space: pre;
   overflow: hidden;
@@ -217,6 +217,11 @@ const AsciiArt = styled.pre`
 
   &:hover {
     opacity: 0.7;
+  }
+
+  @media (max-width: 600px) {
+    font-size: 1.5px;
+    line-height: 1.5px;
   }
 `;
 
@@ -427,7 +432,6 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
           </DashboardTitle>
           <DashboardContent isVisible={isDashboardVisible}>
             <Dashboard>
-              <p>Clawback available for:</p>
               <AsciiContainer>
                 {[
                   { name: 'Mog', art: mogAsciiArt },
@@ -449,6 +453,9 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
                   </AsciiWrapper>
                 ))}
               </AsciiContainer>
+              <p>Clawback available for:</p>
+              <p>Miladies, Sprotos, Aeons,</p>
+              <p>Mog, HPOS10I and SPX6900 holders</p>
             </Dashboard>
           </DashboardContent>
         </DashboardContainer>
