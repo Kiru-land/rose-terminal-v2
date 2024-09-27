@@ -396,7 +396,7 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
       case 'Liquidity':
         return 'Percentage of ROSE going into the custom aAMM liquidity pool';
       case 'Treasury':
-        return 'Funds reserved for future incentivisation, strategic investing, fund development';
+        return 'Funds reserved for future incentivisation, buybacks, strategic investing and development funding';
       case 'Clawback':
         return 'Allocation for cool Ethereum communities';
       default:
@@ -621,7 +621,7 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
         1.) If the total amount raised is smaller than the soft cap, all participation gets reimbursed. <br /> <br />
         2.) If the amount raised is bigger than the hard cap, the excess tokens get proportionally reimbursed to every user.<br /> <br />
         Participants receive a part of the 62% of ROSE tokens sold based on their proportional share of the total <FaEthereum /> submitted.<br /> <br />
-        <em>Note: The Implied Market Cap will increase linearly with the contribution amount until it reaches the Hard Cap of 500<FaEthereum />. <br /> The Implied Market Cap will vary between 800<FaEthereum /> at the Soft Cap and 2000<FaEthereum /> at the Hard Cap.</em>
+        <em>Note: The Implied Market Cap will increase linearly with the contribution amount until it reaches the Hard Cap of 500<FaEthereum />. <br /> The Implied Market Cap will vary between 800<FaEthereum /> at the Soft Cap and 2000<FaEthereum /> at the Hard Cap and beyond.</em>
       </HelpTooltip>
     </LaunchContainer>
   );
