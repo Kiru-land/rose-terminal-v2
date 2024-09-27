@@ -11,7 +11,8 @@ import { usePopUp } from '../contexts/PopUpContext';
 import Trade from './Trade';
 import Transfer from './Transfer';
 import Launch from './Launch';
-import Clawback from './Clawback';  // Add this import
+import Clawback from './Clawback';
+import ChartModal from './ChartModal';
 
 // Add this global style component
 const GlobalStyle = createGlobalStyle`
@@ -319,6 +320,17 @@ const RippleButton = ({ children, onClick, isMobile, isSelected }) => {
   );
 };
 
+const RoseUsdButton = styled.span`
+  font-family: 'Fira Code', monospace;
+  color: #00FF00;
+  cursor: pointer;
+  font-size: 14px;
+  position: absolute;
+  bottom: 40px; // Adjust this value to position it above the alpha reference
+  left: 20px;
+  text-decoration: underline;
+`;
+
 const Terminal = ({ isMobile }) => {
   const [history, setHistory] = useState([]);
   const [asyncOutput, setAsyncOutput] = useState(null);
@@ -328,8 +340,9 @@ const Terminal = ({ isMobile }) => {
   const [showTrade, setShowTrade] = useState(false);
   const [showTransfer, setShowTransfer] = useState(false);
   const [showLaunch, setShowLaunch] = useState(false);
-  const [showClawback, setShowClawback] = useState(false);  // Add this state
+  const [showClawback, setShowClawback] = useState(false);
   const [selectedCommand, setSelectedCommand] = useState(null);
+  const [isChartModalOpen, setIsChartModalOpen] = useState(false);
   const terminalContentRef = useRef(null);
   const outputRef = useRef(null);
 
@@ -390,7 +403,7 @@ const Terminal = ({ isMobile }) => {
     setShowLaunch(false);
     setShowTrade(false);
     setShowTransfer(false);
-    setShowClawback(false);  // Add this line
+    setShowClawback(false);
 
     let output = '';
     switch (command) {
@@ -403,7 +416,7 @@ const Terminal = ({ isMobile }) => {
           setShowLaunch(true);
           setShowTrade(false);
           setShowTransfer(false);
-          setShowClawback(false);  // Add this line
+          setShowClawback(false);
           setSelectedCommand('launch');
           output = 'Opening launch interface...';
         }
@@ -417,7 +430,7 @@ const Terminal = ({ isMobile }) => {
           setShowTrade(true);
           setShowLaunch(false);
           setShowTransfer(false);
-          setShowClawback(false);  // Add this line
+          setShowClawback(false);
           setSelectedCommand('trade');
           output = 'Opening trade interface...';
         }
@@ -431,12 +444,12 @@ const Terminal = ({ isMobile }) => {
           setShowTransfer(true);
           setShowLaunch(false);
           setShowTrade(false);
-          setShowClawback(false);  // Add this line
+          setShowClawback(false);
           setSelectedCommand('transfer');
           output = 'Opening transfer interface...';
         }
         break;
-      case 'clawback':  // Add this case
+      case 'clawback':
         if (showClawback) {
           setShowClawback(false);
           setSelectedCommand(null);
@@ -498,6 +511,14 @@ const Terminal = ({ isMobile }) => {
     } else {
       showPopUp('Rose address not available');
     }
+  };
+
+  const handleOpenChartModal = () => {
+    setIsChartModalOpen(true);
+  };
+
+  const handleCloseChartModal = () => {
+    setIsChartModalOpen(false);
   };
 
   const renderMenuItems = () => {
@@ -589,6 +610,7 @@ const Terminal = ({ isMobile }) => {
         <MenuContainer isMobile={isMobile}>
           {renderMenuItems()}
         </MenuContainer>
+        <RoseUsdButton onClick={handleOpenChartModal}>chart</RoseUsdButton>
         <BottomBar />
         {showTrade && (
           <Trade 
@@ -611,13 +633,14 @@ const Terminal = ({ isMobile }) => {
             setAsyncOutput={setAsyncOutput}
           />
         )}
-        {showClawback && (  // Add this block
+        {showClawback && (
           <Clawback 
             onClose={() => setShowClawback(false)} 
             animateLogo={animateLogo} 
             setAsyncOutput={setAsyncOutput}
           />
         )}
+        {isChartModalOpen && <ChartModal onClose={handleCloseChartModal} />}
       </TerminalContainer>
     </>
   );
