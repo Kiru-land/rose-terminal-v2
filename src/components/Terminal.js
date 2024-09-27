@@ -324,7 +324,7 @@ const RoseUsdButton = styled.span`
   font-family: 'Fira Code', monospace;
   color: #00FF00;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 10px;
   position: absolute;
   bottom: 40px; // Adjust this value to position it above the alpha reference
   left: 20px;
