@@ -178,7 +178,7 @@ const DashboardContainer = styled.div`
 const DashboardTitle = styled.div`
   color: ${props => props.isOpen ? 'rgba(0, 255, 0, 0.8)' : 'grey'};
   font-size: 0.9em;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
   cursor: pointer;
   display: flex;
   font-weight: 500;

@@ -531,12 +531,8 @@ const Terminal = ({ isMobile }) => {
           {command}
         </RippleButton>
       ));
-    } else {
-      // Unsupported network
-      showPopUp("Unsupported network. Please go to mainnet or Holesky testnet");
-      return null;
-    }
-  };
+    };
+  }
 
   return (
     <>

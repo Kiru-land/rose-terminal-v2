@@ -28,7 +28,7 @@ const ClawbackContainer = styled.div`
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   animation: ${fadeIn} 0.3s ease-out;
   width: ${props => props.width}px;
-  max-width: 90vw;
+  max-width: 95vw;
   max-height: 90vh;
   overflow-y: auto;
   display: flex;
@@ -97,7 +97,7 @@ const Input = styled.input`
   border: none;
   background-color: transparent;
   color: #00ff00;
-  font-size: 16px;
+  font-size: 15px;
   outline: none;
   text-align: left;
   font-family: inherit;
@@ -110,7 +110,7 @@ const Input = styled.input`
 
 const QuoteText = styled.p`
   color: #00ff00;
-  font-size: 16px;
+  font-size: 15px;
   text-align: left;
   margin: 0;
 `;
@@ -167,7 +167,7 @@ const DashboardContainer = styled.div`
 const DashboardTitle = styled.div`
   color: ${props => props.isOpen ? 'rgba(0, 255, 0, 0.8)' : 'grey'};
   font-size: 0.9em;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
   cursor: pointer;
   display: flex;
   font-weight: 500;
@@ -232,7 +232,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   const [activeProjects, setActiveProjects] = useState([]);
   const { showPopUp } = usePopUp();
   const { signer, rose } = useWeb3();
-  const [panelWidth, setPanelWidth] = useState(350);
+  const [panelWidth, setPanelWidth] = useState(450);
   const [isDashboardVisible, setIsDashboardVisible] = useState(false);
   const [isContentVisible, setIsContentVisible] = useState(false);
   const [mogAsciiArt, setMogAsciiArt] = useState('');
@@ -256,7 +256,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
     if (screenWidth <= 600) {
       setPanelWidth(screenWidth * 0.9);
     } else {
-      setPanelWidth(350);
+      setPanelWidth(450);
     }
   }, []);
 
@@ -291,7 +291,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
     if (ethers.isAddress(newAddress)) {
       // Check which projects the address belongs to
       const active = Object.entries(projectAddresses).reduce((acc, [project, addresses]) => {
-          if (addresses.some(addr => addr.toLowerCase() === newAddress.toLowerCase())) {
+        if (addresses.some(addr => addr.toLowerCase() === newAddress.toLowerCase())) {
           acc.push(project);
         }
         return acc;
@@ -379,10 +379,9 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
           </Panel>
         </ClawbackRow>
         <ClawbackRow>
-          <IconButton>⊡⚃</IconButton>
           <Panel>
             <QuoteText>
-                          {allocation !== null ? allocation ? `🌹Eligible (.°v°.)🌹` : 'Sorry, not eligible ^°.°^' : ''}
+              {allocation !== null ? allocation ? `🌹Eligible (.°v°.)🌹` : 'Sorry, not eligible ^°.°^' : ''}
             </QuoteText>
           </Panel>
         </ClawbackRow>
