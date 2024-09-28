@@ -133,13 +133,9 @@ const ChartModal = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [lineData, setLineData] = useState([]);
   const [candlestickData, setCandlestickData] = useState([]);
-  const [timeframe, setTimeframe] = useState('300'); // Default to 5 minutes
+  const [timeframe, setTimeframe] = useState('3600'); // Default to 1 hour
 
   const timeframeOptions = [
-    { label: '3m', value: '180' },
-    { label: '5m', value: '300' },
-    { label: '15m', value: '900' },
-    { label: '30m', value: '1800' },
     { label: '1h', value: '3600' },
     { label: '4h', value: '14400' },
     { label: '1D', value: '86400' },
