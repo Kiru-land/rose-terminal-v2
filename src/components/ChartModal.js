@@ -319,7 +319,6 @@ const ChartModal = ({ onClose }) => {
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={e => e.stopPropagation()}>
         <ContentWrapper>
-          <CloseButton onClick={onClose} />
           <ControlsContainer>
             <ControlIcon onClick={() => setChartType('line')}>
               <LineChartIcon />
