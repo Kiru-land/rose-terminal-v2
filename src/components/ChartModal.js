@@ -148,12 +148,71 @@ const ChartModal = ({ onClose }) => {
     { label: '1M', value: '2592000' },
   ];
 
+  const convertToCandlestickData = (data, timeframe) => {
+    const interval = parseInt(timeframe);
+    const candlestickData = [];
+    let currentCandle = null;
+
+    data.forEach(dataPoint => {
+      const time = Math.floor(dataPoint.time / interval) * interval;
+      if (!currentCandle || currentCandle.time !== time) {
+        if (currentCandle) {
+          candlestickData.push(currentCandle);
+        }
+        currentCandle = {
+          time: time,
+          open: dataPoint.value,
+          high: dataPoint.value,
+          low: dataPoint.value,
+          close: dataPoint.value,
+        };
+      } else {
+        currentCandle.high = Math.max(currentCandle.high, dataPoint.value);
+        currentCandle.low = Math.min(currentCandle.low, dataPoint.value);
+        currentCandle.close = dataPoint.value;
+      }
+    });
+
+    if (currentCandle) {
+      candlestickData.push(currentCandle);
+    }
+
+    return candlestickData;
+  };
+
+  const aggregateLineData = (data, timeframe) => {
+    const interval = parseInt(timeframe);
+    const aggregatedData = [];
+    let currentPoint = null;
+
+    data.forEach(dataPoint => {
+      const time = Math.floor(dataPoint.time / interval) * interval;
+      if (!currentPoint || currentPoint.time !== time) {
+        if (currentPoint) {
+          aggregatedData.push(currentPoint);
+        }
+        currentPoint = {
+          time: time,
+          value: dataPoint.value,
+        };
+      } else {
+        // For line charts, we can use the last value in the interval
+        currentPoint.value = dataPoint.value;
+      }
+    });
+
+    if (currentPoint) {
+      aggregatedData.push(currentPoint);
+    }
+
+    return aggregatedData;
+  };
+
   const createChartSeries = useCallback(() => {
     if (!chartRef.current) return;
 
     const chart = chartRef.current;
 
-    // Remove existing series if any
     if (seriesRef.current) {
       chart.removeSeries(seriesRef.current);
       seriesRef.current = null;
@@ -164,7 +223,8 @@ const ChartModal = ({ onClose }) => {
         color: '#00FF00',
         lineWidth: 2,
       });
-      lineSeries.setData(lineData);
+      const aggregatedLineData = aggregateLineData(lineData, timeframe);
+      lineSeries.setData(aggregatedLineData);
       seriesRef.current = lineSeries;
     } else if (chartType === 'candlestick') {
       const candlestickSeries = chart.addCandlestickSeries({
@@ -178,7 +238,35 @@ const ChartModal = ({ onClose }) => {
       candlestickSeries.setData(candlestickData);
       seriesRef.current = candlestickSeries;
     }
-  }, [chartType, lineData, candlestickData]);
+  }, [chartType, lineData, candlestickData, timeframe]);
+
+  useEffect(() => {
+    fetch('https://rose-price.vercel.app/api/readPrice')
+      .then(response => response.json())
+      .then(data => {
+        const rawData = data.data;
+        const lineData = Object.keys(rawData).map(timestamp => ({
+          time: Number(timestamp) / 1000,
+          value: rawData[timestamp],
+        })).sort((a, b) => a.time - b.time);
+
+        setLineData(lineData);
+        const candlestickData = convertToCandlestickData(lineData, timeframe);
+        setCandlestickData(candlestickData);
+        setIsLoading(false);
+      })
+      .catch(err => console.error('Error fetching data', err));
+  }, [timeframe]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      createChartSeries();
+    }
+  }, [isLoading, createChartSeries, chartType, timeframe]);
+
+  const handleTimeframeChange = (event) => {
+    setTimeframe(event.target.value);
+  };
 
   useEffect(() => {
     const chart = createChart(chartContainerRef.current, {
@@ -230,69 +318,6 @@ const ChartModal = ({ onClose }) => {
       chart.remove();
     };
   }, []);
-
-  useEffect(() => {
-    fetch('https://rose-price.vercel.app/api/readPrice')
-      .then(response => response.json())
-      .then(data => {
-        const rawData = data.data;
-        const lineData = Object.keys(rawData).map(timestamp => ({
-          time: Number(timestamp) / 1000,
-          value: rawData[timestamp],
-        })).sort((a, b) => a.time - b.time);
-
-        setLineData(lineData);
-        const candlestickData = convertToCandlestickData(lineData, timeframe);
-        setCandlestickData(candlestickData);
-        setIsLoading(false);
-      })
-      .catch(err => console.error('Error fetching data', err));
-  }, [timeframe]);
-
-  useEffect(() => {
-    if (!isLoading) {
-      createChartSeries();
-    }
-  }, [isLoading, createChartSeries]);
-
-  const convertToCandlestickData = (data, timeframe) => {
-    // Aggregate lineData into candlestick data based on timeframe
-    // timeframe is in seconds
-    const interval = parseInt(timeframe); // Ensure it's a number
-
-    const candlestickData = [];
-    let currentCandle = null;
-
-    data.forEach(dataPoint => {
-      const time = Math.floor(dataPoint.time / interval) * interval;
-      if (!currentCandle || currentCandle.time !== time) {
-        if (currentCandle) {
-          candlestickData.push(currentCandle);
-        }
-        currentCandle = {
-          time: time,
-          open: dataPoint.value,
-          high: dataPoint.value,
-          low: dataPoint.value,
-          close: dataPoint.value,
-        };
-      } else {
-        currentCandle.high = Math.max(currentCandle.high, dataPoint.value);
-        currentCandle.low = Math.min(currentCandle.low, dataPoint.value);
-        currentCandle.close = dataPoint.value;
-      }
-    });
-
-    if (currentCandle) {
-      candlestickData.push(currentCandle);
-    }
-
-    return candlestickData;
-  };
-
-  const handleTimeframeChange = (event) => {
-    setTimeframe(event.target.value);
-  };
 
   return (
     <ModalOverlay onClick={onClose}>
