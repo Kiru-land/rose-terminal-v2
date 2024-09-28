@@ -65,21 +65,6 @@ const ChartContainer = styled.div`
   margin-top: 20px;
 `;
 
-const CloseButton = styled.div`
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 20px;
-  height: 3px;
-  background-color: #00FF00;
-  cursor: pointer;
-  transition: opacity 0.3s ease;
-
-  &:hover {
-    opacity: 0.8;
-  }
-`;
-
 const ControlsContainer = styled.div`
   display: flex;
   align-items: center;
