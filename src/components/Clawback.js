@@ -3,13 +3,14 @@ import styled, { keyframes, css } from 'styled-components';
 import { useWeb3 } from '../contexts/Web3Context';
 import { usePopUp } from '../contexts/PopUpContext';
 import { ethers } from 'ethers';
-import { generateProof, verifyProof } from './MerkleInclusion';
+import { generateProof } from './MerkleInclusion';
 import mogAscii from '../assets/mog-ascii.txt';
 import sprotoAscii from '../assets/sproto-ascii.txt';
 import miladyAscii from '../assets/milady-ascii.txt';
 import hposAscii from '../assets/hpos-ascii.txt';
 import aeonAscii from '../assets/aeon-ascii.txt';
 import spxAscii from '../assets/spx-ascii.txt';
+import { FaInfoCircle } from 'react-icons/fa';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -30,7 +31,6 @@ const ClawbackContainer = styled.div`
   width: ${props => props.width}px;
   max-width: 95vw;
   max-height: 90vh;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   transition: top 0.3s ease-out;
@@ -257,6 +257,65 @@ const AsciiArtContainer = styled.div`
   }
 `;
 
+const HelpIcon = styled(FaInfoCircle)`
+  margin-left: 5px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+`;
+
+const HelpTooltip = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.9);
+  color: #00ff00;
+  padding: 15px;
+  border-radius: 15px;
+  font-size: 12px;
+  max-width: 90vw;
+  width: 380px;
+  z-index: 1001;
+  visibility: ${props => props.visible ? 'visible' : 'hidden'};
+  opacity: ${props => props.visible ? 1 : 0};
+  transition: visibility 0.2s, opacity 0.2s;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+  line-height: 1.4;
+  border: 1px solid rgba(0, 255, 0, 0.3);
+`;
+
+const DashboardRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  font-size: 13px;
+  color: #00ff00;
+  opacity: ${props => props.isVisible ? 1 : 0};
+  transform: translateY(${props => props.isVisible ? 0 : '10px'});
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  transition-delay: ${props => props.delay}s;
+
+  @media (max-width: 600px) {
+    font-size: 11px;
+  }
+`;
+
+const DashboardLabel = styled.span`
+  opacity: 0.7;
+`;
+
+const DashboardValue = styled.span`
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+  position: relative;
+`;
+
 const Clawback = ({ animateLogo, setAsyncOutput }) => {
   const [address, setAddress] = useState('');
   const [allocation, setAllocation] = useState(null);
@@ -272,14 +331,14 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   const [hposAsciiArt, setHposAsciiArt] = useState('');
   const [aeonAsciiArt, setAeonAsciiArt] = useState('');
   const [spxAsciiArt, setSpxAsciiArt] = useState('');
-
+  const [showTooltip, setShowTooltip] = useState(false);
   const projectAddresses = {
-    mog: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31'],
-    sproto: ['0x023DbE08bEC000dDc4b743aC0d5cc65b1C4A086D', ''],
-    milady: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31'],
-    hpos: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31'],
-    aeon: ['0x023DbE08bEC000dDc4b743aC0d5cc65b1C4A086D', ''],
-    spx: ['0x023DbE08bEC000dDc4b743aC0d5cc65b1C4A086D', '']
+    mog: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31', '0xA60489284B69E58781FAfF4C70AA69AE5Ada0f00', '0x1CccC4D3789799a4513D85243bECc93412BBDc22'],
+    sproto: ['0x023DbE08bEC000dDc4b743aC0d5cc65b1C4A086D', '', '0xA60489284B69E58781FAfF4C70AA69AE5Ada0f00', '0x1CccC4D3789799a4513D85243bECc93412BBDc22'],
+    milady: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31', '', '0x1CccC4D3789799a4513D85243bECc93412BBDc22'],
+    hpos: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31', '0xA60489284B69E58781FAfF4C70AA69AE5Ada0f00'],
+    aeon: ['0x023DbE08bEC000dDc4b743aC0d5cc65b1C4A086D', '0x1CccC4D3789799a4513D85243bECc93412BBDc22'],
+    spx: ['0x023DbE08bEC000dDc4b743aC0d5cc65b1C4A086D', '0xA60489284B69E58781FAfF4C70AA69AE5Ada0f00']
   };
 
   const updatePanelWidth = useCallback(() => {
@@ -357,28 +416,47 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
     }
 
     animateLogo(async () => {
-      try {
-        setAsyncOutput(<>Processing clawback registration for {address} ...</>);
+      setAsyncOutput(<>Processing clawback registration for {address?.substring(0, 6)}...{address?.substring(address.length - 4)} ...</>);
+      // const proof = await generateProof(address);
 
-        // Generate and verify Merkle proof
-        const proof = await generateProof(address);
-        const isValid = await verifyProof(proof, address, allocation);
-
-        if (!isValid) {
-          throw new Error('Invalid Merkle proof');
+      // Register the address in the Vercel KV database for each active community
+      for (const community of activeProjects) {
+        console.log('Registering address for community:', community);
+        const response = await fetch('/api/clawback-registration', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ address, community }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Registration failed for community:', community, 'Error:', errorData);
+          throw new Error(errorData.error || 'Failed to register address');
         }
-
-        // Here you would typically call the clawback function on the contract
-        // For now, we'll just simulate a transaction
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        setAsyncOutput(<>Clawback successful for {address}</>);
-        showPopUp(<>Successfully claimed {allocation}🌹 for {address}</>);
-      } catch (error) {
-        console.error('Error during clawback:', error);
-        showPopUp('An error occurred during the clawback. Please try again.');
-        setAsyncOutput('Error occurred during clawback. Please try again.');
+        console.log('Registration successful for community:', community);
       }
+
+      // try {
+      //   // Generate and verify Merkle proof
+      //   const proof = await generateProof(address);
+      //   const isValid = await verifyProof(proof, address, allocation);
+
+      //   if (!isValid) {
+      //     throw new Error('Invalid Merkle proof');
+      //   }
+
+      //   // Here you would typically call the clawback function on the contract
+      //   // For now, we'll just simulate a transaction
+      //   await new Promise(resolve => setTimeout(resolve, 2000));
+
+      //   setAsyncOutput(<>Clawback successful for {address}</>);
+      //   showPopUp(<>Successfully claimed {allocation}🌹 for {address}</>);
+      // } catch (error) {
+      //   showPopUp('An error occurred during clawback registration :( Please try again.');
+      //   setAsyncOutput('Error occurred during clawback registration. Please try again.');
+      // }
+
     });
   };
 
@@ -405,6 +483,28 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
       showPopUp('Please connect your wallet first.');
     }
   };
+
+  const handleHelpIconClick = (event) => {
+    event.stopPropagation();
+    setShowTooltip(!showTooltip);
+  };
+
+  const handleTooltipClick = () => {
+    setShowTooltip(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showTooltip) {
+        setShowTooltip(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showTooltip]);
 
   return (
     <ClawbackContainer width={panelWidth} isDashboardVisible={isDashboardVisible}>
@@ -466,9 +566,21 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
                   </AsciiWrapper>
                 ))}
               </AsciiContainer>
-              <p>Clawback available for:</p>
-              <p>Miladies, Sprotos, Aeons,</p>
-              <p>Mog, HPOS10I and SPX6900 holders</p>
+              <DashboardRow isVisible={isContentVisible} delay={0.1}>
+                <DashboardLabel>Method:</DashboardLabel>
+                <DashboardValue>
+                  Single eligibility Clawback
+                  <HelpIcon onClick={handleHelpIconClick} />
+                </DashboardValue>
+              </DashboardRow>
+              <DashboardRow isVisible={isContentVisible} delay={0.2}>
+                <DashboardLabel>Eligible ERC-721:</DashboardLabel>
+                <DashboardValue>Milady, Sproto, Aeon</DashboardValue>
+              </DashboardRow>
+              <DashboardRow isVisible={isContentVisible} delay={0.3}>
+                <DashboardLabel>Eligible ERC-20:</DashboardLabel>
+                <DashboardValue>MOG, HPOS10I, SPX6900</DashboardValue>
+              </DashboardRow>
             </Dashboard>
           </DashboardContent>
         </DashboardContainer>
@@ -477,11 +589,25 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
         onClick={handleExecute}
         disabled={!ethers.isAddress(address) || !allocation}
       >
-        Clawback
+        Register
       </ExecuteButton>
+      <HelpTooltip 
+        visible={showTooltip} 
+        onClick={handleTooltipClick}
+      >
+        <strong>Single Eligibility Clawback</strong><br /><br />
+        The Clawback mechanism allows selected <em>high-status technocratic post-scarcity cult adepts</em> to get an entry into the <em>Rose economical zone</em> (🌹), and embark on the journey to hyperfinancialization.<br /><br />
+        Eligibility is determined based on ownership of specific tokens from the following digital religions:<br /><br />
+        - Milady Maker<br />
+        - Sprotos Gremlins<br />
+        - Project AEON<br />
+        - Mog<br />
+        - HPOS10I<br />
+        - SPX6900<br /><br />
+        <em>Note: The claimable amount is fixed for all eligible addresses and does not increase with the number of communities the claimee is apart of. A 5% supply allocation is reserved for the Clawback mechanism.</em>
+      </HelpTooltip>
     </ClawbackContainer>
   );
 };
 
 export default Clawback;
-

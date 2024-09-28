@@ -522,8 +522,6 @@ const Terminal = ({ isMobile }) => {
   };
 
   const renderMenuItems = () => {
-    console.log('Current network chainId:', chainId);
-
     if (!isConnected) {
       return null;
     }
@@ -542,7 +540,7 @@ const Terminal = ({ isMobile }) => {
       ));
     } else if (chainId === 17000n) {
       // Holesky Testnet options
-      return ['launch', 'trade', 'transfer'].map(command => (
+      return ['trade', 'transfer'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
