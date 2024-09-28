@@ -356,6 +356,11 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
       return;
     }
 
+    if (activeProjects.length === 0) {
+      showPopUp('Address is not eligible for any community.');
+      return;
+    }
+
     animateLogo(async () => {
       try {
         setAsyncOutput(<>Processing clawback registration for {address} ...</>);
@@ -368,6 +373,22 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
           throw new Error('Invalid Merkle proof');
         }
 
+        // Register the address in the Vercel KV database for each active community
+        for (const community of activeProjects) {
+          const response = await fetch('/api/clawback-registration', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address, community }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to register address');
+          }
+        }
+
         // Here you would typically call the clawback function on the contract
         // For now, we'll just simulate a transaction
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -376,7 +397,11 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
         showPopUp(<>Successfully claimed {allocation}🌹 for {address}</>);
       } catch (error) {
         console.error('Error during clawback:', error);
-        showPopUp('An error occurred during the clawback. Please try again.');
+        if (error.message === 'Address already registered') {
+          showPopUp('Address already registered for one or more communities');
+        } else {
+          showPopUp('An error occurred during the clawback. Please try again.');
+        }
         setAsyncOutput('Error occurred during clawback. Please try again.');
       }
     });
@@ -471,4 +496,3 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
 };
 
 export default Clawback;
-
