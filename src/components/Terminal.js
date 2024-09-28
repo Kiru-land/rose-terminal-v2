@@ -327,7 +327,7 @@ const RoseUsdButton = styled.span`
   font-size: 12px;
   position: absolute;
   bottom: 40px; // Adjust this value to position it above the alpha reference
-  left: 20px;
+  left: 39px;
   text-decoration: underline;
 `;
 
