@@ -346,35 +346,45 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   };
 
   const handleExecute = async () => {
+    console.log('Execute button clicked');
+
     if (!signer) {
+      console.log('No signer available');
       showPopUp('Please connect your wallet first.');
       return;
     }
 
     if (!ethers.isAddress(address)) {
+      console.log('Invalid address:', address);
       showPopUp('Invalid Ethereum address.');
       return;
     }
 
     if (activeProjects.length === 0) {
+      console.log('No active projects for address:', address);
       showPopUp('Address is not eligible for any community.');
       return;
     }
 
     animateLogo(async () => {
       try {
+        console.log('Starting clawback process for address:', address);
         setAsyncOutput(<>Processing clawback registration for {address} ...</>);
 
         // Generate and verify Merkle proof
+        console.log('Generating Merkle proof');
         const proof = await generateProof(address);
+        console.log('Verifying Merkle proof');
         const isValid = await verifyProof(proof, address, allocation);
 
         if (!isValid) {
+          console.log('Invalid Merkle proof');
           throw new Error('Invalid Merkle proof');
         }
 
         // Register the address in the Vercel KV database for each active community
         for (const community of activeProjects) {
+          console.log('Registering address for community:', community);
           const response = await fetch('/api/clawback-registration', {
             method: 'POST',
             headers: {
@@ -385,14 +395,18 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
 
           if (!response.ok) {
             const errorData = await response.json();
+            console.error('Registration failed for community:', community, 'Error:', errorData);
             throw new Error(errorData.error || 'Failed to register address');
           }
+          console.log('Registration successful for community:', community);
         }
 
         // Here you would typically call the clawback function on the contract
         // For now, we'll just simulate a transaction
+        console.log('Simulating transaction');
         await new Promise(resolve => setTimeout(resolve, 2000));
 
+        console.log('Clawback process completed successfully');
         setAsyncOutput(<>Clawback successful for {address}</>);
         showPopUp(<>Successfully claimed {allocation}🌹 for {address}</>);
       } catch (error) {
