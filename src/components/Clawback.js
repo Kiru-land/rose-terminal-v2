@@ -421,7 +421,6 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
 
       // Register the address in the Vercel KV database for each active community
       for (const community of activeProjects) {
-        console.log('Registering address for community:', community);
         const response = await fetch('/api/clawback-registration', {
           method: 'POST',
           headers: {
@@ -431,10 +430,11 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
         });
         if (!response.ok) {
           const errorData = await response.json();
-          console.error('Registration failed for community:', community, 'Error:', errorData);
-          throw new Error(errorData.error || 'Failed to register address');
+            showPopUp('An error occurred during clawback registration :( Please try again.');
+            setAsyncOutput('Error occurred during clawback registration. Please try again.');
         }
-        console.log('Registration successful for community:', community);
+        setAsyncOutput(<>Clawback registration successful for {address}</>);
+        showPopUp(<>Successfully registered {address}</>);
       }
 
       // try {
