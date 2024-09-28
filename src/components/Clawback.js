@@ -212,7 +212,7 @@ const AsciiArt = styled.pre`
   transition: opacity 0.3s ease;
   ${props => props.isBold && css`
     font-weight: bold;
-    color: #00ff99;
+    color: #00ffee;
   `}
 
   &:hover {
@@ -429,7 +429,6 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
           body: JSON.stringify({ address, community }),
         });
         if (!response.ok) {
-          const errorData = await response.json();
             showPopUp('An error occurred during clawback registration :( Please try again.');
             setAsyncOutput('Error occurred during clawback registration. Please try again.');
         }
