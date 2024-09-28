@@ -6,6 +6,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "@vercel/kv": "^3.0.0",
     "asciichart": "^1.5.25",
     "buffer": "^6.0.3",
     "config": "^3.3.12",
