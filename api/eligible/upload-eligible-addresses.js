@@ -2,32 +2,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import { kv } from '@vercel/kv';
 
-/**
- * @api {post} /api/eligible/upload-eligible-addresses Upload Eligible Addresses
- * @apiName UploadEligibleAddresses
- * @apiGroup Eligibility
- * @apiDescription Uploads eligible addresses for all communities from text files to the database.
- * 
- * @apiSuccess {String} message Success message
- * 
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "message": "Eligible addresses updated successfully"
- *     }
- * 
- * @apiError {String} error Error message
- * 
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 Internal Server Error
- *     {
- *       "error": "Failed to update eligible addresses"
- *     }
- */
+const communities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
 
 async function uploadEligibleAddresses() {
-  const communities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
-  const eligibleAddresses = {};
   const basePath = path.join(process.cwd(), 'public', 'eligibility-lists');
 
   for (const community of communities) {
@@ -38,18 +15,14 @@ async function uploadEligibleAddresses() {
         .split('\n')
         .map(line => line.split(',')[0].trim())
         .filter(address => address && address.startsWith('0x'));
-      eligibleAddresses[community] = addresses;
-    } catch (error) {
-      console.error(`Error reading file for ${community}:`, error);
-      eligibleAddresses[community] = [];
-    }
-  }
 
-  try {
-    await kv.set('eligible-addresses', JSON.stringify(eligibleAddresses));
-    console.log('Eligible addresses uploaded successfully');
-  } catch (error) {
-    console.error('Error uploading eligible addresses:', error);
+      // Use a separate key for each community
+      const key = `eligible-addresses-${community}`;
+      await kv.set(key, JSON.stringify(addresses));
+      console.log(`Eligible addresses for ${community} uploaded successfully`);
+    } catch (error) {
+      console.error(`Error processing ${community}:`, error);
+    }
   }
 }
 
