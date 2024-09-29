@@ -15,20 +15,34 @@ export default async function handler(req, res) {
     }
 
     try {
-      console.log('Fetching registered addresses for community:', community);
-      let registeredAddresses = await kv.get(community) || [];
-      console.log('Current registered addresses:', registeredAddresses);
+      console.log('Fetching registered addresses');
+      let registeredAddresses = await kv.get('registered-addresses') || {
+        aeon: [],
+        sproto: [],
+        spx: [],
+        mog: [],
+        milady: [],
+        hpos: []
+      };
 
-      if (registeredAddresses.includes(address)) {
-        console.log('Address already registered for this community');
-        return res.status(409).json({ error: 'Address already registered' });
+      // Check if the address exists in any community
+      const isAddressRegistered = Object.values(registeredAddresses).some(
+        communityAddresses => communityAddresses.includes(address)
+      );
+
+      if (isAddressRegistered) {
+        console.log('Address already registered in a community');
+        return res.status(409).json({ error: 'Address already registered in a community' });
       }
 
       console.log('Adding new address to the list');
-      registeredAddresses.push(address);
+      if (!registeredAddresses[community]) {
+        registeredAddresses[community] = [];
+      }
+      registeredAddresses[community].push(address);
 
       console.log('Updating database');
-      await kv.set(community, registeredAddresses);
+      await kv.set('registered-addresses', registeredAddresses);
 
       console.log('Registration successful');
       return res.status(200).json({ message: 'Address registered successfully' });
