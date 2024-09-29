@@ -210,7 +210,7 @@ const AsciiArt = styled.pre`
   white-space: pre;
   overflow: hidden;
   transition: opacity 0.3s ease;
-  ${props => props.isBold && css`
+  ${props => props.$isBold && css`
     font-weight: bold;
     color: #00ffee;
   `}
@@ -556,7 +556,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
                   <AsciiWrapper key={project.name}>
                     <AsciiArtContainer>
                       <AsciiArt
-                        isBold={activeProjects.includes(project.name.toLowerCase())}
+                        $isBold={activeProjects.includes(project.name.toLowerCase())}
                       >
                         {project.art}
                       </AsciiArt>
