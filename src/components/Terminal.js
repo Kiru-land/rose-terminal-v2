@@ -231,7 +231,7 @@ const MenuItem = styled.button`
     }
   }
 
-  ${props => props.isselected && `
+  ${props => props.isSelected && `
     color: #00ff00;
     &:after {
       width: 100%;
@@ -300,7 +300,7 @@ const RippleButton = ({ children, onClick, isMobile, isSelected }) => {
       ref={buttonRef} 
       onClick={handleClick} 
       $isMobile={isMobile}
-      isselected={isSelected ? 'true' : undefined}
+      isSelected={isSelected}
     >
       {children}
       {isMobile && (
