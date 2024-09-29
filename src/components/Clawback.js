@@ -109,7 +109,7 @@ const Input = styled.input`
 `;
 
 const QuoteText = styled.p`
-  color: ${props => props.dimmed ? 'rgba(0, 255, 0, 0.5)' : '#00ff00'};
+  color: ${props => props.$dimmed ? 'rgba(0, 255, 0, 0.5)' : '#00ff00'};
   font-size: 15px;
   text-align: center;
   margin: 0;
@@ -525,7 +525,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
         <ClawbackRow>
           <Panel>
             <QuoteText
-              dimmed={allocation === null}
+              $dimmed={allocation === null}
             >
               {allocation !== null
                 ? allocation
