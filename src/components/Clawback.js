@@ -471,7 +471,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
       try {
         // Register the address in the Vercel KV database for each active community
         for (const community of activeProjects) {
-          const response = await fetch('/api/clawback-registration', {
+          const response = await fetch('/api/registration/clawback-registration', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
