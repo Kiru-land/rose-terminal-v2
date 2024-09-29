@@ -7,7 +7,10 @@ export default async function handler(req, res) {
   const community = req.url.split('/').pop();
 
   if (req.method === 'GET') {
-    // Handle GET request for fetching eligible addresses per community
+    if (!community) {
+      return res.status(400).json({ error: 'Community name is required' });
+    }
+
     try {
       console.log('Fetching registered addresses for community:', community);
       const registeredAddresses = await kv.get(community) || [];
