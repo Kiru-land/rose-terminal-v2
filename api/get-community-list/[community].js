@@ -1,29 +1,28 @@
 import { kv } from '@vercel/kv';
 
 export default async function handler(req, res) {
-  console.log('Received request:', req.method, req.url);
+  const { params = [] } = req.query;
+  console.log('Received request:', req.method, req.url, params);
 
-  // Extract the community from the URL path
-  const community = req.url.split('/').pop();
-
-  if (req.method === 'GET') {
-    if (!community) {
-      return res.status(400).json({ error: 'Community name is required' });
-    }
-
+  // Handle GET /api/get-community-list/[community]
+  if (req.method === 'GET' && params[0] === 'get-community-list' && params[1]) {
+    const community = params[1].split('?')[0]; // Remove any query string
     try {
       console.log('Fetching registered addresses for community:', community);
-      const registeredAddresses = await kv.get(community) || [];
+      const registeredAddresses = await kv.get(community);
       console.log('Registered addresses:', registeredAddresses);
-
-      return res.status(200).json({ community, addresses: registeredAddresses });
+      
+      if (registeredAddresses === null) {
+        return res.status(404).json({ error: 'Community not found' });
+      }
+      
+      return res.status(200).json({ community, addresses: registeredAddresses || [] });
     } catch (error) {
       console.error('Error fetching addresses:', error);
       return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
-  } else {
-    console.log('Invalid method:', req.method);
-    res.setHeader('Allow', ['GET']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
+
+  // If no matching route is found
+  res.status(404).json({ error: 'Not Found' });
 }
