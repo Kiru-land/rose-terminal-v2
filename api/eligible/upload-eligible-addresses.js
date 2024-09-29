@@ -2,12 +2,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import { kv } from '@vercel/kv';
 
-const getDirname = async () => {
-  const { fileURLToPath } = await import('url');
-  const __filename = fileURLToPath(import.meta.url);
-  return path.dirname(__filename);
-};
-
 /**
  * @api {post} /api/eligible/upload-eligible-addresses Upload Eligible Addresses
  * @apiName UploadEligibleAddresses
@@ -34,10 +28,10 @@ const getDirname = async () => {
 async function uploadEligibleAddresses() {
   const communities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
   const eligibleAddresses = {};
-  const __dirname = await getDirname();
+  const basePath = '@eligibility-lists';
 
   for (const community of communities) {
-    const filePath = path.join(__dirname, '..', '..', 'public', 'eligibility-lists', `${community}.txt`);
+    const filePath = path.join(basePath, `${community}.txt`);
     try {
       const fileContent = await fs.readFile(filePath, 'utf-8');
       const addresses = fileContent
