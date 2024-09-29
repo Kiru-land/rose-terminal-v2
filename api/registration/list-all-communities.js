@@ -1,5 +1,29 @@
 import { kv } from '@vercel/kv';
 
+/**
+ * @api {get} /api/registration/list-all-communities List All Communities
+ * @apiName ListAllCommunities
+ * @apiGroup Registration
+ * @apiDescription Retrieves a list of all available communities.
+ *
+ * @apiSuccess {String[]} communities List of all community names
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "communities": ["aeon", "sproto", "spx", "mog", "milady", "hpos"]
+ *     }
+ *
+ * @apiError {String} error Error message
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Internal server error",
+ *       "details": "Error message details"
+ *     }
+ */
+
 export default async function handler(req, res) {
   console.log('Received request:', req.method, req.url);
 

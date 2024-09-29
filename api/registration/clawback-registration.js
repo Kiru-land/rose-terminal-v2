@@ -1,5 +1,31 @@
 import { kv } from '@vercel/kv';
 
+/**
+ * @api {post} /api/registration/clawback-registration Register Address for Clawback
+ * @apiName ClawbackRegistration
+ * @apiGroup Registration
+ * @apiDescription Registers an address for clawback in a specific community.
+ *
+ * @apiParam {String} address Ethereum address to register
+ * @apiParam {String} community Name of the community
+ *
+ * @apiSuccess {String} message Success message
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "message": "Address registered successfully"
+ *     }
+ *
+ * @apiError {String} error Error message
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "error": "Address and community are required"
+ *     }
+ */
+
 export default async function handler(req, res) {
   console.log('Received request:', req.method, req.body);
 

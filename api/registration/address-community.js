@@ -1,5 +1,32 @@
 import { kv } from '@vercel/kv';
 
+/**
+ * @api {get} /api/registration/address-community Get Communities for Address
+ * @apiName GetAddressCommunities
+ * @apiGroup Registration
+ * @apiDescription Retrieves all communities an address belongs to.
+ *
+ * @apiParam {String} address Ethereum address to check
+ *
+ * @apiSuccess {String} address The checked Ethereum address
+ * @apiSuccess {String[]} communities List of communities the address belongs to
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "address": "0x1234...",
+ *       "communities": ["aeon", "sproto"]
+ *     }
+ *
+ * @apiError {String} error Error message
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "error": "Address parameter is required"
+ *     }
+ */
+
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     const { address } = req.query;
