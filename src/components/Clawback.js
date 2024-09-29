@@ -10,6 +10,7 @@ import miladyAscii from '../assets/milady-ascii.txt';
 import hposAscii from '../assets/hpos-ascii.txt';
 import aeonAscii from '../assets/aeon-ascii.txt';
 import spxAscii from '../assets/spx-ascii.txt';
+import roseCultAscii from '../assets/rosecult.txt';
 import { FaInfoCircle } from 'react-icons/fa';
 
 const fadeIn = keyframes`
@@ -317,6 +318,45 @@ const DashboardValue = styled.span`
   position: relative;
 `;
 
+const FullScreenOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+`;
+
+const RoseCultAscii = styled.pre`
+  color: #ff0000;
+  font-size: 4px;
+  line-height: 4px;
+  white-space: pre;
+  text-align: center;
+
+  @media (max-width: 600px) {
+    font-size: 2px;
+    line-height: 2px;
+  }
+`;
+
+const WelcomeMessage = styled.div`
+  color: #00ff00;
+  font-size: 24px;
+  margin-top: 20px;
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+  text-shadow: 0 0 10px #00ff00;
+
+  @media (max-width: 600px) {
+    font-size: 18px;
+  }
+`;
+
 const Clawback = ({ animateLogo, setAsyncOutput }) => {
   const [address, setAddress] = useState('');
   const [allocation, setAllocation] = useState(null);
@@ -333,14 +373,8 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   const [aeonAsciiArt, setAeonAsciiArt] = useState('');
   const [spxAsciiArt, setSpxAsciiArt] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
-  const projectAddresses = {
-    mog: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31', '0xA60489284B69E58781FAfF4C70AA69AE5Ada0f00', '0x1CccC4D3789799a4513D85243bECc93412BBDc22'],
-    sproto: ['0x023DbE08bEC000dDc4b743aC0d5cc65b1C4A086D', '', '0xA60489284B69E58781FAfF4C70AA69AE5Ada0f00', '0x1CccC4D3789799a4513D85243bECc93412BBDc22'],
-    milady: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31', '', '0x1CccC4D3789799a4513D85243bECc93412BBDc22'],
-    hpos: ['', '0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31', '0xA60489284B69E58781FAfF4C70AA69AE5Ada0f00'],
-    aeon: ['0x023DbE08bEC000dDc4b743aC0d5cc65b1C4A086D', '0x1CccC4D3789799a4513D85243bECc93412BBDc22'],
-    spx: ['0x023DbE08bEC000dDc4b743aC0d5cc65b1C4A086D', '0xA60489284B69E58781FAfF4C70AA69AE5Ada0f00']
-  };
+  const [showRoseCult, setShowRoseCult] = useState(false);
+  const [roseCultArt, setRoseCultArt] = useState('');
 
   const updatePanelWidth = useCallback(() => {
     const screenWidth = window.innerWidth;
@@ -376,21 +410,36 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
     fetchAsciiArt(spxAscii, setSpxAsciiArt);
   }, []);
 
-  const handleAddressChange = (e) => {
+  useEffect(() => {
+    const fetchRoseCultArt = async () => {
+      try {
+        const response = await fetch(roseCultAscii);
+        const text = await response.text();
+        setRoseCultArt(text);
+      } catch (error) {
+        console.error('Error loading Rose Cult ASCII art:', error);
+      }
+    };
+
+    fetchRoseCultArt();
+  }, []);
+
+  const handleAddressChange = async (e) => {
     const newAddress = e.target.value;
     setAddress(newAddress);
     if (ethers.isAddress(newAddress)) {
-      // Check which projects the address belongs to
-      const active = Object.entries(projectAddresses).reduce((acc, [project, addresses]) => {
-        if (addresses.some(addr => addr.toLowerCase() === newAddress.toLowerCase())) {
-          acc.push(project);
+      try {
+        const response = await fetch(`/api/address-community?address=${newAddress}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch active communities');
         }
-        return acc;
-      }, []);
-      setActiveProjects(active);
-      if (active.length > 0) {
-        setAllocation(true);
-      } else {
+        const data = await response.json();
+        const active = data.communities || [];
+        setActiveProjects(active);
+        setAllocation(active.length > 0);
+      } catch (error) {
+        console.error('Error fetching active communities:', error);
+        setActiveProjects([]);
         setAllocation(false);
       }
     } else {
@@ -418,45 +467,32 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
 
     animateLogo(async () => {
       setAsyncOutput(<>Processing clawback registration for {address?.substring(0, 6)}...{address?.substring(address.length - 4)} ...</>);
-      // const proof = await generateProof(address);
-
-      // Register the address in the Vercel KV database for each active community
-      for (const community of activeProjects) {
-        const response = await fetch('/api/clawback-registration', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ address, community }),
-        });
-        if (!response.ok) {
-            showPopUp('An error occurred during clawback registration :( Please try again.');
-            setAsyncOutput('Error occurred during clawback registration. Please try again.');
+      
+      try {
+        // Register the address in the Vercel KV database for each active community
+        for (const community of activeProjects) {
+          const response = await fetch('/api/clawback-registration', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address, community }),
+          });
+          if (!response.ok) {
+            throw new Error('Registration failed');
+          }
         }
+        
         setAsyncOutput(<>Clawback registration successful for {address}</>);
         showPopUp(<>Successfully registered {address}</>);
+        
+        // Only show the Rose Cult ASCII art after successful registration
+        setShowRoseCult(true);
+      } catch (error) {
+        console.error('Error during clawback registration:', error);
+        showPopUp('An error occurred during clawback registration :( Please try again.');
+        setAsyncOutput('Error occurred during clawback registration. Please try again.');
       }
-
-      // try {
-      //   // Generate and verify Merkle proof
-      //   const proof = await generateProof(address);
-      //   const isValid = await verifyProof(proof, address, allocation);
-
-      //   if (!isValid) {
-      //     throw new Error('Invalid Merkle proof');
-      //   }
-
-      //   // Here you would typically call the clawback function on the contract
-      //   // For now, we'll just simulate a transaction
-      //   await new Promise(resolve => setTimeout(resolve, 2000));
-
-      //   setAsyncOutput(<>Clawback successful for {address}</>);
-      //   showPopUp(<>Successfully claimed {allocation}🌹 for {address}</>);
-      // } catch (error) {
-      //   showPopUp('An error occurred during clawback registration :( Please try again.');
-      //   setAsyncOutput('Error occurred during clawback registration. Please try again.');
-      // }
-
     });
   };
 
@@ -507,106 +543,114 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   }, [showTooltip]);
 
   return (
-    <ClawbackContainer width={panelWidth} isDashboardVisible={isDashboardVisible}>
-      <ContentWrapper>
-        <ClawbackRow>
-          <IconButton onClick={handleArrowClick}>⟼</IconButton>
-          <Panel>
-            <InputWrapper>
-              <Input
-                type="text"
-                value={address}
-                onChange={handleAddressChange}
-                onKeyPress={handleKeyPress}
-                placeholder="Enter Ethereum address"
-              />
-            </InputWrapper>
-          </Panel>
-        </ClawbackRow>
-        <ClawbackRow>
-          <Panel>
-            <QuoteText
-              dimmed={allocation === null}
-            >
-              {allocation !== null
-                ? allocation
-                  ? `🌹Eligible (.°v°.)🌹`
-                  : 'Sorry, not eligible ^°.°^'
-                : '↑↑↑ Check eligibility ↑↑↑'}
-            </QuoteText>
-          </Panel>
-        </ClawbackRow>
-        <DashboardContainer>
-          <DashboardTitle onClick={toggleDashboard} isOpen={isDashboardVisible}>
-            Details
-            <ArrowIcon isOpen={isDashboardVisible}>
-              &#10095;
-            </ArrowIcon>
-          </DashboardTitle>
-          <DashboardContent isVisible={isDashboardVisible}>
-            <Dashboard>
-              <AsciiContainer>
-                {[
-                  { name: 'Mog', art: mogAsciiArt },
-                  { name: 'Sproto', art: sprotoAsciiArt },
-                  { name: 'Milady', art: miladyAsciiArt },
-                  { name: 'HPOS', art: hposAsciiArt },
-                  { name: 'Aeon', art: aeonAsciiArt },
-                  { name: 'SPX', art: spxAsciiArt }
-                ].map(project => (
-                  <AsciiWrapper key={project.name}>
-                    <AsciiArtContainer>
-                      <AsciiArt
-                        isBold={activeProjects.includes(project.name.toLowerCase())}
-                      >
-                        {project.art}
-                      </AsciiArt>
-                      <ProjectName>{project.name}</ProjectName>
-                    </AsciiArtContainer>
-                  </AsciiWrapper>
-                ))}
-              </AsciiContainer>
-              <DashboardRow isVisible={isContentVisible} delay={0.1}>
-                <DashboardLabel>Method:</DashboardLabel>
-                <DashboardValue>
-                  Single eligibility Clawback
-                  <HelpIcon onClick={handleHelpIconClick} />
-                </DashboardValue>
-              </DashboardRow>
-              <DashboardRow isVisible={isContentVisible} delay={0.2}>
-                <DashboardLabel>Eligible ERC-721:</DashboardLabel>
-                <DashboardValue>Milady, Sproto, Aeon</DashboardValue>
-              </DashboardRow>
-              <DashboardRow isVisible={isContentVisible} delay={0.3}>
-                <DashboardLabel>Eligible ERC-20:</DashboardLabel>
-                <DashboardValue>MOG, HPOS10I, SPX6900</DashboardValue>
-              </DashboardRow>
-            </Dashboard>
-          </DashboardContent>
-        </DashboardContainer>
-      </ContentWrapper>
-      <ExecuteButton
-        onClick={handleExecute}
-        disabled={!ethers.isAddress(address) || !allocation}
-      >
-        Register
-      </ExecuteButton>
-      <HelpTooltip 
-        visible={showTooltip} 
-        onClick={handleTooltipClick}
-      >
-        <strong>Single Eligibility Clawback</strong><br /><br />
-        The Clawback mechanism allows selected <em>high-status technocratic post-scarcity cult adepts</em> to get an entry into the <em>Rose economical zone</em> (🌹), and embark on the journey to hyperfinancialization.<br /><br />
-        Eligibility is determined based on ownership of specific tokens from the following digital religions:<br /><br />
-        - Milady Maker<br />
-        - Sprotos Gremlins<br />
-        - Project AEON<br />
-        - Mog<br />
-        - HPOS10I<br />
-        - SPX6900<br /><br />
-        <em>Note: The claimable amount is fixed for all eligible addresses and does not increase with the number of communities the claimee is apart of. A 5% supply allocation is reserved for the Clawback mechanism.</em>
-      </HelpTooltip>
-    </ClawbackContainer>
+    <>
+      <ClawbackContainer width={panelWidth} isDashboardVisible={isDashboardVisible}>
+        <ContentWrapper>
+          <ClawbackRow>
+            <IconButton onClick={handleArrowClick}>⟼</IconButton>
+            <Panel>
+              <InputWrapper>
+                <Input
+                  type="text"
+                  value={address}
+                  onChange={handleAddressChange}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Enter Ethereum address"
+                />
+              </InputWrapper>
+            </Panel>
+          </ClawbackRow>
+          <ClawbackRow>
+            <Panel>
+              <QuoteText
+                dimmed={allocation === null}
+              >
+                {allocation !== null
+                  ? allocation
+                    ? `🌹Eligible (.°v°.)🌹`
+                    : 'Sorry, not eligible ^°.°^'
+                  : '↑↑↑ Check eligibility ↑↑↑'}
+              </QuoteText>
+            </Panel>
+          </ClawbackRow>
+          <DashboardContainer>
+            <DashboardTitle onClick={toggleDashboard} isOpen={isDashboardVisible}>
+              Details
+              <ArrowIcon isOpen={isDashboardVisible}>
+                &#10095;
+              </ArrowIcon>
+            </DashboardTitle>
+            <DashboardContent isVisible={isDashboardVisible}>
+              <Dashboard>
+                <AsciiContainer>
+                  {[
+                    { name: 'Mog', art: mogAsciiArt },
+                    { name: 'Sproto', art: sprotoAsciiArt },
+                    { name: 'Milady', art: miladyAsciiArt },
+                    { name: 'HPOS', art: hposAsciiArt },
+                    { name: 'Aeon', art: aeonAsciiArt },
+                    { name: 'SPX', art: spxAsciiArt }
+                  ].map(project => (
+                    <AsciiWrapper key={project.name}>
+                      <AsciiArtContainer>
+                        <AsciiArt
+                          isBold={activeProjects.includes(project.name.toLowerCase())}
+                        >
+                          {project.art}
+                        </AsciiArt>
+                        <ProjectName>{project.name}</ProjectName>
+                      </AsciiArtContainer>
+                    </AsciiWrapper>
+                  ))}
+                </AsciiContainer>
+                <DashboardRow isVisible={isContentVisible} delay={0.1}>
+                  <DashboardLabel>Method:</DashboardLabel>
+                  <DashboardValue>
+                    Single eligibility Clawback
+                    <HelpIcon onClick={handleHelpIconClick} />
+                  </DashboardValue>
+                </DashboardRow>
+                <DashboardRow isVisible={isContentVisible} delay={0.2}>
+                  <DashboardLabel>Eligible ERC-721:</DashboardLabel>
+                  <DashboardValue>Milady, Sproto, Aeon</DashboardValue>
+                </DashboardRow>
+                <DashboardRow isVisible={isContentVisible} delay={0.3}>
+                  <DashboardLabel>Eligible ERC-20:</DashboardLabel>
+                  <DashboardValue>MOG, HPOS10I, SPX6900</DashboardValue>
+                </DashboardRow>
+              </Dashboard>
+            </DashboardContent>
+          </DashboardContainer>
+        </ContentWrapper>
+        <ExecuteButton
+          onClick={handleExecute}
+          disabled={!ethers.isAddress(address) || !allocation}
+        >
+          Register
+        </ExecuteButton>
+        <HelpTooltip 
+          visible={showTooltip} 
+          onClick={handleTooltipClick}
+        >
+          <strong>Single Eligibility Clawback</strong><br /><br />
+          The Clawback mechanism allows selected <em>high-status technocratic post-scarcity cult adepts</em> to get an entry into the <em>Rose economical zone</em> (🌹), and embark on the journey to hyperfinancialization.<br /><br />
+          Eligibility is determined based on ownership of specific tokens from the following digital religions:<br /><br />
+          - Milady Maker<br />
+          - Sprotos Gremlins<br />
+          - Project AEON<br />
+          - Mog<br />
+          - HPOS10I<br />
+          - SPX6900<br /><br />
+          <em>Note: The claimable amount is fixed for all eligible addresses and does not increase with the number of communities the claimee is apart of. A 5% supply allocation is reserved for the Clawback mechanism.</em>
+        </HelpTooltip>
+      </ClawbackContainer>
+      {showRoseCult && (
+        <FullScreenOverlay onClick={() => setShowRoseCult(false)}>
+          <RoseCultAscii>{roseCultArt}</RoseCultAscii>
+          <WelcomeMessage>Welcome to Rose Community</WelcomeMessage>
+        </FullScreenOverlay>
+      )}
+    </>
   );
 };
 

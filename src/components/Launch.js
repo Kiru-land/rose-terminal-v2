@@ -5,6 +5,7 @@ import { usePopUp } from '../contexts/PopUpContext';
 import { FaEthereum, FaInfoCircle } from 'react-icons/fa';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { ethers } from 'ethers';
+import roseCultAscii from '../assets/rosecult.txt';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -316,6 +317,45 @@ const ChartTooltip = styled.div`
   border: 1px solid rgba(0, 255, 0, 0.3);
 `;
 
+const FullScreenOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+`;
+
+const RoseCultAscii = styled.pre`
+  color: #ff0000;
+  font-size: 4px;
+  line-height: 4px;
+  white-space: pre;
+  text-align: center;
+
+  @media (max-width: 600px) {
+    font-size: 2px;
+    line-height: 2px;
+  }
+`;
+
+const WelcomeMessage = styled.div`
+  color: #00ff00;
+  font-size: 24px;
+  margin-top: 20px;
+  text-align: center;
+  font-family: 'Helvetica Neue';
+  text-shadow: 0 0 10px #00ff00;
+
+  @media (max-width: 600px) {
+    font-size: 18px;
+  }
+`;
+
 const Launch = ({ animateLogo, setAsyncOutput }) => {
   const [panelWidth, setPanelWidth] = useState(380);
   const [amount, setAmount] = useState('');
@@ -325,6 +365,8 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
   const [totalRaised, setTotalRaised] = useState('0');
   const [expectedMarketCap, setExpectedMarketCap] = useState('0');
   const [activeTooltip, setActiveTooltip] = useState(null);
+  const [showRoseCult, setShowRoseCult] = useState(false);
+  const [roseCultArt, setRoseCultArt] = useState('');
 
   const { showPopUp } = usePopUp();
   const { signer, balance: nativeBalance, sale: saleAddress, provider } = useWeb3();
@@ -368,6 +410,20 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
     const interval = setInterval(fetchSaleData, 15000); // Update every 15 seconds
     return () => clearInterval(interval);
   }, [provider, saleAddress]);
+
+  useEffect(() => {
+    const fetchRoseCultArt = async () => {
+      try {
+        const response = await fetch(roseCultAscii);
+        const text = await response.text();
+        setRoseCultArt(text);
+      } catch (error) {
+        console.error('Error loading Rose Cult ASCII art:', error);
+      }
+    };
+
+    fetchRoseCultArt();
+  }, []);
 
   const softCap = "200";
   const hardCap = "500";
@@ -439,11 +495,6 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
       try {
         setAsyncOutput(<>Processing participation of {amount}<FaEthereum /> ...</>);
 
-        if (amountInWei > nativeBalanceInWei) {
-          showPopUp(<>Insufficient ETH balance. <br /> Current balance: {parseFloat(ethers.formatEther(nativeBalanceInWei)).toFixed(6)}<FaEthereum /></>);
-          return;
-        }
-
         const saleContract = new ethers.Contract(
           saleAddress,
           ['function participate() payable'],
@@ -460,6 +511,9 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
 
         setAsyncOutput(<>Successfully participated for {amount}<FaEthereum /></>);
         showPopUp(<>Successfully participated in the sale for {amount}<FaEthereum /></>);
+        
+        // Show Rose Cult ASCII art after successful participation
+        setShowRoseCult(true);
       } catch (error) {
         console.error('Error during sale participation:', error);
         let errorMessage = "An error occurred during the transaction.";
@@ -526,105 +580,113 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
   }, [showTooltip]);
 
   return (
-    <LaunchContainer width={panelWidth} isDashboardVisible={isDashboardVisible}>
-      <ContentWrapper>
-        <SaleRow>
-          <IconButton>
-            <FaEthereum />
-          </IconButton>
-          <Panel>
-            <InputWrapper>
-              <Input 
-                type="text" 
-                value={amount} 
-                onChange={handleAmountChange} 
-                placeholder="Enter amount"
-              />
-              <MaxButton onClick={handleMaxClick}>max</MaxButton>
-            </InputWrapper>
-          </Panel>
-        </SaleRow>
-        <DashboardContainer>
-          <DashboardTitle onClick={toggleDashboard} isOpen={isDashboardVisible}>
-            Details
-            <ArrowIcon isOpen={isDashboardVisible}>
-              &#10095;
-            </ArrowIcon>
-          </DashboardTitle>
-          <DashboardContent isVisible={isDashboardVisible}>
-            <Dashboard>
-              <DashboardRow isVisible={isContentVisible} delay={0.1}>
-                <DashboardLabel>Type:</DashboardLabel>
-                <DashboardValue>
-                  Fair Launch
-                  <HelpIcon onClick={handleHelpIconClick} />
-                </DashboardValue>
-              </DashboardRow>
-              <DashboardRow isVisible={isContentVisible} delay={0.2}>
-                <DashboardLabel>Soft Cap:</DashboardLabel>
-                <DashboardValue>{softCap}<FaEthereum /></DashboardValue>
-              </DashboardRow>
-              <DashboardRow isVisible={isContentVisible} delay={0.3}>
-                <DashboardLabel>Hard Cap:</DashboardLabel>
-                <DashboardValue>{hardCap}<FaEthereum /></DashboardValue>
-              </DashboardRow>
-              <DashboardRow isVisible={isContentVisible} delay={0.4}>
-                <DashboardLabel>Amount Raised:</DashboardLabel>
-                <DashboardValue>{totalRaised}<FaEthereum /></DashboardValue>
-              </DashboardRow>
-              <DashboardRow isVisible={isContentVisible} delay={0.5}>
-                <DashboardLabel>Implied Market Cap:</DashboardLabel>
-                <DashboardValue>{expectedMarketCap}<FaEthereum /></DashboardValue>
-              </DashboardRow>
-              <ChartContainer isVisible={isContentVisible}>
-                <PieChart width={240} height={240}>
-                  <Pie
-                    data={data}
-                    cx={120}
-                    cy={110}
-                    innerRadius={75}
-                    outerRadius={105}
-                    paddingAngle={4}
-                    dataKey="value"
-                    strokeWidth={0}
-                    cornerRadius={8}
-                    onMouseEnter={handlePieEnter}
-                    onMouseLeave={handlePieLeave}
-                  >
-                    {data.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={activeTooltip === entry.name ? HOVER_COLORS[index % HOVER_COLORS.length] : COLORS[index % COLORS.length]}
-                        stroke="rgba(0, 0, 0, 0.2)"
-                        strokeWidth={1}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltipContent />} />
-                </PieChart>
-              </ChartContainer>
-            </Dashboard>
-          </DashboardContent>
-        </DashboardContainer>
-      </ContentWrapper>
-      <ParticipateButton 
-        onClick={handleExecute} 
-        disabled={!amount}
-      >
-        Participate
-      </ParticipateButton>
-      <HelpTooltip 
-        visible={showTooltip} 
-        onClick={handleTooltipClick}
-      >
-        <strong>Proportional Oversubscribed Capped Sale</strong><br /><br />
-        This Fair Launch has a <em>soft</em> and <em>hard</em> cap. <br /> <br />
-        1.) If the total amount raised is smaller than the soft cap, all participation gets reimbursed. <br /> <br />
-        2.) If the amount raised is bigger than the hard cap, the excess tokens get proportionally reimbursed to every user.<br /> <br />
-        Participants receive a part of the 62% of ROSE tokens sold based on their proportional share of the total <FaEthereum /> submitted.<br /> <br />
-        <em>Note: The Implied Market Cap will increase linearly with the contribution amount until it reaches the Hard Cap of 500<FaEthereum />. <br /> The Implied Market Cap will vary between 800<FaEthereum /> at the Soft Cap and 2000<FaEthereum /> at the Hard Cap and beyond.</em>
-      </HelpTooltip>
-    </LaunchContainer>
+    <>
+      <LaunchContainer width={panelWidth} isDashboardVisible={isDashboardVisible}>
+        <ContentWrapper>
+          <SaleRow>
+            <IconButton>
+              <FaEthereum />
+            </IconButton>
+            <Panel>
+              <InputWrapper>
+                <Input 
+                  type="text" 
+                  value={amount} 
+                  onChange={handleAmountChange} 
+                  placeholder="Enter amount"
+                />
+                <MaxButton onClick={handleMaxClick}>max</MaxButton>
+              </InputWrapper>
+            </Panel>
+          </SaleRow>
+          <DashboardContainer>
+            <DashboardTitle onClick={toggleDashboard} isOpen={isDashboardVisible}>
+              Details
+              <ArrowIcon isOpen={isDashboardVisible}>
+                &#10095;
+              </ArrowIcon>
+            </DashboardTitle>
+            <DashboardContent isVisible={isDashboardVisible}>
+              <Dashboard>
+                <DashboardRow isVisible={isContentVisible} delay={0.1}>
+                  <DashboardLabel>Type:</DashboardLabel>
+                  <DashboardValue>
+                    Fair Launch
+                    <HelpIcon onClick={handleHelpIconClick} />
+                  </DashboardValue>
+                </DashboardRow>
+                <DashboardRow isVisible={isContentVisible} delay={0.2}>
+                  <DashboardLabel>Soft Cap:</DashboardLabel>
+                  <DashboardValue>{softCap}<FaEthereum /></DashboardValue>
+                </DashboardRow>
+                <DashboardRow isVisible={isContentVisible} delay={0.3}>
+                  <DashboardLabel>Hard Cap:</DashboardLabel>
+                  <DashboardValue>{hardCap}<FaEthereum /></DashboardValue>
+                </DashboardRow>
+                <DashboardRow isVisible={isContentVisible} delay={0.4}>
+                  <DashboardLabel>Amount Raised:</DashboardLabel>
+                  <DashboardValue>{totalRaised}<FaEthereum /></DashboardValue>
+                </DashboardRow>
+                <DashboardRow isVisible={isContentVisible} delay={0.5}>
+                  <DashboardLabel>Implied Market Cap:</DashboardLabel>
+                  <DashboardValue>{expectedMarketCap}<FaEthereum /></DashboardValue>
+                </DashboardRow>
+                <ChartContainer isVisible={isContentVisible}>
+                  <PieChart width={240} height={240}>
+                    <Pie
+                      data={data}
+                      cx={120}
+                      cy={110}
+                      innerRadius={75}
+                      outerRadius={105}
+                      paddingAngle={4}
+                      dataKey="value"
+                      strokeWidth={0}
+                      cornerRadius={8}
+                      onMouseEnter={handlePieEnter}
+                      onMouseLeave={handlePieLeave}
+                    >
+                      {data.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={activeTooltip === entry.name ? HOVER_COLORS[index % HOVER_COLORS.length] : COLORS[index % COLORS.length]}
+                          stroke="rgba(0, 0, 0, 0.2)"
+                          strokeWidth={1}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltipContent />} />
+                  </PieChart>
+                </ChartContainer>
+              </Dashboard>
+            </DashboardContent>
+          </DashboardContainer>
+        </ContentWrapper>
+        <ParticipateButton 
+          onClick={handleExecute} 
+          disabled={!amount}
+        >
+          Participate
+        </ParticipateButton>
+        <HelpTooltip 
+          visible={showTooltip} 
+          onClick={handleTooltipClick}
+        >
+          <strong>Proportional Oversubscribed Capped Sale</strong><br /><br />
+          This Fair Launch has a <em>soft</em> and <em>hard</em> cap. <br /> <br />
+          1.) If the total amount raised is smaller than the soft cap, all participation gets reimbursed. <br /> <br />
+          2.) If the amount raised is bigger than the hard cap, the excess tokens get proportionally reimbursed to every user.<br /> <br />
+          Participants receive a part of the 62% of ROSE tokens sold based on their proportional share of the total <FaEthereum /> submitted.<br /> <br />
+          <em>Note: The Implied Market Cap will increase linearly with the contribution amount until it reaches the Hard Cap of 500<FaEthereum />. <br /> The Implied Market Cap will vary between 800<FaEthereum /> at the Soft Cap and 2000<FaEthereum /> at the Hard Cap and beyond.</em>
+        </HelpTooltip>
+      </LaunchContainer>
+      {showRoseCult && (
+        <FullScreenOverlay onClick={() => setShowRoseCult(false)}>
+          <RoseCultAscii>{roseCultArt}</RoseCultAscii>
+          <WelcomeMessage>Welcome to Rose Community</WelcomeMessage>
+        </FullScreenOverlay>
+      )}
+    </>
   );
 };
 
