@@ -23,6 +23,18 @@ export default async function handler(req, res) {
     }
   }
 
+  // Handle GET /api/list-all-keys
+  if (req.method === 'GET' && params[0] === 'list-all-keys') {
+    try {
+      const keys = await kv.keys('*');
+      console.log('All keys:', keys);
+      return res.status(200).json({ keys });
+    } catch (error) {
+      console.error('Error listing keys:', error);
+      return res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+  }
+
   // If no matching route is found
   res.status(404).json({ error: 'Not Found' });
 }
