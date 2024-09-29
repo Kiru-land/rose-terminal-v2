@@ -174,6 +174,7 @@ const DashboardTitle = styled.div`
   font-weight: 500;
   align-items: center;
   justify-content: space-between;
+  padding-right: 5px;
   
   &:hover {
     color: ${props => props.$isOpen ? 'rgba(0, 255, 0, 1)' : 'lightgrey'};
