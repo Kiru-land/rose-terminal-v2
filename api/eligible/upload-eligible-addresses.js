@@ -1,10 +1,12 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { kv } from '@vercel/kv';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const getDirname = async () => {
+  const { fileURLToPath } = await import('url');
+  const __filename = fileURLToPath(import.meta.url);
+  return path.dirname(__filename);
+};
 
 /**
  * @api {post} /api/eligible/upload-eligible-addresses Upload Eligible Addresses
@@ -32,6 +34,7 @@ const __dirname = path.dirname(__filename);
 async function uploadEligibleAddresses() {
   const communities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
   const eligibleAddresses = {};
+  const __dirname = await getDirname();
 
   for (const community of communities) {
     const filePath = path.join(__dirname, '..', '..', 'public', 'eligibility-lists', `${community}.txt`);
