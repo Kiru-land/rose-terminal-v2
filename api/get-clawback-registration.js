@@ -3,19 +3,16 @@ import { kv } from '@vercel/kv';
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      // Get all keys (communities) from the database
-      const keys = await kv.keys('*');
+      const registeredAddresses = await kv.get('registered-addresses') || {
+        aeon: [],
+        sproto: [],
+        spx: [],
+        mog: [],
+        milady: [],
+        hpos: []
+      };
       
-      // Object to store all community data
-      const allCommunityData = {};
-
-      // Fetch data for each community
-      for (const community of keys) {
-        const addresses = await kv.get(community);
-        allCommunityData[community] = addresses;
-      }
-
-      return res.status(200).json(allCommunityData);
+      return res.status(200).json(registeredAddresses);
     } catch (error) {
       console.error('Error fetching data:', error);
       return res.status(500).json({ error: 'Internal server error', details: error.message });

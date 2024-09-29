@@ -9,19 +9,18 @@ export default async function handler(req, res) {
     }
 
     try {
-      // Get all keys (communities) from the database
-      const keys = await kv.keys('*');
+      const registeredAddresses = await kv.get('registered-addresses') || {
+        aeon: [],
+        sproto: [],
+        spx: [],
+        mog: [],
+        milady: [],
+        hpos: []
+      };
       
-      // Array to store communities the address belongs to
-      const belongingCommunities = [];
-
-      // Check each community for the address
-      for (const community of keys) {
-        const addresses = await kv.get(community);
-        if (addresses && addresses.includes(address)) {
-          belongingCommunities.push(community);
-        }
-      }
+      const belongingCommunities = Object.entries(registeredAddresses)
+        .filter(([_, addresses]) => addresses.includes(address))
+        .map(([community, _]) => community);
 
       return res.status(200).json({ address, communities: belongingCommunities });
     } catch (error) {

@@ -5,11 +5,19 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const keys = await kv.keys('*');
-      console.log('All keys:', keys);
-      return res.status(200).json({ keys });
+      const registeredAddresses = await kv.get('registered-addresses') || {
+        aeon: [],
+        sproto: [],
+        spx: [],
+        mog: [],
+        milady: [],
+        hpos: []
+      };
+      const communities = Object.keys(registeredAddresses);
+      console.log('All communities:', communities);
+      return res.status(200).json({ communities });
     } catch (error) {
-      console.error('Error listing keys:', error);
+      console.error('Error listing communities:', error);
       return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   } else {
