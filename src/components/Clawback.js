@@ -19,7 +19,7 @@ const fadeIn = keyframes`
 
 const ClawbackContainer = styled.div`
   position: absolute;
-  top: ${props => props.$isDashboardVisible ? '50%' : '55%'};
+  top: ${props => props.isDashboardVisible ? '50%' : '55%'};
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: rgba(0, 0, 0, 0.9);
@@ -109,7 +109,7 @@ const Input = styled.input`
 `;
 
 const QuoteText = styled.p`
-  color: ${props => props.$dimmed ? 'rgba(0, 255, 0, 0.5)' : '#00ff00'};
+  color: ${props => props.dimmed ? 'rgba(0, 255, 0, 0.5)' : '#00ff00'};
   font-size: 15px;
   text-align: center;
   margin: 0;
@@ -166,7 +166,7 @@ const DashboardContainer = styled.div`
 `;
 
 const DashboardTitle = styled.div`
-  color: ${props => props.$isOpen ? 'rgba(0, 255, 0, 0.8)' : 'grey'};
+  color: ${props => props.isOpen ? 'rgba(0, 255, 0, 0.8)' : 'grey'};
   font-size: 0.9em;
   margin-bottom: 4px;
   cursor: pointer;
@@ -177,19 +177,19 @@ const DashboardTitle = styled.div`
   padding-right: 5px;
   
   &:hover {
-    color: ${props => props.$isOpen ? 'rgba(0, 255, 0, 1)' : 'lightgrey'};
+    color: ${props => props.isOpen ? 'rgba(0, 255, 0, 1)' : 'lightgrey'};
   }
 `;
 
 const ArrowIcon = styled.span`
   display: inline-block;
   transition: transform 0.3s ease;
-  transform: ${props => props.$isOpen ? 'rotate(-90deg)' : 'rotate(90deg)'};
+  transform: ${props => props.isOpen ? 'rotate(-90deg)' : 'rotate(90deg)'};
 `;
 
 const DashboardContent = styled.div`
-  max-height: ${props => props.$isVisible ? '1000px' : '0'};
-  opacity: ${props => props.$isVisible ? 1 : 0};
+  max-height: ${props => props.isVisible ? '1000px' : '0'};
+  opacity: ${props => props.isVisible ? 1 : 0};
   overflow: hidden;
   transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
 `;
@@ -211,7 +211,7 @@ const AsciiArt = styled.pre`
   white-space: pre;
   overflow: hidden;
   transition: opacity 0.3s ease;
-  ${props => props.$isBold && css`
+  ${props => props.isBold && css`
     font-weight: bold;
     color: #00ffee;
   `}
@@ -281,8 +281,8 @@ const HelpTooltip = styled.div`
   max-width: 90vw;
   width: 380px;
   z-index: 1001;
-  visibility: ${props => props.$visible ? 'visible' : 'hidden'};
-  opacity: ${props => props.$visible ? 1 : 0};
+  visibility: ${props => props.visible ? 'visible' : 'hidden'};
+  opacity: ${props => props.visible ? 1 : 0};
   transition: visibility 0.2s, opacity 0.2s;
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   line-height: 1.4;
@@ -296,10 +296,10 @@ const DashboardRow = styled.div`
   margin-bottom: 5px;
   font-size: 13px;
   color: #00ff00;
-  opacity: ${props => props.$isVisible ? 1 : 0};
-  transform: translateY(${props => props.$isVisible ? 0 : '10px'});
+  opacity: ${props => props.isVisible ? 1 : 0};
+  transform: translateY(${props => props.isVisible ? 0 : '10px'});
   transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-  transition-delay: ${props => props.$delay}s;
+  transition-delay: ${props => props.delay}s;
 
   @media (max-width: 600px) {
     font-size: 11px;
@@ -507,7 +507,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   }, [showTooltip]);
 
   return (
-    <ClawbackContainer width={panelWidth} $isDashboardVisible={isDashboardVisible}>
+    <ClawbackContainer width={panelWidth} isDashboardVisible={isDashboardVisible}>
       <ContentWrapper>
         <ClawbackRow>
           <IconButton onClick={handleArrowClick}>⟼</IconButton>
@@ -526,7 +526,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
         <ClawbackRow>
           <Panel>
             <QuoteText
-              $dimmed={allocation === null}
+              dimmed={allocation === null}
             >
               {allocation !== null
                 ? allocation
@@ -537,13 +537,13 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
           </Panel>
         </ClawbackRow>
         <DashboardContainer>
-          <DashboardTitle onClick={toggleDashboard} $isOpen={isDashboardVisible}>
+          <DashboardTitle onClick={toggleDashboard} isOpen={isDashboardVisible}>
             Details
-            <ArrowIcon $isOpen={isDashboardVisible}>
+            <ArrowIcon isOpen={isDashboardVisible}>
               &#10095;
             </ArrowIcon>
           </DashboardTitle>
-          <DashboardContent $isVisible={isDashboardVisible}>
+          <DashboardContent isVisible={isDashboardVisible}>
             <Dashboard>
               <AsciiContainer>
                 {[
@@ -557,7 +557,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
                   <AsciiWrapper key={project.name}>
                     <AsciiArtContainer>
                       <AsciiArt
-                        $isBold={activeProjects.includes(project.name.toLowerCase())}
+                        isBold={activeProjects.includes(project.name.toLowerCase())}
                       >
                         {project.art}
                       </AsciiArt>
@@ -566,18 +566,18 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
                   </AsciiWrapper>
                 ))}
               </AsciiContainer>
-              <DashboardRow $isVisible={isContentVisible} $delay={0.1}>
+              <DashboardRow isVisible={isContentVisible} delay={0.1}>
                 <DashboardLabel>Method:</DashboardLabel>
                 <DashboardValue>
                   Single eligibility Clawback
                   <HelpIcon onClick={handleHelpIconClick} />
                 </DashboardValue>
               </DashboardRow>
-              <DashboardRow $isVisible={isContentVisible} $delay={0.2}>
+              <DashboardRow isVisible={isContentVisible} delay={0.2}>
                 <DashboardLabel>Eligible ERC-721:</DashboardLabel>
                 <DashboardValue>Milady, Sproto, Aeon</DashboardValue>
               </DashboardRow>
-              <DashboardRow $isVisible={isContentVisible} $delay={0.3}>
+              <DashboardRow isVisible={isContentVisible} delay={0.3}>
                 <DashboardLabel>Eligible ERC-20:</DashboardLabel>
                 <DashboardValue>MOG, HPOS10I, SPX6900</DashboardValue>
               </DashboardRow>
@@ -592,7 +592,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
         Register
       </ExecuteButton>
       <HelpTooltip 
-        $visible={showTooltip} 
+        visible={showTooltip} 
         onClick={handleTooltipClick}
       >
         <strong>Single Eligibility Clawback</strong><br /><br />

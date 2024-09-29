@@ -40,7 +40,7 @@ const TerminalContainer = styled.div`
   top: 0;
   left: 0;
   overflow: hidden;
-  ${props => props.$isMobile && `
+  ${props => props.isMobile && `
     width: 100%;
     height: 100vh;
     border-radius: 0;
@@ -61,7 +61,7 @@ const AsciiArtContainer = styled.pre`
   color: #00ff00;
   text-align: center;
   margin-bottom: 20px;
-  animation: ${props => props.$isAnimating ? beeMotion : 'none'} 0.5s infinite;
+  animation: ${props => props.isAnimating ? beeMotion : 'none'} 0.5s infinite;
 `;
 
 const ClickableAsciiArtContainer = styled(AsciiArtContainer)`
@@ -179,7 +179,7 @@ const MenuContainer = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 10px;  // Add some space between the menu and BottomBar
-  ${props => props.$isMobile && `
+  ${props => props.isMobile && `
     position: fixed;
     bottom: 0;
     left: 0;
@@ -239,7 +239,7 @@ const MenuItem = styled.button`
     }
   `}
 
-  ${props => props.$isMobile && `
+  ${props => props.isMobile && `
     padding: 15px;
     font-size: 18px;
     position: relative;
@@ -299,7 +299,7 @@ const RippleButton = ({ children, onClick, isMobile, isSelected }) => {
     <MenuItem 
       ref={buttonRef} 
       onClick={handleClick} 
-      $isMobile={isMobile}
+      isMobile={isMobile}
       isSelected={isSelected}
     >
       {children}
@@ -556,7 +556,7 @@ const Terminal = ({ isMobile }) => {
   return (
     <>
       <GlobalStyle />
-      <TerminalContainer onClick={handleContainerClick} $isMobile={isMobile}>
+      <TerminalContainer onClick={handleContainerClick} isMobile={isMobile}>
         <GitHubLink 
           href="https://github.com/RedRoseMoney/Rose" 
           target="_blank" 
@@ -570,7 +570,7 @@ const Terminal = ({ isMobile }) => {
         )}
         <AsciiArtWrapper>
           <ClickableAsciiArtContainer 
-            $isAnimating={isAnimating}
+            isAnimating={isAnimating}
             onClick={handleLogoClick}
           >
             {asciiLogo}
@@ -605,7 +605,7 @@ const Terminal = ({ isMobile }) => {
         <TerminalContent ref={terminalContentRef}>
           {/* Remove the history mapping from here */}
         </TerminalContent>
-        <MenuContainer $isMobile={isMobile}>
+        <MenuContainer isMobile={isMobile}>
           {renderMenuItems()}
         </MenuContainer>
         <RoseUsdButton onClick={handleOpenChartModal}>chart</RoseUsdButton>
