@@ -326,6 +326,7 @@ const FullScreenOverlay = styled.div`
   height: 100vh;
   background-color: black;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   z-index: 9999;
@@ -470,17 +471,15 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
       
       try {
         // Register the address in the Vercel KV database for each active community
-        for (const community of activeProjects) {
-          const response = await fetch('/api/registration/clawback-registration', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ address, community }),
-          });
-          if (!response.ok) {
-            throw new Error('Registration failed');
-          }
+        const response = await fetch('/api/clawback-registration', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ address }),
+        });
+        if (!response.ok) {
+          throw new Error('Registration failed');
         }
         
         setAsyncOutput(<>Clawback registration successful for {address}</>);

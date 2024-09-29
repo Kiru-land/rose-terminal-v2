@@ -429,10 +429,10 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
   const hardCap = "500";
 
   const data = [
-    { name: 'Fair Launch', value: 62 },
+    { name: 'Fair Launch', value: 67 },
     { name: 'Liquidity', value: 20 },
-    { name: 'Clawback', value: 10 },
     { name: 'Treasury', value: 8 },
+    { name: 'Clawback', value: 5 },
   ];
 
   const COLORS = ['rgba(0, 255, 0, 0.4)', 'rgba(0, 204, 255, 0.4)', 'rgba(255, 0, 255, 0.4)', 'rgba(255, 165, 0, 0.4)'];
@@ -676,7 +676,7 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
           This Fair Launch has a <em>soft</em> and <em>hard</em> cap. <br /> <br />
           1.) If the total amount raised is smaller than the soft cap, all participation gets reimbursed. <br /> <br />
           2.) If the amount raised is bigger than the hard cap, the excess tokens get proportionally reimbursed to every user.<br /> <br />
-          Participants receive a part of the 62% of ROSE tokens sold based on their proportional share of the total <FaEthereum /> submitted.<br /> <br />
+          Participants receive a part of the 67% of ROSE tokens sold based on their proportional share of the total <FaEthereum /> submitted.<br /> <br />
           <em>Note: The Implied Market Cap will increase linearly with the contribution amount until it reaches the Hard Cap of 500<FaEthereum />. <br /> The Implied Market Cap will vary between 800<FaEthereum /> at the Soft Cap and 2000<FaEthereum /> at the Hard Cap and beyond.</em>
         </HelpTooltip>
       </LaunchContainer>
