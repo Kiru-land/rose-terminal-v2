@@ -28,7 +28,7 @@ import { kv } from '@vercel/kv';
 async function uploadEligibleAddresses() {
   const communities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
   const eligibleAddresses = {};
-  const basePath = '@eligibility-lists';
+  const basePath = '../../public/eligibility-lists';
 
   for (const community of communities) {
     const filePath = path.join(basePath, `${community}.txt`);
