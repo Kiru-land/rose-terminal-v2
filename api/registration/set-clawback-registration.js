@@ -4,10 +4,9 @@ import { kv } from '@vercel/kv';
  * @api {post} /api/registration/clawback-registration Register Address for Clawback
  * @apiName ClawbackRegistration
  * @apiGroup Registration
- * @apiDescription Registers an address for clawback in a specific community.
+ * @apiDescription Registers an Ethereum address for clawback.
  *
  * @apiParam {String} address Ethereum address to register
- * @apiParam {String} community Name of the community
  *
  * @apiSuccess {String} message Success message
  *
@@ -22,7 +21,20 @@ import { kv } from '@vercel/kv';
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {
- *       "error": "Address and community are required"
+ *       "error": "Address is required"
+ *     }
+ * 
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 409 Conflict
+ *     {
+ *       "error": "Address already registered"
+ *     }
+ * 
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Internal server error",
+ *       "details": "Error message details"
  *     }
  */
 
