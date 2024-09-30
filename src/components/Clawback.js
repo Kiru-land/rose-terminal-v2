@@ -482,7 +482,8 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
           showPopUp(<>Successfully registered {address?.substring(0, 6)}...{address?.substring(address.length - 4)} </>);
           setShowRoseCult(true);
         } else {
-          throw new Error('Registration failed');
+          setAsyncOutput(<>address {address.substring(0, 6)}...{address.substring(address.length - 4)} already registered</>);
+          showPopUp(<>address {address.substring(0, 6)}...{address.substring(address.length - 4)} already registered (°.°)</>);
         }
       } catch (error) {
         console.error('Error during clawback registration:', error);
