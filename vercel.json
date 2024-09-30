@@ -1,0 +1,7 @@
+{
+    "functions": {
+      "api/eligible/set-address-community.js": {
+        "maxDuration": 300
+    }
+    }
+}
