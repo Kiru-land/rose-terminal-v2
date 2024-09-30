@@ -1,17 +1,15 @@
 import { kv } from '@vercel/kv';
 
-const communities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
-
 /**
- * @api {get} /api/eligible/get-address-communities Get Communities for Address
+ * @api {get} /api/eligible/get-address-communities Get Address Communities
  * @apiName GetAddressCommunities
  * @apiGroup Eligibility
- * @apiDescription Retrieves all communities an address is eligible for.
+ * @apiDescription Retrieves the communities associated with a specific Ethereum address.
  *
  * @apiParam {String} address Ethereum address to check
  *
- * @apiSuccess {String} address The checked Ethereum address
- * @apiSuccess {String[]} communities List of communities the address is eligible for
+ * @apiSuccess {String} address The Ethereum address queried
+ * @apiSuccess {String[]} communities List of communities the address belongs to
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -25,41 +23,25 @@ const communities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {
- *       "error": "Address parameter is required"
+ *       "error": "Invalid address provided"
  *     }
  */
+
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     const { address } = req.query;
 
-    if (!address) {
-      return res.status(400).json({ error: 'Address parameter is required' });
+    if (!address || !address.startsWith('0x')) {
+      return res.status(400).json({ error: 'Invalid address provided' });
     }
 
     try {
-      const eligibleCommunities = [];
-
-      for (const community of communities) {
-        const key = `eligible-addresses-${community}`;
-        const communityAddresses = await kv.get(key);
-        
-        if (communityAddresses) {
-          const parsedAddresses = JSON.parse(communityAddresses);
-          if (parsedAddresses.includes(address.toLowerCase())) {
-            eligibleCommunities.push(community);
-          }
-        }
-      }
-
-      if (eligibleCommunities.length === 0) {
-        return res.status(404).json({ error: `Address ${address} not found in any community` });
-      }
-
-      res.status(200).json({ address, communities: eligibleCommunities });
+      const communities = await kv.smembers(address);
+      res.status(200).json({ address, communities });
     } catch (error) {
-      console.error('Error fetching communities for address:', error);
-      res.status(500).json({ error: 'Failed to fetch communities for address' });
+      console.error('Error fetching address communities:', error);
+      res.status(500).json({ error: `Failed to fetch address communities: ${error.message}` });
     }
   } else {
     res.setHeader('Allow', ['GET']);
