@@ -471,7 +471,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
       setAsyncOutput(<>Processing clawback registration for {address?.substring(0, 6)}...{address?.substring(address.length - 4)} ...</>);
       
       try {
-        const response = await axios.get('/api/set-clawback-registration', {
+        const response = await axios.post('/api/set-clawback-registration', {
           params: { 
             address: address,
           }
