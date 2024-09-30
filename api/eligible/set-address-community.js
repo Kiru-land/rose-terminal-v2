@@ -44,12 +44,9 @@ async function uploadAddressCommunities(communities) {
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
-      const { communities } = req.body;
-      if (!Array.isArray(communities) || communities.length === 0) {
-        return res.status(400).json({ error: 'Invalid communities array' });
-      }
-      const processedAddresses = await uploadAddressCommunities(communities);
-      res.status(200).json({ message: `Processed ${processedAddresses} addresses for communities: ${communities.join(', ')}` });
+      // No need to destructure communities from req.body
+      await uploadAddressCommunities();
+      res.status(200).json({ message: 'Address-community mappings updated successfully' });
     } catch (error) {
       console.error('Error updating address-community mappings:', error);
       res.status(500).json({ error: 'Failed to update address-community mappings' });
