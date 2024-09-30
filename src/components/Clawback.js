@@ -11,7 +11,7 @@ import hposAscii from '../assets/hpos-ascii.txt';
 import aeonAscii from '../assets/aeon-ascii.txt';
 import spxAscii from '../assets/spx-ascii.txt';
 import roseCultAscii from '../assets/rosecult.txt';
-import { FaInfoCircle } from 'react-icons/fa';
+import { FaEthereum, FaInfoCircle } from 'react-icons/fa';
 import axios from 'axios';
 
 const fadeIn = keyframes`
@@ -629,7 +629,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
           - Mog<br />
           - HPOS10I<br />
           - SPX6900<br /><br />
-          <em>Note: The claimable amount is fixed for all eligible addresses and does not increase with the number of communities the claimee is apart of. A 5% supply allocation is reserved for the Clawback mechanism.</em>
+          <em>Note: Snapshot taken on september 27th. For ERC20s, an address needs at least 0.2<FaEthereum /> worth of holdings to be eligible. The claimable amount is fixed for all eligible addresses and does not increase with the number of communities the claimee is apart of. A 5% supply allocation is reserved for the Clawback mechanism.</em>
         </HelpTooltip>
       </ClawbackContainer>
       {showRoseCult && (
