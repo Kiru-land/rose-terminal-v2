@@ -481,13 +481,8 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
           setShowRoseCult(true);
         }
       } catch (error) {
-        if (error.response && error.response.status === 409) {
           setAsyncOutput(<>address {address.substring(0, 6)}...{address.substring(address.length - 4)} already registered</>);
           showPopUp(<>address {address.substring(0, 6)}...{address.substring(address.length - 4)} already registered (°.°)</>);
-        }
-        console.error('Error during clawback registration:', error);
-        showPopUp('An error occurred during clawback registration :( Please try again.');
-        setAsyncOutput('Error occurred during clawback registration. Please try again.');
       }
     });
   };
