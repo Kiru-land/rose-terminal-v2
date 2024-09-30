@@ -33,17 +33,23 @@ async function uploadAddressCommunities() {
 
   console.log(`Total unique addresses: ${addressCommunities.size}`);
 
-  // Upload address-community mappings to KV store
+  // Use pipeline for batch operations
+  const pipeline = kv.pipeline();
+
+  // Prepare batch operations
   for (const [address, communities] of addressCommunities) {
     const key = `${address}`;
     const value = JSON.stringify(Array.from(communities));
+    pipeline.set(key, value);
+  }
 
-    try {
-      await kv.set(key, value);
-      console.log(`Uploaded communities for address ${address}: ${value}`);
-    } catch (error) {
-      console.error(`Error uploading data for address ${address}:`, error);
-    }
+  // Execute batch operations
+  try {
+    await pipeline.exec();
+    console.log(`Uploaded communities for ${addressCommunities.size} addresses`);
+  } catch (error) {
+    console.error('Error uploading data:', error);
+    throw error; // Rethrow the error to be caught by the handler
   }
 }
 
