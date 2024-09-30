@@ -471,12 +471,19 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
       setAsyncOutput(<>Processing clawback registration for {address?.substring(0, 6)}...{address?.substring(address.length - 4)} ...</>);
       
       try {
+        const response = await axios.get('/api/set-clawback-registration', {
+          params: { 
+            address: address,
+          }
+        });
         
-        // register to the clawback
-        
-        setAsyncOutput(<>Clawback registration successful for {address?.substring(0, 6)}...{address?.substring(address.length - 4)} </>);
-        showPopUp(<>Successfully registered {address?.substring(0, 6)}...{address?.substring(address.length - 4)} </>);
-        setShowRoseCult(true);
+        if (response.data) {
+          setAsyncOutput(<>Clawback registration successful for {address?.substring(0, 6)}...{address?.substring(address.length - 4)} </>);
+          showPopUp(<>Successfully registered {address?.substring(0, 6)}...{address?.substring(address.length - 4)} </>);
+          setShowRoseCult(true);
+        } else {
+          throw new Error('Registration failed');
+        }
       } catch (error) {
         console.error('Error during clawback registration:', error);
         showPopUp('An error occurred during clawback registration :( Please try again.');
