@@ -37,7 +37,8 @@ export default async function handler(req, res) {
     }
 
     try {
-      const communities = await kv.smembers(address);
+      const communitiesJson = await kv.get(address);
+      const communities = communitiesJson ? JSON.parse(communitiesJson) : [];
       res.status(200).json({ address, communities });
     } catch (error) {
       console.error('Error fetching address communities:', error);
