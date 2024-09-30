@@ -453,7 +453,7 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
       case 'Liquidity':
         return 'Percentage of ROSE going into the custom aAMM liquidity pool';
       case 'Treasury':
-        return 'Funds reserved for future incentivisation, buybacks, strategic investing and development funding';
+        return 'Funds reserved for buybacks, strategic investing and development funding';
       case 'Clawback':
         return 'Allocation for cool Ethereum communities';
       default:

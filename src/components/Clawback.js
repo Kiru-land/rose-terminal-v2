@@ -427,6 +427,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   }, []);
 
   const handleAddressChange = async (e) => {
+    setAllocation(null);
     const newAddress = e.target.value;
     setAddress(newAddress);
     if (ethers.isAddress(newAddress)) {
@@ -473,8 +474,8 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
         
         // register to the clawback
         
-        setAsyncOutput(<>Clawback registration successful for {address}</>);
-        showPopUp(<>Successfully registered {address}</>);
+        setAsyncOutput(<>Clawback registration successful for {address?.substring(0, 6)}...{address?.substring(address.length - 4)} </>);
+        showPopUp(<>Successfully registered {address?.substring(0, 6)}...{address?.substring(address.length - 4)} </>);
         setShowRoseCult(true);
       } catch (error) {
         console.error('Error during clawback registration:', error);
@@ -622,7 +623,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
         >
           <strong>Single Eligibility Clawback</strong><br /><br />
           The Clawback mechanism allows selected <em>high-status technocratic post-scarcity cult adepts</em> to get an entry into the <em>Rose economical zone</em> (🌹), and embark on the journey to hyperfinancialization.<br /><br />
-          Eligibility is determined based on ownership of specific tokens from the following digital religions:<br /><br />
+          Eligibility is granted based on appartenance to the following digital religions:<br /><br />
           - Milady Maker<br />
           - Sprotos Gremlins<br />
           - Project AEON<br />
