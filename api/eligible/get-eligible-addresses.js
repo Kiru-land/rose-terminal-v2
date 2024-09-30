@@ -47,7 +47,24 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: `No addresses found for community: ${community}` });
       }
 
-      const parsedAddresses = JSON.parse(eligibleAddresses);
+      let parsedAddresses;
+      try {
+        parsedAddresses = JSON.parse(eligibleAddresses);
+      } catch (parseError) {
+        console.error('Error parsing addresses:', parseError);
+        console.error('Raw data:', eligibleAddresses);
+        return res.status(500).json({ 
+          error: 'Failed to parse eligible addresses',
+          rawData: eligibleAddresses.slice(0, 100) // Send first 100 characters for debugging
+        });
+      }
+
+      if (!Array.isArray(parsedAddresses)) {
+        return res.status(500).json({ 
+          error: 'Stored data is not an array',
+          dataType: typeof parsedAddresses
+        });
+      }
 
       res.status(200).json({ addresses: parsedAddresses });
     } catch (error) {
