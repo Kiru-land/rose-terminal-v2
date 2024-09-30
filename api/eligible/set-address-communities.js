@@ -39,7 +39,7 @@ async function uploadAddressCommunities() {
   // Prepare batch operations
   for (const [address, communities] of addressCommunities) {
     const key = `${address}`;
-    const value = JSON.stringify(Array.from(communities));
+    const value = Array.from(communities).join(',');  // Change this line
     pipeline.set(key, value);
   }
 
