@@ -4,7 +4,7 @@ import { kv } from '@vercel/kv';
 
 const communities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
 
-async function uploadAddressCommunities() {
+async function setAddressCommunities() {
   const basePath = path.join(process.cwd(), 'public', 'eligibility-lists');
   const batchSize = 1000;
 
@@ -25,7 +25,7 @@ async function uploadAddressCommunities() {
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
-      await uploadAddressCommunities();
+      await setAddressCommunities();
       res.status(200).json({ message: 'Address-community mappings updated successfully' });
     } catch (error) {
       console.error('Error updating address-community mappings:', error);
