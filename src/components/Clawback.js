@@ -12,6 +12,7 @@ import aeonAscii from '../assets/aeon-ascii.txt';
 import spxAscii from '../assets/spx-ascii.txt';
 import roseCultAscii from '../assets/rosecult.txt';
 import { FaInfoCircle } from 'react-icons/fa';
+import axios from 'axios';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -334,15 +335,15 @@ const FullScreenOverlay = styled.div`
 
 const RoseCultAscii = styled.pre`
   color: #ff0000;
-  font-size: 4px;
-  line-height: 4px;
   white-space: pre;
   text-align: center;
+  font-size: ${props => Math.max(window.innerWidth / 200, 2)}px;
+  line-height: ${props => Math.max(window.innerWidth / 200, 2)}px;
 
-  @media (max-width: 600px) {
-    font-size: 2px;
-    line-height: 2px;
-  }
+  // @media (max-width: 600px) {
+    // font-size: ${props => Math.max(window.innerWidth / 300, 1.5)}px;
+    // line-height: ${props => Math.max(window.innerWidth / 300, 1.5)}px;
+  // }
 `;
 
 const WelcomeMessage = styled.div`
@@ -350,11 +351,11 @@ const WelcomeMessage = styled.div`
   font-size: 24px;
   margin-top: 20px;
   text-align: center;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'fira code';
   text-shadow: 0 0 10px #00ff00;
 
   @media (max-width: 600px) {
-    font-size: 18px;
+    font-size: 20px;
   }
 `;
 
@@ -430,12 +431,11 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
     setAddress(newAddress);
     if (ethers.isAddress(newAddress)) {
       try {
-        const response = await fetch(`/api/address-community?address=${newAddress}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch active communities');
-        }
-        const data = await response.json();
-        const active = data.communities || [];
+        const response = await axios.get('/api/eligible/get-address-communities', {
+          params: { address: newAddress }
+        });
+        
+        const active = response.data.communities.map(p => p.toLowerCase());
         setActiveProjects(active);
         setAllocation(active.length > 0);
       } catch (error) {
@@ -470,22 +470,11 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
       setAsyncOutput(<>Processing clawback registration for {address?.substring(0, 6)}...{address?.substring(address.length - 4)} ...</>);
       
       try {
-        // Register the address in the Vercel KV database for each active community
-        const response = await fetch('/api/clawback-registration', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ address }),
-        });
-        if (!response.ok) {
-          throw new Error('Registration failed');
-        }
+        
+        // register to the clawback
         
         setAsyncOutput(<>Clawback registration successful for {address}</>);
         showPopUp(<>Successfully registered {address}</>);
-        
-        // Only show the Rose Cult ASCII art after successful registration
         setShowRoseCult(true);
       } catch (error) {
         console.error('Error during clawback registration:', error);
@@ -566,8 +555,8 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
               >
                 {allocation !== null
                   ? allocation
-                    ? `🌹Eligible (.°v°.)🌹`
-                    : 'Sorry, not eligible ^°.°^'
+                    ? `🌹 Eligible 🌹 (.°v°.)`
+                    : 'Sorry, not eligible ^.^'
                   : '↑↑↑ Check eligibility ↑↑↑'}
               </QuoteText>
             </Panel>
@@ -590,7 +579,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
                     { name: 'Aeon', art: aeonAsciiArt },
                     { name: 'SPX', art: spxAsciiArt }
                   ].map(project => (
-                    <AsciiWrapper key={project.name}>
+                    <AsciiWrapper key={project.name.toLowerCase()}>
                       <AsciiArtContainer>
                         <AsciiArt
                           isBold={activeProjects.includes(project.name.toLowerCase())}
