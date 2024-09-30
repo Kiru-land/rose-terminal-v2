@@ -1,46 +1,45 @@
 import { kv } from '@vercel/kv';
 
 /**
- * @api {get} /api/registration/get-clawback-registration Get Clawback Registrations
- * @apiName GetClawbackRegistrations
+ * @api {get} /api/registration/check-clawback-registration Check Clawback Registration
+ * @apiName CheckClawbackRegistration
  * @apiGroup Registration
- * @apiDescription Retrieves all registered addresses for clawback across all communities.
+ * @apiDescription Checks if a given address is registered for clawback.
  *
- * @apiSuccess {Object} registeredAddresses Object containing lists of registered addresses for each community
+ * @apiParam {String} address Ethereum address to check
+ *
+ * @apiSuccess {Boolean} isRegistered Whether the address is registered or not
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
  *     {
- *       "aeon": ["0x1234...", "0x5678..."],
- *       "sproto": ["0xabcd...", "0xefgh..."],
- *       ...
+ *       "isRegistered": true
  *     }
  *
  * @apiError {String} error Error message
  *
  * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 Internal Server Error
+ *     HTTP/1.1 400 Bad Request
  *     {
- *       "error": "Internal server error",
- *       "details": "Error message details"
+ *       "error": "Address is required"
  *     }
  */
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
+    const { address } = req.query;
+
+    if (!address) {
+      return res.status(400).json({ error: 'Address is required' });
+    }
+
     try {
-      const registeredAddresses = await kv.get('registered-addresses') || {
-        aeon: [],
-        sproto: [],
-        spx: [],
-        mog: [],
-        milady: [],
-        hpos: []
-      };
+      const registeredAddresses = await kv.get('registered-addresses') || [];
+      const isRegistered = registeredAddresses.includes(address);
       
-      return res.status(200).json(registeredAddresses);
+      return res.status(200).json({ isRegistered });
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error checking registration:', error);
       return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   } else {
