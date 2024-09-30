@@ -528,8 +528,10 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
           errorMessage = "User rejected the request";
         }
         
-        showPopUp(errorMessage);
-        setAsyncOutput('Error occurred during sale participation. Please try again.');
+        // showPopUp(errorMessage);
+        // setAsyncOutput('Error occurred during sale participation. Please try again.');
+        showPopUp("The launch is not active. Please try again later.");
+        setAsyncOutput("The launch is not active. Please try again later.");
       }
     });
   };
