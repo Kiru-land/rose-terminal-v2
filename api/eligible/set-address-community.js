@@ -2,11 +2,11 @@ import fs from 'fs/promises';
 import path from 'path';
 import { kv } from '@vercel/kv';
 
-const communities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
+const allCommunities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
 
-async function uploadAddressCommunities() {
+async function uploadAddressCommunities(communities) {
   const basePath = path.join(process.cwd(), 'public', 'eligibility-lists');
-  const addressCommunities = new Map();
+  const batchSize = 1000; // Adjust this value based on your needs
 
   for (const community of communities) {
     const filePath = path.join(basePath, `${community}.txt`);
@@ -19,45 +19,37 @@ async function uploadAddressCommunities() {
 
       console.log(`Processing ${community}: ${addresses.length} addresses found`);
 
-      for (const address of addresses) {
-        if (addressCommunities.has(address)) {
-          addressCommunities.get(address).add(community);
-        } else {
-          addressCommunities.set(address, new Set([community]));
+      // Process addresses in batches
+      for (let i = 0; i < addresses.length; i += batchSize) {
+        const batch = addresses.slice(i, i + batchSize);
+        const pipeline = kv.pipeline();
+
+        for (const address of batch) {
+          pipeline.sadd(`${address}`, community);
         }
+
+        await pipeline.exec();
+        console.log(`Processed batch ${i / batchSize + 1} for ${community}`);
       }
+
+      console.log(`Finished processing ${community}`);
     } catch (error) {
       console.error(`Error processing ${community}:`, error);
     }
   }
 
-  console.log(`Total unique addresses: ${addressCommunities.size}`);
-
-  // Use pipeline for batch operations
-  const pipeline = kv.pipeline();
-
-  // Prepare batch operations
-  for (const [address, communities] of addressCommunities) {
-    const key = `${address}`;
-    const value = JSON.stringify(Array.from(communities));
-    pipeline.set(key, value);
-  }
-
-  // Execute batch operations
-  try {
-    await pipeline.exec();
-    console.log(`Uploaded communities for ${addressCommunities.size} addresses`);
-  } catch (error) {
-    console.error('Error uploading data:', error);
-    throw error; // Rethrow the error to be caught by the handler
-  }
+  console.log('All communities processed');
 }
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
-      await uploadAddressCommunities();
-      res.status(200).json({ message: 'Address-community mappings updated successfully' });
+      const { communities } = req.body;
+      if (!Array.isArray(communities) || communities.length === 0) {
+        return res.status(400).json({ error: 'Invalid communities array' });
+      }
+      const processedAddresses = await uploadAddressCommunities(communities);
+      res.status(200).json({ message: `Processed ${processedAddresses} addresses for communities: ${communities.join(', ')}` });
     } catch (error) {
       console.error('Error updating address-community mappings:', error);
       res.status(500).json({ error: 'Failed to update address-community mappings' });
