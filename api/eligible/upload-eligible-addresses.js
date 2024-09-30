@@ -16,9 +16,29 @@ async function uploadEligibleAddresses() {
         .map(line => line.split(',')[0].trim())
         .filter(address => address && address.startsWith('0x'));
 
+      console.log(`Processing ${community}: ${addresses.length} addresses found`);
+
+      if (addresses.length === 0) {
+        console.warn(`No valid addresses found for ${community}`);
+        continue;
+      }
+
       // Use a separate key for each community
       const key = `eligible-addresses-${community}`;
-      await kv.set(key, JSON.stringify(addresses));
+      const stringifiedAddresses = JSON.stringify(addresses);
+      
+      console.log(`Stringified addresses for ${community} (first 100 chars): ${stringifiedAddresses.slice(0, 100)}...`);
+
+      await kv.set(key, stringifiedAddresses);
+      
+      // Verify the upload
+      const storedAddresses = await kv.get(key);
+      console.log(`Stored addresses for ${community} (first 100 chars): ${JSON.stringify(storedAddresses).slice(0, 100)}...`);
+
+      if (JSON.stringify(storedAddresses) !== stringifiedAddresses) {
+        console.warn(`Mismatch in stored data for ${community}`);
+      }
+
       console.log(`Eligible addresses for ${community} uploaded successfully`);
     } catch (error) {
       console.error(`Error processing ${community}:`, error);
