@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { clawbackKV } from '../../config';
 
 /**
  * @api {get} /api/registration/check-clawback-registration Check Clawback Registration
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     }
 
     try {
-      const registeredAddresses = await kv.get('registered-addresses') || [];
+      const registeredAddresses = await clawbackKV.get('registered-addresses') || [];
       const isRegistered = registeredAddresses.includes(address);
       
       return res.status(200).json({ isRegistered });

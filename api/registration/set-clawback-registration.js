@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { clawbackKV } from '../../config';
 
 /**
  * @api {post} /api/registration/clawback-registration Register Address for Clawback
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
 
     try {
       console.log('Fetching registered addresses');
-      let registeredAddresses = await kv.get('registered-addresses') || [];
+      let registeredAddresses = await clawbackKV.get('registered-addresses') || [];
 
       // Check if the address is already registered
       if (registeredAddresses.includes(address)) {
@@ -65,7 +65,7 @@ export default async function handler(req, res) {
       registeredAddresses.push(address);
 
       console.log('Updating database');
-      await kv.set('registered-addresses', registeredAddresses);
+      await clawbackKV.set('registered-addresses', registeredAddresses);
 
       console.log('Registration successful');
       return res.status(200).json({ message: 'Address registered successfully' });

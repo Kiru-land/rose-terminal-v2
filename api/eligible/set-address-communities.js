@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { kv } from '@vercel/kv';
+import { clawbackKV } from '../../config';
 
 const communities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
 
@@ -34,7 +34,7 @@ async function uploadAddressCommunities() {
   console.log(`Total unique addresses: ${addressCommunities.size}`);
 
   // Use pipeline for batch operations
-  const pipeline = kv.pipeline();
+  const pipeline = clawbackKV.pipeline();
 
   // Prepare batch operations
   for (const [address, communities] of addressCommunities) {

@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { clawbackKV } from '../../config';
 
 /**
  * @api {get} /api/eligible/get-address-communities Get Address Communities
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     }
 
     try {
-      const communitiesString = await kv.get(address);
+      const communitiesString = await clawbackKV.get(address);
       const communities = communitiesString ? communitiesString.split(',') : [];
       res.status(200).json({ address, communities });
     } catch (error) {
