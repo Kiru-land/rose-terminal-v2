@@ -91,13 +91,18 @@ const Input = styled.input`
   padding: 8px;
   border: none;
   background-color: transparent;
-  color: #00ff00;
-  font-size: 16px;
+  // @todo
+  // color: #00ff00;
+  // font-size: 16px;
+  font-size: 15px;
+  color: rgba(0, 255, 0, 0.5);
   outline: none;
   text-align: left;
   font-family: inherit;
   maxLength={8}
   padding-right: 40px;
+  // @todo
+  cursor: not-allowed;
 
   &::placeholder {
     font-size: 15px;
@@ -116,7 +121,8 @@ const MaxButton = styled.button`
   color: rgba(0, 255, 0, 0.5);
   padding: 2px 6px;
   font-size: 12px;
-  cursor: pointer;
+  // @todo
+  cursor: not-allowed;
   transition: all 0.2s;
   text-transform: lowercase;
 
@@ -429,7 +435,7 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
   const hardCap = "500";
 
   const data = [
-    { name: 'Fair Launch', value: 67 },
+    { name: 'Sale', value: 67 },
     { name: 'Liquidity', value: 20 },
     { name: 'Treasury', value: 8 },
     { name: 'Clawback', value: 5 },
@@ -448,8 +454,8 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
 
   const getTooltipContent = (name) => {
     switch (name) {
-      case 'Fair Launch':
-        return 'Percentage of the ROSE total supply to be sold into the Fair Launch';
+      case 'Sale':
+        return 'Percentage of the ROSE total supply to be sold into Launch';
       case 'Liquidity':
         return 'Percentage of ROSE going into the custom aAMM liquidity pool';
       case 'Treasury':
@@ -593,11 +599,18 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
               <InputWrapper>
                 <Input 
                   type="text" 
-                  value={amount} 
-                  onChange={handleAmountChange} 
-                  placeholder="Enter amount"
+                  // @todo
+                  // value={amount}
+                  // onChange={handleAmountChange}
+                  // placeholder="Enter amount"                  
+                  value="Launch not active"
+                  onChange={() => {}}
+                  placeholder="Launch not active"
+                  disabled
                 />
-                <MaxButton onClick={handleMaxClick}>max</MaxButton>
+                {/* @todo */}
+                {/* <MaxButton onClick={handleMaxClick}>max</MaxButton> */}
+                <MaxButton onClick={() => {}} disabled>max</MaxButton>
               </InputWrapper>
             </Panel>
           </SaleRow>
@@ -613,7 +626,7 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
                 <DashboardRow isVisible={isContentVisible} delay={0.1}>
                   <DashboardLabel>Type:</DashboardLabel>
                   <DashboardValue>
-                    Fair Launch
+                    Oversubscribed-capped
                     <HelpIcon onClick={handleHelpIconClick} />
                   </DashboardValue>
                 </DashboardRow>
@@ -675,7 +688,7 @@ const Launch = ({ animateLogo, setAsyncOutput }) => {
           onClick={handleTooltipClick}
         >
           <strong>Proportional Oversubscribed Capped Sale</strong><br /><br />
-          This Fair Launch has a <em>soft</em> and <em>hard</em> cap. <br /> <br />
+          This Launch has a <em>soft</em> and <em>hard</em> cap. <br /> <br />
           1.) If the total amount raised is smaller than the soft cap, all participation gets reimbursed. <br /> <br />
           2.) If the amount raised is bigger than the hard cap, the excess tokens get proportionally reimbursed to every user.<br /> <br />
           Participants receive a part of the 67% of ROSE tokens sold based on their proportional share of the total <FaEthereum /> submitted.<br /> <br />

@@ -384,7 +384,7 @@ const Terminal = ({ isMobile }) => {
   };
 
   const handleMenuClick = (command) => {
-    if (!isConnected && command !== 'clawback') {
+    if (!isConnected && command !== 'clawback' && command !== 'launch') {
       setHistory(prev => [...prev, { type: 'output', content: 'Please connect your wallet.' }]);
       return;
     }
