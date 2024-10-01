@@ -384,7 +384,7 @@ const Terminal = ({ isMobile }) => {
   };
 
   const handleMenuClick = (command) => {
-    if (!isConnected) {
+    if (!isConnected && command !== 'clawback') {
       setHistory(prev => [...prev, { type: 'output', content: 'Please connect your wallet.' }]);
       return;
     }
@@ -522,23 +522,11 @@ const Terminal = ({ isMobile }) => {
   };
 
   const renderMenuItems = () => {
-    if (!isConnected) {
-      return null;
-    }
+    // if (!isConnected) {
+    //   return null;
+    // }
 
-    if (chainId === 1n) {
-      // Mainnet options
-      return ['launch', 'clawback'].map(command => (
-        <RippleButton
-          key={command}
-          onClick={() => handleMenuClick(command)}
-          isMobile={isMobile}
-          isSelected={selectedCommand === command}
-        >
-          {command}
-        </RippleButton>
-      ));
-    } else if (chainId === 17000n) {
+if (chainId === 17000n) {
       // Holesky Testnet options
       return ['trade', 'transfer'].map(command => (
         <RippleButton
@@ -550,8 +538,20 @@ const Terminal = ({ isMobile }) => {
           {command}
         </RippleButton>
       ));
-    };
-  }
+} else {
+  // Mainnet options
+  return ['launch', 'clawback'].map(command => (
+    <RippleButton
+      key={command}
+      onClick={() => handleMenuClick(command)}
+      isMobile={isMobile}
+      isSelected={selectedCommand === command}
+    >
+      {command}
+    </RippleButton>
+  ));
+};
+}
 
   return (
     <>
