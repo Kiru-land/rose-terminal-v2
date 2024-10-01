@@ -5,7 +5,7 @@ import {
   formatUnits 
 } from 'ethers';
 import { getEthPrice } from '../utils/getEthPrice.js';
-import { pricesKV } from '../../config';
+import { pricesKV } from '../../config.js';
 
 export default async function handler(req, res) {
     // Ethereum provider (e.g., Infura, Alchemy)

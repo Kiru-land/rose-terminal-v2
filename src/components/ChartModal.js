@@ -222,7 +222,7 @@ const ChartModal = ({ onClose }) => {
   }, [chartType, lineData, candlestickData, timeframe]);
 
   useEffect(() => {
-    fetch('https://www.rose-terminal.com/api/prices/readPrice')
+    fetch('https://www.rose-terminal.com/api/prices/get-rose-price')
       .then(response => response.json())
       .then(data => {
         const rawData = data.data;
