@@ -6,7 +6,7 @@
   },
     "crons": [
     {
-      "path": "/api/getRosePrice.js",
+      "path": "/api/prices/getRosePrice.js",
       "schedule": "* * * * *"
     }
   ],
