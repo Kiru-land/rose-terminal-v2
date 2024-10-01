@@ -222,7 +222,7 @@ const ChartModal = ({ onClose }) => {
   }, [chartType, lineData, candlestickData, timeframe]);
 
   useEffect(() => {
-    fetch('https://rose-price.vercel.app/api/readPrice')
+    fetch('https://www.rose-terminal.com/api/prices/readPrice')
       .then(response => response.json())
       .then(data => {
         const rawData = data.data;
