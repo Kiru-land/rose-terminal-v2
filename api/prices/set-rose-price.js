@@ -4,7 +4,7 @@ import {
   formatEther, 
   formatUnits 
 } from 'ethers';
-import { getEthPrice } from '../utils/getEthPrice.js';
+import { getEthPrice } from './utils/getEthPrice.js';
 import { pricesKV } from '../../config.js';
 
 export default async function handler(req, res) {
