@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
+import lore0mp3 from '../assets/lore0.mp3';
+import { FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 
 const LoreContainer = styled.div`
   position: fixed;
@@ -113,6 +115,23 @@ const NavigationButton = styled.button`
   }
 `;
 
+const AudioButton = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #00ff00;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001;
+  transition: transform 0.2s ease-in-out;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+`;
+
 const loreData = [
   { artPath: 'intro3.txt', text: 'Grandpa... what is Rose?', textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 0, 1)', fullscreenText: false },
   { artPath: 'intro3.txt', text: '...', textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 0, 1)', fullscreenText: false },
@@ -124,7 +143,7 @@ const loreData = [
 //   { artPath: 'hall.txt', text: "The blooming flower, Rose. guardian of society.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 0, 1)', fullscreenText: false },
   { artPath: 'introHQ.txt', text: "It all started 30 years ago, when the first great factions started to emerge, driven by a burning desire of Freedom and Acceleration.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 100, 100, 0.1)', fullscreenText: true },
     { artPath: 'introHQ.txt', text: " Still nascent, they were very different from what they are now.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 100, 100, 0.1)', fullscreenText: true },
-    { artPath: 'centerHQ.txt', text: "At that time, we struggled to understand what unstoppable technologies could mean for our future.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'centerHQ.txt', text: "At that time, we struggled to understand how unstoppable technologies would shape our future.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     // { artPath: 'center.txt', text: "At that time, we struggled to understand what unstoppable technologies could mean for our future.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'cyber.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'bigrosecityHQ.txt', text: "brc", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
@@ -164,7 +183,9 @@ function Lore({ onClose }) {
   const [nextAsciiArt, setNextAsciiArt] = useState('');
   const [scale, setScale] = useState(1);
   const [isFading, setIsFading] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const preRef = useRef(null);
+  const audioRef = useRef(new Audio(lore0mp3));
 
   useEffect(() => {
     const loadAsciiArt = async (index) => {
@@ -183,7 +204,22 @@ function Lore({ onClose }) {
     if (currentIndex < loreData.length - 1) {
       loadAsciiArt(currentIndex + 1).then(setNextAsciiArt);
     }
-  }, [currentIndex]);
+
+    // Handle music playback
+    if (currentIndex >= 3) {
+      audioRef.current.loop = true;
+      if (!isMuted) {
+        audioRef.current.play().catch(error => console.error("Audio playback failed:", error));
+      }
+    } else {
+      audioRef.current.pause();
+    }
+
+    // Cleanup function to pause music when component unmounts
+    return () => {
+      audioRef.current.pause();
+    };
+  }, [currentIndex, isMuted]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -203,13 +239,14 @@ function Lore({ onClose }) {
 
   const handleNext = () => {
     if (currentIndex === loreData.length - 1) {
+      audioRef.current.pause();
       onClose();
     } else {
       setIsFading(true);
       setTimeout(() => {
         setCurrentIndex((prevIndex) => prevIndex + 1);
         setIsFading(false);
-      }, 500); // This should match the animation duration
+      }, 500);
     }
   };
 
@@ -219,7 +256,18 @@ function Lore({ onClose }) {
       setTimeout(() => {
         setCurrentIndex((prevIndex) => prevIndex - 1);
         setIsFading(false);
-      }, 500); // This should match the animation duration
+      }, 500);
+    }
+  };
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    if (isMuted) {
+      if (currentIndex >= 3) {
+        audioRef.current.play().catch(error => console.error("Audio playback failed:", error));
+      }
+    } else {
+      audioRef.current.pause();
     }
   };
 
@@ -229,6 +277,9 @@ function Lore({ onClose }) {
 
   return (
     <LoreContainer>
+      <AudioButton onClick={toggleMute}>
+        {!isMuted && currentIndex >= 3 ? <FaVolumeUp /> : <FaVolumeMute />}
+      </AudioButton>
       <AsciiContainer>
         <AsciiPre 
           ref={preRef} 
