@@ -55,7 +55,7 @@ const AsciiPre = styled.pre`
 
 const TextContainer = styled.div`
   width: 100%;
-  padding: 20px;
+  padding: 20px 50px; // Added horizontal padding
   color: ${props => props.textColor || 'rgba(0, 255, 0, 1)'};
   font-family: monospace;
   text-align: center;
@@ -68,6 +68,10 @@ const TextContainer = styled.div`
     font-size: 24px;
     text-shadow: 0 0 10px ${props => props.textColor || 'rgba(0, 255, 0, 0.7)'};
   `}
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
 `;
 
 const NavigationButton = styled.button`
