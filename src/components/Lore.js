@@ -188,9 +188,10 @@ const loreData = [
 
 const audioTracks = [
   { src: lore0mp3, startIndex: 3 },
-  { src: lore6Music, startIndex: 13 },
-  { src: lore1Music, startIndex: 18 },
-  { src: lore0mp3, startIndex: 23 },
+  { src: lore6Music, startIndex: 12 },
+  { src: lore1Music, startIndex: 17 },
+  { src: lore0mp3, startIndex: 22 },
+  { src: lore1Music, startIndex: 28 },
 ];
 
 function Lore({ onClose }) {
