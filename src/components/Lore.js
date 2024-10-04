@@ -2,11 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import lore0mp3 from '../assets/lore0.mp3';
 import lore1Music from '../assets/lore1.mp3';
-import lore5Music from '../assets/lore5.mp3';
-import lore3Music from '../assets/lore3.mp3';
-import lore4Music from '../assets/lore4.mp3'; 
-import loreEndMusic from '../assets/loreEnd.mp3';
-import { FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
+import lore6Music from '../assets/lore6.mp3';
+import { FaVolumeUp, FaVolumeMute, FaTimes } from 'react-icons/fa';
 
 const LoreContainer = styled.div`
   position: fixed;
@@ -120,21 +117,29 @@ const NavigationButton = styled.button`
   }
 `;
 
-const AudioButton = styled.button`
+const ControlButton = styled.button`
   position: absolute;
-  top: 20px;
-  right: 20px;
   background: none;
   border: none;
   color: #00ff00;
   font-size: 24px;
   cursor: pointer;
   z-index: 1001;
-  transition: transform 0.2s ease-in-out;
-
-  &:hover {
+  transition: opacity 0.3s ease-in-out;
+  opacity: ${props => props.visible ? 1 : 0};
+    &:hover {
     transform: scale(1.1);
   }
+`;
+
+const AudioButton = styled(ControlButton)`
+  top: 20px;
+  right: 20px;
+`;
+
+const CloseButton = styled(ControlButton)`
+  top: 20px;
+  left: 20px;
 `;
 
 const loreData = [
@@ -158,34 +163,35 @@ const loreData = [
     { artPath: 'coin.txt', text: "I've put some magic in this coin. Not much, but it should be enough to get us started.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'societyHQ.txt', text: "Few people heard the message. The ones who did became the first Rose citizens.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(100, 100, 255, 1)', fullscreenText: false },
     { artPath: 'buildingsHQ.txt', text: "The goal was clear: Research, Spread, Accelerate.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(100, 100, 255, 1)', fullscreenText: false },
-    { artPath: 'bigrosecityHQ.txt', text: "brc", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'city.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'city.txt', text: "In just 3 years, Rose city was built. A city that would be the envy of the world.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'cityHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'lainHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'vertical2.txt', text: "Rose became the first society in modern history to achieve complete self-sufficency", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'vertical1.txt', text: "Research in vertical agriculture allowed us to grow food in the most efficient way possible.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'vertical0.txt', text: "Monitored by humans and AI, plants are grown in a controlled environment, in near perfect conditions.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'vertical3.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'gen0.txt', text: "Rapid advancements in nuclear fusion allowed us to generate way more energy than we needed.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'gen1.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'oldcityHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'capital.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'prayerHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'prayer.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'bigrosecityHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'rosecult.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'singleman.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'society.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'vertical0.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'vertical1.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'vertical2.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'vertical3.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    // { artPath: 'society.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'warfare0.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'warfare1.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'warfare2.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-  { artPath: 'buildings.txt', text: '', textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(0, 0, 255, 1)', fullscreenText: false },
+    { artPath: 'introHQ.txt', text: "A flower is something beautiful yet fragile, you have to work to keep it alive.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 255, 0.1)', fullscreenText: true },
+    { artPath: 'prayerHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 0, 1)', fullscreenText: false },
+    { artPath: 'prayer.txt', text: "To be continued...", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 0, 1)', fullscreenText: false },
   // Add more items as needed
 ];
 
 const audioTracks = [
   { src: lore0mp3, startIndex: 3 },
-  { src: lore5Music, startIndex: 13 },
+  { src: lore6Music, startIndex: 13 },
   { src: lore1Music, startIndex: 18 },
-//   { src: lore2Music, startIndex: 12 },
-  { src: loreEndMusic, startIndex: 30 },
+  { src: lore0mp3, startIndex: 23 },
 ];
 
 function Lore({ onClose }) {
@@ -195,8 +201,10 @@ function Lore({ onClose }) {
   const [scale, setScale] = useState(1);
   const [isFading, setIsFading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const preRef = useRef(null);
   const audioRefs = useRef(audioTracks.map(track => new Audio(track.src)));
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     const loadAsciiArt = async (index) => {
@@ -237,9 +245,26 @@ function Lore({ onClose }) {
       }
     });
 
-    // Cleanup function to pause music when component unmounts
+    // Add mouse move event listener
+    const handleMouseMove = () => {
+      setControlsVisible(true);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        setControlsVisible(false);
+      }, 1000);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+
+    // Cleanup
     return () => {
       audioRefs.current.forEach(audio => audio.pause());
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, [currentIndex, isMuted]);
 
@@ -303,9 +328,12 @@ function Lore({ onClose }) {
 
   return (
     <LoreContainer>
-      <AudioButton onClick={toggleMute}>
+      <AudioButton onClick={toggleMute} visible={controlsVisible}>
         {!isMuted && currentIndex >= audioTracks[0].startIndex ? <FaVolumeUp /> : <FaVolumeMute />}
       </AudioButton>
+      <CloseButton onClick={onClose} visible={controlsVisible}>
+        <FaTimes />
+      </CloseButton>
       <AsciiContainer>
         <AsciiPre 
           ref={preRef} 
