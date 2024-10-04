@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import lore0mp3 from '../assets/lore0.mp3';
+import lore1Music from '../assets/lore1.mp3';
+import lore5Music from '../assets/lore5.mp3';
+import lore3Music from '../assets/lore3.mp3';
+import lore4Music from '../assets/lore4.mp3'; 
+import loreEndMusic from '../assets/loreEnd.mp3';
 import { FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 
 const LoreContainer = styled.div`
@@ -154,7 +159,6 @@ const loreData = [
     { artPath: 'societyHQ.txt', text: "Few people heard the message. The ones who did became the first Rose citizens.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(100, 100, 255, 1)', fullscreenText: false },
     { artPath: 'buildingsHQ.txt', text: "The goal was clear: Research, Spread, Accelerate.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(100, 100, 255, 1)', fullscreenText: false },
     { artPath: 'bigrosecityHQ.txt', text: "brc", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'buildings.txt', text: "buildings", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'city.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'cityHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'lainHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
@@ -176,6 +180,14 @@ const loreData = [
   // Add more items as needed
 ];
 
+const audioTracks = [
+  { src: lore0mp3, startIndex: 3 },
+  { src: lore5Music, startIndex: 13 },
+  { src: lore1Music, startIndex: 18 },
+//   { src: lore2Music, startIndex: 12 },
+  { src: loreEndMusic, startIndex: 30 },
+];
+
 function Lore({ onClose }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [asciiArt, setAsciiArt] = useState('Loading...');
@@ -184,7 +196,7 @@ function Lore({ onClose }) {
   const [isFading, setIsFading] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const preRef = useRef(null);
-  const audioRef = useRef(new Audio(lore0mp3));
+  const audioRefs = useRef(audioTracks.map(track => new Audio(track.src)));
 
   useEffect(() => {
     const loadAsciiArt = async (index) => {
@@ -205,18 +217,29 @@ function Lore({ onClose }) {
     }
 
     // Handle music playback
-    if (currentIndex >= 3) {
-      audioRef.current.loop = true;
-      if (!isMuted) {
-        audioRef.current.play().catch(error => console.error("Audio playback failed:", error));
+    const getCurrentAudioIndex = () => 
+      audioTracks.findIndex((track, index) => 
+        currentIndex >= track.startIndex && 
+        (index === audioTracks.length - 1 || currentIndex < audioTracks[index + 1].startIndex)
+      );
+
+    const currentAudioIndex = getCurrentAudioIndex();
+    
+    audioRefs.current.forEach((audio, index) => {
+      if (index === currentAudioIndex && currentIndex >= audioTracks[0].startIndex) {
+        audio.loop = true;
+        if (!isMuted) {
+          audio.play().catch(error => console.error("Audio playback failed:", error));
+        }
+      } else {
+        audio.pause();
+        audio.currentTime = 0;
       }
-    } else {
-      audioRef.current.pause();
-    }
+    });
 
     // Cleanup function to pause music when component unmounts
     return () => {
-      audioRef.current.pause();
+      audioRefs.current.forEach(audio => audio.pause());
     };
   }, [currentIndex, isMuted]);
 
@@ -238,7 +261,7 @@ function Lore({ onClose }) {
 
   const handleNext = () => {
     if (currentIndex === loreData.length - 1) {
-      audioRef.current.pause();
+      audioRefs.current.forEach(audio => audio.pause());
       onClose();
     } else {
       setIsFading(true);
@@ -261,53 +284,48 @@ function Lore({ onClose }) {
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
-    if (isMuted) {
-      if (currentIndex >= 3) {
-        audioRef.current.play().catch(error => console.error("Audio playback failed:", error));
+    const currentAudioIndex = audioTracks.findIndex((track, index) => 
+      currentIndex >= track.startIndex && 
+      (index === audioTracks.length - 1 || currentIndex < audioTracks[index + 1].startIndex)
+    );
+    
+    if (currentAudioIndex !== -1) {
+      const currentAudio = audioRefs.current[currentAudioIndex];
+      if (isMuted) {
+        if (currentIndex >= audioTracks[0].startIndex) {
+          currentAudio.play().catch(error => console.error("Audio playback failed:", error));
+        }
+      } else {
+        currentAudio.pause();
       }
-    } else {
-      audioRef.current.pause();
     }
   };
-
-  const isFirstArt = currentIndex === 0;
-  const isLastArt = currentIndex === loreData.length - 1;
-  const currentLore = loreData[currentIndex];
 
   return (
     <LoreContainer>
       <AudioButton onClick={toggleMute}>
-        {!isMuted && currentIndex >= 3 ? <FaVolumeUp /> : <FaVolumeMute />}
+        {!isMuted && currentIndex >= audioTracks[0].startIndex ? <FaVolumeUp /> : <FaVolumeMute />}
       </AudioButton>
       <AsciiContainer>
         <AsciiPre 
           ref={preRef} 
-          color={currentLore.color}
+          color={loreData[currentIndex].color}
           scale={scale}
           isFading={isFading}
         >
           {asciiArt}
         </AsciiPre>
-        {!isLastArt && (
-          <AsciiPre 
-            color={loreData[currentIndex + 1].color}
-            scale={scale}
-            style={{ opacity: 0 }}
-          >
-            {nextAsciiArt}
-          </AsciiPre>
-        )}
       </AsciiContainer>
       <TextContainer 
-        fullscreen={currentLore.fullscreenText}
-        textColor={currentLore.textColor}
+        fullscreen={loreData[currentIndex].fullscreenText}
+        textColor={loreData[currentIndex].textColor}
       >
-        <p>{currentLore.text}</p>
+        <p>{loreData[currentIndex].text}</p>
       </TextContainer>
       <NavigationButton 
         onClick={handlePrev} 
         position="left" 
-        disabled={isFirstArt}
+        disabled={currentIndex === 0}
       >
         Prev
       </NavigationButton>
@@ -315,7 +333,7 @@ function Lore({ onClose }) {
         onClick={handleNext} 
         position="right"
       >
-        {isLastArt ? 'End' : 'Next'}
+        {currentIndex === loreData.length - 1 ? 'End' : 'Next'}
       </NavigationButton>
     </LoreContainer>
   );
