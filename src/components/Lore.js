@@ -71,6 +71,10 @@ const TextContainer = styled.div`
 
   @media (max-width: 768px) {
     font-size: 12px;
+    padding: 20px 120px;
+    ${props => props.fullscreen && `
+      padding: 20px 60px;
+    `}
   }
 `;
 
