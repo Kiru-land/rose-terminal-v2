@@ -157,14 +157,14 @@ const loreData = [
   { artPath: 'forestbaseHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
   { artPath: 'forestbase2HQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(210, 255, 200, 1)', fullscreenText: false },
   { artPath: 'hallHQ.txt', text: "Let me tell you the story of the blooming flower, Rose. guardian of society.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 0, 1)', fullscreenText: false },
-  { artPath: 'introHQ.txt', text: "It all started 30 years ago, when the first great factions started to emerge, driven by a burning desire of Freedom and Acceleration.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 100, 100, 0.1)', fullscreenText: true },
-    { artPath: 'introHQ.txt', text: " Still nascent, they looked nothing like what they are now.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 100, 100, 0.1)', fullscreenText: true },
-    { artPath: 'centerHQ.txt', text: "At that time, we struggled to understand how unstoppable technologies would shape our future.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'cyber.txt', text: "Back then, most of the things we take for granted today were very scarce.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'cyber.txt', text: "Health, food, water, energy... All of these were luxuries that only the selected few could afford.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'cyber.txt', text: "Citizens of the old world had to make a pact with the selected few and trade their freedom to fulfill their basic needs.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+  { artPath: 'introHQ.txt', text: "It started 30 years ago, when the first network factions started to emerge, driven by a burning desire of Freedom and Acceleration.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 100, 100, 0.1)', fullscreenText: true },
+    { artPath: 'introHQ.txt', text: " Still nascent, they looked nothing like now.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 100, 100, 0.1)', fullscreenText: true },
+    { artPath: 'centerHQ.txt', text: "At the time, we struggled to understand how unstoppable technologies would shape our future.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'cyber.txt', text: "Back then, most of the things we take for granted were very scarce.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'cyber.txt', text: "Health, food, water, energy... All of these were luxuries. Only the selected few could afford it.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'cyber.txt', text: "Citizens of the old world had to make a pact with the selected few and give up their freedom to fulfill their basic needs.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'introHQ.txt', text: "The voices of the oppressed echoed...", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 255, 0.1)', fullscreenText: true },
-    { artPath: 'cyborg2.txt', text: "A voice, unlike any other, foresaw a path to the new world.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'cyborg2.txt', text: "A voice, unlike any other, foresaw a path to a new world.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'cyborg.txt', text: "\"Money is the new information, flowing freely, transcending borders.\"", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'introHQ.txt', text: "\"We're gonna build a resilient society that will outlast anything ever created.\"", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 255, 0.1)', fullscreenText: true },
     { artPath: 'coin.txt', text: "I've put some magic in this coin. Not much, but it should be enough to get us started.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
@@ -175,13 +175,14 @@ const loreData = [
     { artPath: 'lainHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'vertical2.txt', text: "Rose became the first society in modern history to achieve complete self-sufficency", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'vertical1.txt', text: "Research in vertical agriculture allowed us to grow food in the most efficient way possible.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'vertical0.txt', text: "Monitored by humans and AI, plants are grown in a controlled environment, in near perfect conditions.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'vertical0.txt', text: "Monitored by humans and AI, plants grown in a controlled environment, in near perfect conditions.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'vertical3.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(0, 255, 0, 1)', fullscreenText: false },
     { artPath: 'gen0.txt', text: "Rapid advancements in nuclear fusion allowed us to generate way more energy than we needed.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'gen1.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'gen1.txt', text: "Open and Unrestricted medical research between Rose network members doubled the average life expectancy", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'gen1.txt', text: "Ten years later, lot of new cities were created, and about half the population was automated", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'oldcityHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 255, 1)', fullscreenText: false },
     { artPath: 'capital.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'bigrosecityHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'rosecult.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 0, 1)', fullscreenText: false },
     { artPath: 'singleman.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     // { artPath: 'society.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
@@ -213,11 +214,13 @@ function Lore({ onClose }) {
   const preRef = useRef(null);
   const audioRefs = useRef(audioTracks.map(track => new Audio(track.src)));
   const timeoutRef = useRef(null);
+  const [isPageVisible, setIsPageVisible] = useState(true);
 
   useEffect(() => {
     const loadAsciiArt = async (index) => {
       try {
-        const module = await import(`../assets/${loreData[index].artPath}`);
+        const artPath = loreData[index].artPath;
+        const module = await import(`../assets/${artPath}`);
         const response = await fetch(module.default);
         const text = await response.text();
         return text;
@@ -266,10 +269,17 @@ function Lore({ onClose }) {
 
     window.addEventListener('mousemove', handleMouseMove);
 
-    // Cleanup
+    // Add visibility change event listener
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       audioRefs.current.forEach(audio => audio.pause());
       window.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -291,6 +301,22 @@ function Lore({ onClose }) {
 
     return () => window.removeEventListener('resize', handleResize);
   }, [asciiArt]);
+
+  useEffect(() => {
+    const currentAudioIndex = audioTracks.findIndex((track, index) => 
+      currentIndex >= track.startIndex && 
+      (index === audioTracks.length - 1 || currentIndex < audioTracks[index + 1].startIndex)
+    );
+
+    if (currentAudioIndex !== -1) {
+      const currentAudio = audioRefs.current[currentAudioIndex];
+      if (isPageVisible && !isMuted && currentIndex >= audioTracks[0].startIndex) {
+        currentAudio.play().catch(error => console.error("Audio playback failed:", error));
+      } else {
+        currentAudio.pause();
+      }
+    }
+  }, [isPageVisible, isMuted, currentIndex]);
 
   const handleNext = () => {
     if (currentIndex === loreData.length - 1) {
