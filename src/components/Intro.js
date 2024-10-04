@@ -65,7 +65,7 @@ const Intro = ({ asciiLogo, onIntroComplete }) => {
   const [introText, setIntroText] = useState('');
   const [glitterCount, setGlitterCount] = useState(0);
   const [isTypingComplete, setIsTypingComplete] = useState(false);
-  const fullText = "Rose Terminal v0.2.2alpha";
+  const fullText = "Rose Terminal v0.3.0";
 
   const maxGlitters = 100;
 
