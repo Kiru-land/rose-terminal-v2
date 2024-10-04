@@ -13,6 +13,7 @@ import Transfer from './Transfer';
 import Launch from './Launch';
 import Clawback from './Clawback';
 import ChartModal from './ChartModal';
+import Lore from './Lore';
 
 // Add this global style component
 const GlobalStyle = createGlobalStyle`
@@ -343,6 +344,7 @@ const Terminal = ({ isMobile }) => {
   const [showClawback, setShowClawback] = useState(false);
   const [selectedCommand, setSelectedCommand] = useState(null);
   const [isChartModalOpen, setIsChartModalOpen] = useState(false);
+  const [showLore, setShowLore] = useState(false);
   const terminalContentRef = useRef(null);
   const outputRef = useRef(null);
 
@@ -384,7 +386,7 @@ const Terminal = ({ isMobile }) => {
   };
 
   const handleMenuClick = (command) => {
-    if (!isConnected && command !== 'clawback' && command !== 'launch') {
+    if (!isConnected && command !== 'clawback' && command !== 'launch' && command !== 'lore') {
       setHistory(prev => [...prev, { type: 'output', content: 'Please connect your wallet.' }]);
       return;
     }
@@ -404,6 +406,7 @@ const Terminal = ({ isMobile }) => {
     setShowTrade(false);
     setShowTransfer(false);
     setShowClawback(false);
+    setShowLore(false);
 
     let output = '';
     switch (command) {
@@ -417,6 +420,7 @@ const Terminal = ({ isMobile }) => {
           setShowTrade(false);
           setShowTransfer(false);
           setShowClawback(false);
+          setShowLore(false);
           setSelectedCommand('launch');
           output = 'Opening launch interface...';
         }
@@ -431,6 +435,7 @@ const Terminal = ({ isMobile }) => {
           setShowLaunch(false);
           setShowTransfer(false);
           setShowClawback(false);
+          setShowLore(false);
           setSelectedCommand('trade');
           output = 'Opening trade interface...';
         }
@@ -445,6 +450,7 @@ const Terminal = ({ isMobile }) => {
           setShowLaunch(false);
           setShowTrade(false);
           setShowClawback(false);
+          setShowLore(false);
           setSelectedCommand('transfer');
           output = 'Opening transfer interface...';
         }
@@ -459,8 +465,24 @@ const Terminal = ({ isMobile }) => {
           setShowLaunch(false);
           setShowTrade(false);
           setShowTransfer(false);
+          setShowLore(false);
           setSelectedCommand('clawback');
           output = 'Opening clawback interface...';
+        }
+        break;
+      case 'lore':
+        if (showLore) {
+          setShowLore(false);
+          setSelectedCommand(null);
+          output = 'Closing lore interface...';
+        } else {
+          setShowLore(true);
+          setShowLaunch(false);
+          setShowTrade(false);
+          setShowTransfer(false);
+          setShowClawback(false);
+          setSelectedCommand('lore');
+          output = 'Opening lore interface...';
         }
         break;
       default:
@@ -528,7 +550,7 @@ const Terminal = ({ isMobile }) => {
 
 if (chainId === 17000n) {
       // Holesky Testnet options
-      return ['trade', 'transfer'].map(command => (
+      return ['trade', 'transfer', 'lore'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -538,20 +560,20 @@ if (chainId === 17000n) {
           {command}
         </RippleButton>
       ));
-} else {
-  // Mainnet options
-  return ['launch', 'clawback'].map(command => (
-    <RippleButton
-      key={command}
-      onClick={() => handleMenuClick(command)}
-      isMobile={isMobile}
-      isSelected={selectedCommand === command}
-    >
-      {command}
-    </RippleButton>
-  ));
-};
-}
+    } else {
+      // Mainnet options
+      return ['launch', 'clawback', 'lore'].map(command => (
+        <RippleButton
+          key={command}
+          onClick={() => handleMenuClick(command)}
+          isMobile={isMobile}
+          isSelected={selectedCommand === command}
+        >
+          {command}
+        </RippleButton>
+      ));
+    };
+  }
 
   return (
     <>
@@ -634,6 +656,13 @@ if (chainId === 17000n) {
         {showClawback && (
           <Clawback 
             onClose={() => setShowClawback(false)} 
+            animateLogo={animateLogo} 
+            setAsyncOutput={setAsyncOutput}
+          />
+        )}
+        {showLore && (
+          <Lore 
+            onClose={() => setShowLore(false)} 
             animateLogo={animateLogo} 
             setAsyncOutput={setAsyncOutput}
           />
