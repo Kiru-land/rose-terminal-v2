@@ -327,9 +327,13 @@ const RoseUsdButton = styled.span`
   cursor: pointer;
   font-size: 12px;
   position: absolute;
-  bottom: 40px; // Adjust this value to position it above the alpha reference
+  bottom: 40px;
   left: 39px;
   text-decoration: underline;
+
+  ${props => props.isMobile && `
+    bottom: 80px; // Higher position for mobile
+  `}
 `;
 
 const Terminal = ({ isMobile }) => {
@@ -630,7 +634,7 @@ if (chainId === 17000n) {
         <MenuContainer isMobile={isMobile}>
           {renderMenuItems()}
         </MenuContainer>
-        <RoseUsdButton onClick={handleOpenChartModal}>chart</RoseUsdButton>
+        <RoseUsdButton onClick={handleOpenChartModal} isMobile={isMobile}>chart</RoseUsdButton>
         <BottomBar />
         {showTrade && (
           <Trade 
