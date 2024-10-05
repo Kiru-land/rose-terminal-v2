@@ -54,21 +54,11 @@ const AsciiPre = styled.pre`
 `;
 
 const TextContainer = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   width: 100%;
   padding: 20px 100px;
   color: ${props => props.textColor || 'rgba(0, 255, 0, 1)'};
   font-family: monospace;
   text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100px; // Adjust this value as needed
-  z-index: 10;
-
   ${props => props.fullscreen && `
     position: absolute;
     padding: 50px;
@@ -81,9 +71,10 @@ const TextContainer = styled.div`
 
   @media (max-width: 768px) {
     font-size: 12px;
-    padding: 20px 120px;
+    padding: 20px 60px;
     ${props => props.fullscreen && `
-      padding: 20px 20px;
+      padding: 20px 60px;
+      font-size: 18px; // Adjust fullscreen font size for mobile
     `}
   }
 `;
@@ -133,6 +124,10 @@ const NavigationButton = styled.button`
   &:active {
     transform: ${props => props.disabled ? 'none' : 'translateY(1px)'};
   }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const ControlButton = styled.button`
@@ -165,6 +160,13 @@ const TouchArea = styled.div`
   top: 0;
   bottom: 0;
   width: 50%;
+  cursor: pointer;
+  z-index: 1000;
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
 `;
 
 const LeftTouchArea = styled(TouchArea)`
@@ -242,7 +244,6 @@ function Lore({ onClose }) {
   const audioRefs = useRef(audioTracks.map(track => new Audio(track.src)));
   const timeoutRef = useRef(null);
   const [isPageVisible, setIsPageVisible] = useState(true);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     const loadAsciiArt = async (index) => {
@@ -322,7 +323,6 @@ function Lore({ onClose }) {
         const newScale = containerWidth / contentWidth;
         setScale(newScale * 0.98); // Slightly reduce scale to ensure no overflow
       }
-      setIsMobile(window.innerWidth <= 768);
     };
 
     window.addEventListener('resize', handleResize);
@@ -348,15 +348,15 @@ function Lore({ onClose }) {
   }, [isPageVisible, isMuted, currentIndex]);
 
   const handleNext = () => {
-    if (currentIndex === loreData.length - 1) {
-      audioRefs.current.forEach(audio => audio.pause());
-      onClose();
-    } else {
+    if (currentIndex < loreData.length - 1) {
       setIsFading(true);
       setTimeout(() => {
         setCurrentIndex((prevIndex) => prevIndex + 1);
         setIsFading(false);
       }, 500);
+    } else {
+      audioRefs.current.forEach(audio => audio.pause());
+      onClose();
     }
   };
 
@@ -397,6 +397,8 @@ function Lore({ onClose }) {
       <CloseButton onClick={onClose} visible={controlsVisible}>
         <FaTimes />
       </CloseButton>
+      <LeftTouchArea onClick={handlePrev} />
+      <RightTouchArea onClick={handleNext} />
       <AsciiContainer>
         <AsciiPre 
           ref={preRef} 
@@ -413,28 +415,19 @@ function Lore({ onClose }) {
       >
         <p>{loreData[currentIndex].text}</p>
       </TextContainer>
-      {isMobile ? (
-        <>
-          <LeftTouchArea onClick={handlePrev} />
-          <RightTouchArea onClick={handleNext} />
-        </>
-      ) : (
-        <>
-          <NavigationButton 
-            onClick={handlePrev} 
-            position="left" 
-            disabled={currentIndex === 0}
-          >
-            Prev
-          </NavigationButton>
-          <NavigationButton 
-            onClick={handleNext} 
-            position="right"
-          >
-            {currentIndex === loreData.length - 1 ? 'End' : 'Next'}
-          </NavigationButton>
-        </>
-      )}
+      <NavigationButton 
+        onClick={handlePrev} 
+        position="left" 
+        disabled={currentIndex === 0}
+      >
+        Prev
+      </NavigationButton>
+      <NavigationButton 
+        onClick={handleNext} 
+        position="right"
+      >
+        {currentIndex === loreData.length - 1 ? 'End' : 'Next'}
+      </NavigationButton>
     </LoreContainer>
   );
 }
