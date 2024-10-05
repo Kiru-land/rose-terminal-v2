@@ -37,10 +37,6 @@ const AsciiContainer = styled.div`
   align-items: center;
   overflow: hidden;
   position: relative;
-
-//   @media (max-width: 768px) {
-//     margin-bottom: 30vh; // Add space at the bottom for the text
-//   }
 `;
 
 const AsciiPre = styled.pre`
@@ -59,11 +55,10 @@ const AsciiPre = styled.pre`
 
 const TextContainer = styled.div`
   width: 100%;
-  padding: 20px 100px;
+  padding: 20px 100px; // Added horizontal padding
   color: ${props => props.textColor || 'rgba(0, 255, 0, 1)'};
   font-family: monospace;
   text-align: center;
-  z-index: 1001;
   ${props => props.fullscreen && `
     position: absolute;
     padding: 50px;
@@ -75,17 +70,10 @@ const TextContainer = styled.div`
   `}
 
   @media (max-width: 768px) {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    font-size: 14px;
-    padding: 15px;
-    max-height: 30vh; // Limit height to 30% of viewport height
-    overflow-y: auto; // Allow scrolling if text is too long
+    font-size: 12px;
+    padding: 20px 120px;
     ${props => props.fullscreen && `
       padding: 20px 60px;
-      font-size: 18px; // Adjust fullscreen font size for mobile
     `}
   }
 `;
@@ -136,6 +124,7 @@ const NavigationButton = styled.button`
     transform: ${props => props.disabled ? 'none' : 'translateY(1px)'};
   }
 
+
   @media (max-width: 768px) {
     display: none;
   }
@@ -165,6 +154,7 @@ const CloseButton = styled(ControlButton)`
   top: 20px;
   left: 20px;
 `;
+
 
 const TouchArea = styled.div`
   position: absolute;
@@ -359,15 +349,15 @@ function Lore({ onClose }) {
   }, [isPageVisible, isMuted, currentIndex]);
 
   const handleNext = () => {
-    if (currentIndex < loreData.length - 1) {
+    if (currentIndex === loreData.length - 1) {
+      audioRefs.current.forEach(audio => audio.pause());
+      onClose();
+    } else {
       setIsFading(true);
       setTimeout(() => {
         setCurrentIndex((prevIndex) => prevIndex + 1);
         setIsFading(false);
       }, 500);
-    } else {
-      audioRefs.current.forEach(audio => audio.pause());
-      onClose();
     }
   };
 
@@ -408,8 +398,8 @@ function Lore({ onClose }) {
       <CloseButton onClick={onClose} visible={controlsVisible}>
         <FaTimes />
       </CloseButton>
-      <LeftTouchArea onClick={handlePrev} />
-      <RightTouchArea onClick={handleNext} />
+          <LeftTouchArea onClick={handlePrev} />
+          <RightTouchArea onClick={handleNext} />
       <AsciiContainer>
         <AsciiPre 
           ref={preRef} 
