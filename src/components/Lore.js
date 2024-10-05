@@ -55,7 +55,7 @@ const AsciiPre = styled.pre`
 
 const TextContainer = styled.div`
   width: 100%;
-  padding: 20px 50px; // Added horizontal padding
+  padding: 20px 100px; // Added horizontal padding
   color: ${props => props.textColor || 'rgba(0, 255, 0, 1)'};
   font-family: monospace;
   text-align: center;
@@ -150,6 +150,21 @@ const CloseButton = styled(ControlButton)`
   left: 20px;
 `;
 
+const TouchArea = styled.div`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+`;
+
+const LeftTouchArea = styled(TouchArea)`
+  left: 0;
+`;
+
+const RightTouchArea = styled(TouchArea)`
+  right: 0;
+`;
+
 const loreData = [
   { artPath: 'intro3.txt', text: 'Grandpa... what is Rose?', textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 0, 1)', fullscreenText: false },
   { artPath: 'intro3.txt', text: '...', textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 0, 1)', fullscreenText: false },
@@ -157,7 +172,7 @@ const loreData = [
   { artPath: 'forestbaseHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
   { artPath: 'forestbase2HQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(210, 255, 200, 1)', fullscreenText: false },
   { artPath: 'hallHQ.txt', text: "Let me tell you the story of the blooming flower, Rose. guardian of society.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 0, 1)', fullscreenText: false },
-  { artPath: 'introHQ.txt', text: "It started 30 years ago, when the first network factions started to emerge, driven by a burning desire of Freedom and Acceleration.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 100, 100, 0.1)', fullscreenText: true },
+  { artPath: 'introHQ.txt', text: "30 years ago, the first network factions started to emerge, driven by a burning desire of Freedom and Acceleration.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 100, 100, 0.1)', fullscreenText: true },
     { artPath: 'introHQ.txt', text: " Still nascent, they looked nothing like now.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 100, 100, 0.1)', fullscreenText: true },
     { artPath: 'centerHQ.txt', text: "At the time, we struggled to understand how unstoppable technologies would shape our future.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'cyber.txt', text: "Back then, most of the things we take for granted were very scarce.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
@@ -179,9 +194,13 @@ const loreData = [
     { artPath: 'vertical3.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(0, 255, 0, 1)', fullscreenText: false },
     { artPath: 'gen0.txt', text: "Rapid advancements in nuclear fusion allowed us to generate way more energy than we needed.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'gen1.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'gen1.txt', text: "Open and Unrestricted medical research between Rose network members doubled the average life expectancy", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'gen1.txt', text: "Ten years later, lot of new cities were created, and about half the population was automated", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'oldcityHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 255, 1)', fullscreenText: false },
+    { artPath: 'med0.txt', text: "Open and Unrestricted medical research, in particular advances in stem cells and AI modeling, doubled the average life expectancy", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(200, 200, 255, 1)', fullscreenText: false },
+    { artPath: 'med1.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(200, 200, 255, 1)', fullscreenText: false },
+    { artPath: 'coin2.txt', text: "The holy token kept peace and order in the network.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'coin2.txt', text: "It is widely known that the token possesses a mysterious power.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'coin2.txt', text: "The Rose Economical Zone (REZ) flourished, powering the vast majority of trade and commerce of the network states.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'ekid.txt', text: "Ten years later, five new cities were created, about half Rose population was already automated", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 255, 1)', fullscreenText: false },
+    { artPath: 'oldcityHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 200, 255, 1)', fullscreenText: false },
     { artPath: 'capital.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'rosecult.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 0, 1)', fullscreenText: false },
     { artPath: 'singleman.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
@@ -199,8 +218,6 @@ const audioTracks = [
   { src: lore0mp3, startIndex: 3 },
   { src: lore6Music, startIndex: 12 },
   { src: lore1Music, startIndex: 17 },
-  { src: lore0mp3, startIndex: 22 },
-  { src: lore1Music, startIndex: 28 },
 ];
 
 function Lore({ onClose }) {
@@ -215,6 +232,7 @@ function Lore({ onClose }) {
   const audioRefs = useRef(audioTracks.map(track => new Audio(track.src)));
   const timeoutRef = useRef(null);
   const [isPageVisible, setIsPageVisible] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     const loadAsciiArt = async (index) => {
@@ -294,6 +312,7 @@ function Lore({ onClose }) {
         const newScale = containerWidth / contentWidth;
         setScale(newScale * 0.98); // Slightly reduce scale to ensure no overflow
       }
+      setIsMobile(window.innerWidth <= 768);
     };
 
     window.addEventListener('resize', handleResize);
@@ -384,19 +403,28 @@ function Lore({ onClose }) {
       >
         <p>{loreData[currentIndex].text}</p>
       </TextContainer>
-      <NavigationButton 
-        onClick={handlePrev} 
-        position="left" 
-        disabled={currentIndex === 0}
-      >
-        Prev
-      </NavigationButton>
-      <NavigationButton 
-        onClick={handleNext} 
-        position="right"
-      >
-        {currentIndex === loreData.length - 1 ? 'End' : 'Next'}
-      </NavigationButton>
+      {isMobile ? (
+        <>
+          <LeftTouchArea onClick={handlePrev} />
+          <RightTouchArea onClick={handleNext} />
+        </>
+      ) : (
+        <>
+          <NavigationButton 
+            onClick={handlePrev} 
+            position="left" 
+            disabled={currentIndex === 0}
+          >
+            Prev
+          </NavigationButton>
+          <NavigationButton 
+            onClick={handleNext} 
+            position="right"
+          >
+            {currentIndex === loreData.length - 1 ? 'End' : 'Next'}
+          </NavigationButton>
+        </>
+      )}
     </LoreContainer>
   );
 }
