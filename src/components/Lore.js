@@ -55,10 +55,11 @@ const AsciiPre = styled.pre`
 
 const TextContainer = styled.div`
   width: 100%;
-  padding: 20px 100px; // Added horizontal padding
+  padding: 20px 100px;
   color: ${props => props.textColor || 'rgba(0, 255, 0, 1)'};
   font-family: monospace;
   text-align: center;
+  animation: ${props => props.isFading ? fadeOut : fadeIn} 0.5s ease-in-out;
   ${props => props.fullscreen && `
     position: absolute;
     padding: 50px;
@@ -71,10 +72,20 @@ const TextContainer = styled.div`
 
   @media (max-width: 768px) {
     font-size: 12px;
-    padding: 20px 120px;
+    padding: 20px 40px;
     ${props => props.fullscreen && `
       padding: 20px 60px;
     `}
+  }
+
+  @media (max-width: 600px) {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    padding: 10px;
+    font-size: 10px;
   }
 `;
 
@@ -245,6 +256,7 @@ function Lore({ onClose }) {
   const audioRefs = useRef(audioTracks.map(track => new Audio(track.src)));
   const timeoutRef = useRef(null);
   const [isPageVisible, setIsPageVisible] = useState(true);
+  const [isTextFading, setIsTextFading] = useState(false);
 
   useEffect(() => {
     const loadAsciiArt = async (index) => {
@@ -354,9 +366,11 @@ function Lore({ onClose }) {
       onClose();
     } else {
       setIsFading(true);
+      setIsTextFading(true);
       setTimeout(() => {
         setCurrentIndex((prevIndex) => prevIndex + 1);
         setIsFading(false);
+        setIsTextFading(false);
       }, 500);
     }
   };
@@ -364,9 +378,11 @@ function Lore({ onClose }) {
   const handlePrev = () => {
     if (currentIndex > 0) {
       setIsFading(true);
+      setIsTextFading(true);
       setTimeout(() => {
         setCurrentIndex((prevIndex) => prevIndex - 1);
         setIsFading(false);
+        setIsTextFading(false);
       }, 500);
     }
   };
@@ -413,6 +429,7 @@ function Lore({ onClose }) {
       <TextContainer 
         fullscreen={loreData[currentIndex].fullscreenText}
         textColor={loreData[currentIndex].textColor}
+        isFading={isTextFading}
       >
         <p>{loreData[currentIndex].text}</p>
       </TextContainer>
