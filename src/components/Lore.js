@@ -37,6 +37,10 @@ const AsciiContainer = styled.div`
   align-items: center;
   overflow: hidden;
   position: relative;
+
+//   @media (max-width: 768px) {
+//     margin-bottom: 30vh; // Add space at the bottom for the text
+//   }
 `;
 
 const AsciiPre = styled.pre`
@@ -59,6 +63,7 @@ const TextContainer = styled.div`
   color: ${props => props.textColor || 'rgba(0, 255, 0, 1)'};
   font-family: monospace;
   text-align: center;
+  z-index: 1001;
   ${props => props.fullscreen && `
     position: absolute;
     padding: 50px;
@@ -70,8 +75,14 @@ const TextContainer = styled.div`
   `}
 
   @media (max-width: 768px) {
-    font-size: 12px;
-    padding: 20px 60px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 14px;
+    padding: 15px;
+    max-height: 30vh; // Limit height to 30% of viewport height
+    overflow-y: auto; // Allow scrolling if text is too long
     ${props => props.fullscreen && `
       padding: 20px 60px;
       font-size: 18px; // Adjust fullscreen font size for mobile
