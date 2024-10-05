@@ -324,16 +324,10 @@ const RippleButton = ({ children, onClick, isMobile, isSelected }) => {
 const RoseUsdButton = styled.span`
   font-family: 'Fira Code', monospace;
   color: #00FF00;
-  cursor: pointer;
   font-size: 12px;
   position: absolute;
   bottom: 40px;
   left: 39px;
-  text-decoration: underline;
-
-  ${props => props.isMobile && `
-    bottom: 60px; // Higher position for mobile
-  `}
 `;
 
 const Terminal = ({ isMobile }) => {
@@ -634,7 +628,7 @@ if (chainId === 17000n) {
         <MenuContainer isMobile={isMobile}>
           {renderMenuItems()}
         </MenuContainer>
-        <RoseUsdButton onClick={handleOpenChartModal} isMobile={isMobile}>chart</RoseUsdButton>
+        <RoseUsdButton onClick={handleOpenChartModal} isMobile={isMobile}>💹</RoseUsdButton>
         <BottomBar />
         {showTrade && (
           <Trade 

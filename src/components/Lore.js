@@ -80,12 +80,12 @@ const TextContainer = styled.div`
 
   @media (max-width: 600px) {
     position: absolute;
-    bottom: 20%;
+    bottom: 15%;
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
     padding: 10px;
-    font-size: 10px;
+    font-size: 12px;
   }
 `;
 
