@@ -332,7 +332,7 @@ const RoseUsdButton = styled.span`
   text-decoration: underline;
 
   ${props => props.isMobile && `
-    bottom: 80px; // Higher position for mobile
+    bottom: 60px; // Higher position for mobile
   `}
 `;
 
