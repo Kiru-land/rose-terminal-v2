@@ -54,11 +54,21 @@ const AsciiPre = styled.pre`
 `;
 
 const TextContainer = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   width: 100%;
-  padding: 20px 100px; // Added horizontal padding
+  padding: 20px 100px;
   color: ${props => props.textColor || 'rgba(0, 255, 0, 1)'};
   font-family: monospace;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px; // Adjust this value as needed
+  z-index: 10;
+
   ${props => props.fullscreen && `
     position: absolute;
     padding: 50px;
@@ -73,7 +83,7 @@ const TextContainer = styled.div`
     font-size: 12px;
     padding: 20px 120px;
     ${props => props.fullscreen && `
-      padding: 20px 60px;
+      padding: 20px 20px;
     `}
   }
 `;
