@@ -10,7 +10,6 @@ import Intro from './Intro';
 import { usePopUp } from '../contexts/PopUpContext';
 import Trade from './Trade';
 import Transfer from './Transfer';
-import Launch from './Launch';
 import Clawback from './Clawback';
 import ChartModal from './ChartModal';
 import Lore from './Lore';
@@ -560,7 +559,7 @@ if (chainId === 17000n) {
       ));
     } else {
       // Mainnet options
-      return ['launch', 'clawback', 'lore'].map(command => (
+      return ['clawback', 'lore'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -640,13 +639,6 @@ if (chainId === 17000n) {
         {showTransfer && (
           <Transfer 
             onClose={() => setShowTransfer(false)} 
-            animateLogo={animateLogo} 
-            setAsyncOutput={setAsyncOutput}
-          />
-        )}
-        {showLaunch && (
-          <Launch 
-            onClose={() => setShowLaunch(false)} 
             animateLogo={animateLogo} 
             setAsyncOutput={setAsyncOutput}
           />
