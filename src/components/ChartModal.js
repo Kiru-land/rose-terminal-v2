@@ -222,8 +222,13 @@ const ChartModal = ({ onClose }) => {
   }, [chartType, lineData, candlestickData, timeframe]);
 
   useEffect(() => {
-    fetch('https://www.rose-terminal.com/api/prices/get-rose-price')
-      .then(response => response.json())
+    fetch('/api/prices/get-rose-price')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
       .then(data => {
         const rawData = data.data;
         const lineData = Object.keys(rawData).map(timestamp => ({
@@ -236,7 +241,10 @@ const ChartModal = ({ onClose }) => {
         setCandlestickData(candlestickData);
         setIsLoading(false);
       })
-      .catch(err => console.error('Error fetching data', err));
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        // Display an error message to the user
+      });
   }, [timeframe]);
 
   useEffect(() => {

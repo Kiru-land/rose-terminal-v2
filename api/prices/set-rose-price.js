@@ -58,8 +58,11 @@ export default async function handler(req, res) {
         // Generate a timestamp as the key
         const timestamp = Date.now().toString();
 
-        // Store the timestamp as key and ROSE price in USD as value in Vercel KV database
-        await pricesKV.set(timestamp, rosePriceInUsd);
+        // Prepare the data entry
+        const dataEntry = JSON.stringify({ timestamp, rosePriceInUsd });
+
+        // Store the data entry into a Redis List
+        await pricesKV.lpush('rosePrices', dataEntry);
 
         res.status(200).json({ success: true, timestamp, rosePriceInUsd });
     } catch (error) {
