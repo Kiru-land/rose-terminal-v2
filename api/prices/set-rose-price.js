@@ -37,24 +37,15 @@ import {
           const erc20Decimals = await erc20Contract.decimals();
           const erc20Balance = formatUnits(erc20BalanceRaw, erc20Decimals);
   
-          console.log('etherBalance', etherBalance);
-          console.log('erc20Balance', erc20Balance);
-  
           // Divide the ERC20 balance by the Ether balance
           const roseEthRatio = parseFloat(etherBalance) / parseFloat(erc20Balance);
-  
-          console.log('ROSE/ETH ratio:', roseEthRatio);
   
           // Get the current ETH price in USD
           const ethPriceInUsd = await getEthPrice();
   
-          console.log('ETH Price in USD:', ethPriceInUsd);
-  
           // Calculate ROSE price in USD
           const rosePriceInUsd = Number((roseEthRatio * ethPriceInUsd).toFixed(2));
-  
-          console.log('ROSE Price in USD:', rosePriceInUsd);
-  
+
           // Generate a timestamp as the key
           const timestamp = Date.now().toString();
   
