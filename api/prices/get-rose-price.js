@@ -16,20 +16,26 @@ export default async function handler(req, res) {
 
         console.log('Incoming request:', req.method, req.url);
 
-        // Retrieve the list of prices
-        const dataList = await pricesKV.lrange('rosePrices', 0, -1);
+        // Get all keys from the KV store
+        const keys = await pricesKV.keys('*');
+        console.log('Fetched keys:', keys);
 
-        // If no data is found, return an empty array
-        if (!dataList || dataList.length === 0) {
-            console.log('No data found in KV store');
-            res.status(200).json({ success: true, data: [] });
+        // If no keys are found, return an empty object
+        if (!keys || keys.length === 0) {
+            console.log('No keys found in KV store');
+            res.status(200).json({ success: true, data: {} });
             return;
         }
 
-        // Parse each data entry
-        const data = dataList.map(item => JSON.parse(item));
+        // Fetch all values associated with the keys in a single operation
+        const values = await pricesKV.mget(...keys);
+        console.log('Fetched values:', values);
 
-        console.log('Retrieved data:', data);
+        // Combine keys and values into an object
+        const data = Object.fromEntries(
+            keys.map((key, index) => [key, Number(values[index])])
+        );
+        console.log('Combined data:', data);
 
         // Return the data as JSON
         res.status(200).json({ success: true, data });
