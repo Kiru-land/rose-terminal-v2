@@ -1,6 +1,7 @@
 import { pricesKV } from '../../config';
 
 export default async function handler(req, res) {
+    console.log('Handler function called');
     try {
         // Set CORS headers
         res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins
@@ -15,6 +16,13 @@ export default async function handler(req, res) {
         }
 
         console.log('Incoming request:', req.method, req.url);
+
+        // Check if it's a GET request
+        if (req.method !== 'GET') {
+            console.log('Invalid method:', req.method);
+            res.status(405).json({ success: false, error: 'Method Not Allowed' });
+            return;
+        }
 
         // Get all keys from the KV store
         const keys = await pricesKV.keys('*');
@@ -40,7 +48,7 @@ export default async function handler(req, res) {
         // Return the data as JSON
         res.status(200).json({ success: true, data });
     } catch (error) {
-        console.error('Error fetching KV contents:', error);
+        console.error('Error in handler:', error);
         res.status(500).json({ success: false, error: 'Internal Server Error' });
     }
 }
