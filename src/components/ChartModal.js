@@ -224,19 +224,27 @@ const ChartModal = ({ onClose }) => {
   useEffect(() => {
     fetch('https://www.rose-terminal.com/api/prices/get-rose-price')
       .then(response => response.json())
-      .then(data => {
-        const rawData = data.data;
-        const lineData = Object.keys(rawData).map(timestamp => ({
-          time: Number(timestamp) / 1000,
-          value: rawData[timestamp],
-        })).sort((a, b) => a.time - b.time);
+      .then(result => {
+        if (result.success) {
+          const rawData = result.data;
+          const lineData = Object.entries(rawData).map(([timestamp, value]) => ({
+            time: Number(timestamp) / 1000,
+            value: value,
+          })).sort((a, b) => a.time - b.time);
 
-        setLineData(lineData);
-        const candlestickData = convertToCandlestickData(lineData, timeframe);
-        setCandlestickData(candlestickData);
-        setIsLoading(false);
+          setLineData(lineData);
+          const candlestickData = convertToCandlestickData(lineData, timeframe);
+          setCandlestickData(candlestickData);
+          setIsLoading(false);
+        } else {
+          console.error('API request failed:', result.error);
+          setIsLoading(false);
+        }
       })
-      .catch(err => console.error('Error fetching data', err));
+      .catch(err => {
+        console.error('Error fetching data', err);
+        setIsLoading(false);
+      });
   }, [timeframe]);
 
   useEffect(() => {
