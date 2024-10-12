@@ -30,12 +30,14 @@ export default async function handler(req, res) {
 
         // Use SCAN to iterate over keys
         do {
+            console.log(`Scanning with cursor: ${cursor}`);
             const result = await pricesKV.scan(cursor, { count: 100 });
             cursor = result.cursor;
             keys = keys.concat(result.keys);
 
             // Fetch values for this batch of keys
             if (result.keys.length > 0) {
+                console.log(`Fetching values for ${result.keys.length} keys`);
                 const values = await pricesKV.mget(...result.keys);
                 result.keys.forEach((key, index) => {
                     data[key] = Number(values[index]);
@@ -43,7 +45,7 @@ export default async function handler(req, res) {
             }
         } while (cursor !== '0');
 
-        console.log('Fetched data:', data);
+        console.log(`Total keys fetched: ${Object.keys(data).length}`);
 
         // Return the data as JSON
         res.status(200).json({ success: true, data });
