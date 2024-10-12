@@ -67,8 +67,6 @@ export async function getEthPrice() {
         // Get the price of WETH in terms of USDC
         const ethPriceInUsd = parseFloat(pool.token1Price.toSignificant(6));
 
-        console.log('ETH Price in USD:', ethPriceInUsd.toFixed(2));
-
         return ethPriceInUsd;
     } catch (error) {
         console.error('Error fetching ETH price:', error);
