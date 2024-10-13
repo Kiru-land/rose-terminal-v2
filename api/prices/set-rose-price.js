@@ -1,60 +1,43 @@
-import { 
-    Contract, 
-    JsonRpcProvider, 
-    formatEther, 
-    formatUnits 
-  } from 'ethers';
-  import { getEthPrice } from './utils/getEthPrice.js';
-  import { pricesKV } from '../../config.js';
-  
-  export default async function handler(req, res) {
-      // Ethereum provider (e.g., Infura, Alchemy)
-      const provider = new JsonRpcProvider(process.env.ETH_RPC_URL);
-      
-      // Contract address
-      const contractAddress = '0xdB02B6a7cfe9d4DE7D2dC585EFc27a24b6345aD1';
-  
-      // ERC20 token address
-      const erc20TokenAddress = '0xdB02B6a7cfe9d4DE7D2dC585EFc27a24b6345aD1';
-  
-      // ERC20 ABI (minimal)
-      const erc20Abi = [
-          // Read-Only Functions
-          "function balanceOf(address owner) view returns (uint256)",
-          "function decimals() view returns (uint8)"
-      ];
-  
-      // Create ERC20 contract instance
-      const erc20Contract = new Contract(erc20TokenAddress, erc20Abi, provider);
-  
-      try {
-          // Get Ether balance of the contract
-          const etherBalanceWei = await provider.getBalance(contractAddress);
-          const etherBalance = formatEther(etherBalanceWei);
-  
-          // Get ERC20 token balance of the contract
-          const erc20BalanceRaw = await erc20Contract.balanceOf(contractAddress);
-          const erc20Decimals = await erc20Contract.decimals();
-          const erc20Balance = formatUnits(erc20BalanceRaw, erc20Decimals);
-  
-          // Divide the ERC20 balance by the Ether balance
-          const roseEthRatio = parseFloat(etherBalance) / parseFloat(erc20Balance);
-  
-          // Get the current ETH price in USD
-          const ethPriceInUsd = await getEthPrice();
-  
-          // Calculate ROSE price in USD
-          const rosePriceInUsd = Number((roseEthRatio * ethPriceInUsd).toFixed(2));
+import { getEthPrice } from './utils/getEthPrice.js';
+import { pricesKV } from '../../config.js';
+import { formatEther } from 'ethers';
 
-          // Generate a timestamp as the key
-          const timestamp = Date.now().toString();
-  
-          // Store the timestamp as key and ROSE price in USD as value in Vercel KV database
-          await pricesKV.set(timestamp, rosePriceInUsd);
-  
-          res.status(200).json({ success: true, timestamp, rosePriceInUsd });
-      } catch (error) {
-          console.error('Error in getRosePrice:', error);
-          res.status(500).json({ success: false, error: error.message });
-      }
-  }
+export default async function handler(req, res) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ success: false, error: 'Method Not Allowed' });
+    }
+
+    try {
+        const { r0, r1 } = req.body;
+
+        if (!r0 || !r1) {
+            return res.status(400).json({ success: false, error: 'Missing r0 or r1 values' });
+        }
+
+        // Compute ROSE/ETH ratio using r0 and r1
+        const roseEthRatio = formatEther(r0) / formatEther(r1);
+
+        // Get the current ETH price in USD
+        const ethPriceInUsd = await getEthPrice();
+
+        // Calculate ROSE price in USD
+        const rosePriceInUsd = roseEthRatio * ethPriceInUsd;
+
+        // Generate a timestamp
+        const timestamp = Date.now();
+
+        // Create a value object containing both price and timestamp
+        const priceEntry = JSON.stringify({
+            price: rosePriceInUsd,
+            timestamp: timestamp
+        });
+
+        // Store the entry in Vercel KV database
+        await pricesKV.zadd('rose_prices', timestamp, priceEntry);
+
+        res.status(200).json({ success: true, timestamp, rosePriceInUsd: rosePriceInUsd.toString() });
+    } catch (error) {
+        console.error('Error in setRosePrice:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+}

@@ -24,28 +24,16 @@ export default async function handler(req, res) {
             return;
         }
 
-        let cursor = '0';
-        let keys = [];
-        let data = {};
+        // Retrieve all entries from the sorted set
+        const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
 
-        // Use SCAN to iterate over keys
-        do {
-            console.log(`Scanning with cursor: ${cursor}`);
-            const [nextCursor, scanKeys] = await pricesKV.scan(cursor, { count: 100 });
-            cursor = nextCursor;
-            keys = keys.concat(scanKeys);
+        console.log(`Total entries fetched: ${entries.length}`);
 
-            // Fetch values for this batch of keys
-            if (scanKeys.length > 0) {
-                console.log(`Fetching values for ${scanKeys.length} keys`);
-                const values = await pricesKV.mget(...scanKeys);
-                scanKeys.forEach((key, index) => {
-                    data[key] = Number(values[index]);
-                });
-            }
-        } while (cursor !== '0');
-
-        console.log(`Total keys fetched: ${Object.keys(data).length}`);
+        // Parse the entries
+        const data = entries.map(([entry, score]) => {
+            const { price } = JSON.parse(entry);
+            return { price: Number(price), timestamp: Number(score) };
+        });
 
         // Return the data as JSON
         res.status(200).json({ success: true, data });
