@@ -250,7 +250,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
   const [isEthOnTop, setIsEthOnTop] = useState(true);
   const { showPopUp } = usePopUp();
   const { signer, rose, balance: nativeBalance, roseBalance, reserve0, reserve1 } = useWeb3();
-  const [slippage, setSlippage] = useState(3);
+  const [slippage, setSlippage] = useState(1);
   const [isSliderVisible, setIsSliderVisible] = useState(false);
   const [panelWidth, setPanelWidth] = useState(350);
   const [priceImpact, setPriceImpact] = useState(null);
@@ -552,7 +552,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
           <Slider
             type="range"
             min="0.1"
-            max="25"
+            max="10"
             step="0.1"
             value={slippage}
             onChange={handleSlippageChange}
