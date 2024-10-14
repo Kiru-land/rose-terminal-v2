@@ -5,7 +5,7 @@ import { useWeb3 } from '../contexts/Web3Context';
 import Prompt from './Prompt';
 import BottomBar from './BottomBar';
 import asciiArt from '../assets/ascii-art.txt';
-import { FaEthereum, FaGithub } from 'react-icons/fa6';
+import { FaEthereum, FaGithub, FaTwitter, FaBook, FaBars, FaTelegram } from 'react-icons/fa';
 import Intro from './Intro';
 import { usePopUp } from '../contexts/PopUpContext';
 import Trade from './Trade';
@@ -160,18 +160,58 @@ const EthIcon = styled(FaEthereum)`
   margin-right: 2px;
 `;
 
-const GitHubLink = styled.a`
+const DropdownContainer = styled.div`
   position: absolute;
   top: 20px;
   left: 20px;
+  z-index: 10;
+`;
+
+const DropdownButton = styled.button`
+  background: none;
+  border: none;
   color: #ccc;
   font-size: 24px;
   cursor: pointer;
-  text-decoration: none;
-  z-index: 10;  // Add this to ensure the link is above other elements
-  
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease;
+
   &:hover {
     color: #fff;
+  }
+`;
+
+const DropdownContent = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: black;
+  border-radius: 8px;  // Round edges for the entire dropdown
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: ${props => props.isOpen ? 1 : 0};
+  visibility: ${props => props.isOpen ? 'visible' : 'hidden'};
+  transform: ${props => props.isOpen ? 'translateY(0)' : 'translateY(-10px)'};
+`;
+
+const DropdownItem = styled.a`
+  color: #00ff00;
+  padding: 12px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+  border-radius: 4px;  // Round edges for each item
+  margin: 4px;  // Add some margin to separate items and show individual roundness
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  svg {
+    font-size: 20px;
   }
 `;
 
@@ -344,6 +384,7 @@ const Terminal = ({ isMobile }) => {
   const [showLore, setShowLore] = useState(false);
   const terminalContentRef = useRef(null);
   const outputRef = useRef(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const { isConnected, signer, provider, balance: nativeBalance, roseBalance, chainId, rose, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
@@ -572,18 +613,62 @@ if (chainId === 17000n) {
     };
   }
 
+  const toggleDropdown = (e) => {
+    e.stopPropagation();
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const closeDropdown = () => {
+    setIsDropdownOpen(false);
+  };
+
   return (
     <>
       <GlobalStyle />
       <TerminalContainer onClick={handleContainerClick} isMobile={isMobile}>
-        <GitHubLink 
-          href="https://github.com/RedRoseMoney/Rose" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <FaGithub />
-        </GitHubLink>
+        <DropdownContainer>
+          <DropdownButton onClick={toggleDropdown}>
+            <FaBars />
+          </DropdownButton>
+          <DropdownContent isOpen={isDropdownOpen}>
+            <DropdownItem 
+              href="https://github.com/RedRoseMoney/Rose" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={closeDropdown}
+              title="GitHub"
+            >
+              <FaGithub />
+            </DropdownItem>
+            <DropdownItem 
+              href="https://twitter.com/punkmoneyrose" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={closeDropdown}
+              title="Twitter"
+            >
+              <FaTwitter />
+            </DropdownItem>
+            <DropdownItem
+              href="https://t.me/+dxSYXf2wdJc0MmNl"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={closeDropdown}
+              title="Telegram"
+            >
+              <FaTelegram />
+            </DropdownItem>
+            <DropdownItem 
+              href="https://rose-money.gitbook.io/rose/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={closeDropdown}
+              title="Docs"
+            >
+              <FaBook />
+            </DropdownItem>
+          </DropdownContent>
+        </DropdownContainer>
         {showIntro && (
           <Intro asciiLogo={asciiLogo} onIntroComplete={handleIntroComplete} />
         )}
