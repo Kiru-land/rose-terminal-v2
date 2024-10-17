@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { authMiddleware } from '../middleware/auth';
 import { clawbackKV } from '../../config';
 
 /**
@@ -79,7 +80,7 @@ async function uploadAddressCommunities() {
   }
 }
 
-export default async function handler(req, res) {
+export default authMiddleware(async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       await uploadAddressCommunities();
@@ -92,4 +93,4 @@ export default async function handler(req, res) {
     res.setHeader('Allow', ['POST']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-}
+}) // Add this closing parenthesis

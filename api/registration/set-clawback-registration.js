@@ -1,3 +1,4 @@
+import { authMiddleware } from '../middleware/auth';
 import { clawbackKV } from '../../config';
 
 /**
@@ -38,7 +39,7 @@ import { clawbackKV } from '../../config';
  *     }
  */
 
-export default async function handler(req, res) {
+export default authMiddleware(async function handler(req, res) {
   console.log('Received request:', req.method, req.body);
 
   if (req.method === 'POST') {
@@ -78,4 +79,4 @@ export default async function handler(req, res) {
     res.setHeader('Allow', ['POST']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-}
+});

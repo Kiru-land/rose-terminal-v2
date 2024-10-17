@@ -1,6 +1,7 @@
+import { authMiddleware } from '../middleware/auth';
 import { pricesKV } from '../../config';
 
-export default async function handler(req, res) {
+export default authMiddleware(async function handler(req, res) {
     console.log('Handler function called');
     try {
         // Set CORS headers
@@ -41,4 +42,4 @@ export default async function handler(req, res) {
         console.error('Error in handler:', error);
         res.status(500).json({ success: false, error: error.message || 'Internal Server Error' });
     }
-}
+});

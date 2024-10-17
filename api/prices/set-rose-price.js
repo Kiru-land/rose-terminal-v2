@@ -1,6 +1,7 @@
+import { authMiddleware } from '../middleware/auth';
 import { pricesKV } from '../../config.js';
 
-export default async function handler(req, res) {
+export default authMiddleware(async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ success: false, error: 'Method Not Allowed' });
     }
@@ -31,4 +32,4 @@ export default async function handler(req, res) {
         console.error('Error in setRosePrice:', error);
         res.status(500).json({ success: false, error: error.message });
     }
-}
+});

@@ -1,3 +1,4 @@
+import { authMiddleware } from '../middleware/auth';
 import { clawbackKV } from '../../config';
 
 /**
@@ -28,7 +29,7 @@ import { clawbackKV } from '../../config';
  */
 
 
-export default async function handler(req, res) {
+export default authMiddleware(async function handler(req, res) {
   if (req.method === 'GET') {
     const { address } = req.query;
 
@@ -48,4 +49,4 @@ export default async function handler(req, res) {
     res.setHeader('Allow', ['GET']);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-}
+}) // Add this closing parenthesis
