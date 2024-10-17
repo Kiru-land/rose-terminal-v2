@@ -1,6 +1,4 @@
-import { getEthPrice } from './utils/getEthPrice.js';
 import { pricesKV } from '../../config.js';
-import { formatEther } from 'ethers';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -8,34 +6,27 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { r0, r1 } = req.body;
+        const { price, timestamp } = req.body;
 
-        if (!r0 || !r1) {
-            return res.status(400).json({ success: false, error: 'Missing r0 or r1 values' });
+        if (price === undefined || !timestamp) {
+            return res.status(400).json({ success: false, error: 'Missing price or timestamp values' });
         }
 
-        // Compute ROSE/ETH ratio using r0 and r1
-        const roseEthRatio = formatEther(r0) / formatEther(r1);
 
-        // Get the current ETH price in USD
-        const ethPriceInUsd = await getEthPrice();
-
-        // Calculate ROSE price in USD
-        const rosePriceInUsd = roseEthRatio * ethPriceInUsd;
-
-        // Generate a timestamp
-        const timestamp = Date.now();
+        if (isNaN(price)) {
+            return res.status(400).json({ success: false, error: 'Invalid price value' });
+        }
 
         // Create a value object containing both price and timestamp
         const priceEntry = JSON.stringify({
-            price: rosePriceInUsd,
+            price: price,
             timestamp: timestamp
         });
 
         // Store the entry in Vercel KV database
         await pricesKV.zadd('rose_prices', timestamp, priceEntry);
 
-        res.status(200).json({ success: true, timestamp, rosePriceInUsd: rosePriceInUsd.toString() });
+        res.status(200).json({ success: true, timestamp, price });
     } catch (error) {
         console.error('Error in setRosePrice:', error);
         res.status(500).json({ success: false, error: error.message });
