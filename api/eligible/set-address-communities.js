@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../auth/auth';
 import { clawbackKV } from '../../config';
 
 /**

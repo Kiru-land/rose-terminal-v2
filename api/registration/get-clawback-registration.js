@@ -1,4 +1,4 @@
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../auth/auth';
 import { clawbackKV } from '../../config';
 
 /**

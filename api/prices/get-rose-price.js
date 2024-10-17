@@ -1,4 +1,4 @@
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../auth/auth';
 import { pricesKV } from '../../config';
 
 export default authMiddleware(async function handler(req, res) {
