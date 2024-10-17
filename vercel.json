@@ -3,17 +3,5 @@
       "api/eligible/set-address-communities.js": {
         "maxDuration": 300
     }
-  },
-    "crons": [
-    {
-      "path": "/api/prices/set-rose-price.js",
-      "schedule": "* * * * *"
-    }
-  ],
-    "build": {
-      "env": {
-        "ETH_RPC_URL": "https://ethereum-holesky.blockpi.network/v1/rpc/public"
-      }
   }
-
 }
