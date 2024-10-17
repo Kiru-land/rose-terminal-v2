@@ -433,7 +433,10 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
     if (ethers.isAddress(newAddress)) {
       try {
         const response = await axios.get('/api/eligible/get-address-communities', {
-          params: { address: newAddress }
+          params: { address: newAddress },
+          headers: {
+            'x-api-key': process.env.API_KEY // Add the API key to the request headers
+          }
         });
         
         const active = response.data.communities.map(p => p.toLowerCase());
@@ -472,7 +475,11 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
       
       try {
         const response = await axios.post('/api/registration/set-clawback-registration', {
-          address: address, // Use the address state directly
+          address: address,
+        }, {
+          headers: {
+            'x-api-key': process.env.API_KEY // Add the API key to the request headers
+          }
         });
         
         if (response.data) {

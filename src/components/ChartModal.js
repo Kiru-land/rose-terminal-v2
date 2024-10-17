@@ -222,7 +222,11 @@ const ChartModal = ({ onClose }) => {
   }, [chartType, lineData, candlestickData, timeframe]);
 
   useEffect(() => {
-    fetch('https://www.rose-terminal.com/api/prices/get-rose-price')
+    fetch('https://www.rose-terminal.com/api/prices/get-rose-price', {
+      headers: {
+        'x-api-key': process.env.API_KEY // Add the API key to the request headers
+      }
+    })
       .then(response => response.json())
       .then(result => {
         if (result.success) {
