@@ -2,6 +2,32 @@ import fs from 'fs/promises';
 import path from 'path';
 import { clawbackKV } from '../../config';
 
+/**
+ * @api {post} /api/eligible/set-address-communities Set Address Communities
+ * @apiName SetAddressCommunities
+ * @apiGroup Eligibility
+ * @apiDescription Updates the communities associated with Ethereum addresses based on eligibility lists.
+ *
+ * @apiSuccess {Number} totalAddresses The total number of unique addresses processed
+ * @apiSuccess {String} message Success message
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "totalAddresses": 1000,
+ *       "message": "Successfully updated address communities"
+ *     }
+ *
+ * @apiError {String} error Error message
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Failed to update address communities"
+ *     }
+ */
+
+
 const communities = ['aeon', 'sproto', 'spx', 'mog', 'milady', 'hpos'];
 
 async function uploadAddressCommunities() {
