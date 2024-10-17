@@ -5,6 +5,7 @@ import { createChart, CrosshairMode } from 'lightweight-charts';
 // Import icons (you need to have these icons in your assets)
 import { ReactComponent as LineChartIcon } from '../assets/line-chart-icon.svg';
 import { ReactComponent as CandlestickIcon } from '../assets/candlestick-icon.svg';
+import axios from 'axios';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -119,6 +120,7 @@ const ChartModal = ({ onClose }) => {
   const [lineData, setLineData] = useState([]);
   const [candlestickData, setCandlestickData] = useState([]);
   const [timeframe, setTimeframe] = useState('3600'); // Default to 1 hour
+  const [rosePrice, setRosePrice] = useState(null);
 
   const timeframeOptions = [
     { label: '1h', value: '3600' },
@@ -221,35 +223,20 @@ const ChartModal = ({ onClose }) => {
     }
   }, [chartType, lineData, candlestickData, timeframe]);
 
-  useEffect(() => {
-    fetch('https://www.rose-terminal.com/api/prices/get-rose-price', {
-      headers: {
-        'x-api-key': process.env.API_KEY // Add the API key to the request headers
-      }
-    })
-      .then(response => response.json())
-      .then(result => {
-        if (result.success) {
-          const rawData = result.data;
-          const lineData = Object.entries(rawData).map(([timestamp, value]) => ({
-            time: Number(timestamp) / 1000,
-            value: value,
-          })).sort((a, b) => a.time - b.time);
+  const fetchRosePrice = async () => {
+    try {
+      const response = await axios.get('/api/proxy/get-rose-price');
+      const price = response.data.price;
+      setRosePrice(price);
+    } catch (error) {
+      console.error('Error fetching ROSE price:', error);
+      setRosePrice(null);
+    }
+  };
 
-          setLineData(lineData);
-          const candlestickData = convertToCandlestickData(lineData, timeframe);
-          setCandlestickData(candlestickData);
-          setIsLoading(false);
-        } else {
-          console.error('API request failed:', result.error);
-          setIsLoading(false);
-        }
-      })
-      .catch(err => {
-        console.error('Error fetching data', err);
-        setIsLoading(false);
-      });
-  }, [timeframe]);
+  useEffect(() => {
+    fetchRosePrice();
+  }, []);
 
   useEffect(() => {
     if (!isLoading) {
