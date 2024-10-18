@@ -36,12 +36,31 @@ export default authMiddleware(async function handler(req, res) {
         const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
 
         console.log(`Total entries fetched: ${entries.length}`);
+        console.log('Entries:', entries);
+
+        // Check if entries is an array and not empty
+        if (!Array.isArray(entries) || entries.length === 0) {
+            console.log('No entries found or invalid data structure');
+            res.status(404).json({ success: false, error: 'No price data available' });
+            return;
+        }
 
         // Parse and format the entries
         const data = entries.map(([priceEntry, score]) => {
-            const { price, timestamp } = JSON.parse(priceEntry);
-            return { price: Number(price), timestamp: Number(timestamp) };
-        });
+            try {
+                const { price, timestamp } = JSON.parse(priceEntry);
+                return { price: Number(price), timestamp: Number(timestamp) };
+            } catch (error) {
+                console.error('Error parsing entry:', error);
+                return null;
+            }
+        }).filter(Boolean);
+
+        if (data.length === 0) {
+            console.log('No valid data after parsing');
+            res.status(404).json({ success: false, error: 'No valid price data available' });
+            return;
+        }
 
         const candlestickData = aggregateDataToCandlesticks(data, timeframe);
 
