@@ -6,7 +6,6 @@ import { createChart, CrosshairMode } from 'lightweight-charts';
 import { ReactComponent as LineChartIcon } from '../assets/line-chart-icon.svg';
 import { ReactComponent as CandlestickIcon } from '../assets/candlestick-icon.svg';
 import axios from 'axios';
-import io from 'socket.io-client';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -119,7 +118,6 @@ const ChartModal = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [candlestickData, setCandlestickData] = useState([]);
   const [timeframe, setTimeframe] = useState('1m');
-  const socketRef = useRef();
 
   const timeframeOptions = [
     { label: '1m', value: '1m' },
@@ -135,7 +133,7 @@ const ChartModal = ({ onClose }) => {
   const fetchPriceData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`/api/prices/get-rose-price?timeframe=${timeframe}`);
+      const response = await axios.get(`/api/proxy/get-rose-price?timeframe=${timeframe}`);
       setCandlestickData(response.data.data);
     } catch (error) {
       console.error('Error fetching price data:', error);
@@ -199,50 +197,6 @@ const ChartModal = ({ onClose }) => {
     setTimeframe(event.target.value);
   };
 
-  useEffect(() => {
-    socketRef.current = io('http://your-websocket-server-url');
-
-    socketRef.current.on('priceUpdate', (newPrice) => {
-      setCandlestickData((prevData) => {
-        const lastCandle = prevData[prevData.length - 1];
-        const newTime = Math.floor(Date.now() / 1000);
-        
-        if (newTime - lastCandle.time < getIntervalInSeconds(timeframe)) {
-          // Update the last candle
-          const updatedCandle = {
-            ...lastCandle,
-            high: Math.max(lastCandle.high, newPrice),
-            low: Math.min(lastCandle.low, newPrice),
-            close: newPrice
-          };
-          return [...prevData.slice(0, -1), updatedCandle];
-        } else {
-          // Create a new candle
-          const newCandle = {
-            time: newTime,
-            open: newPrice,
-            high: newPrice,
-            low: newPrice,
-            close: newPrice
-          };
-          return [...prevData, newCandle];
-        }
-      });
-    });
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
-    };
-  }, [timeframe]);
-
-  useEffect(() => {
-    if (socketRef.current) {
-      socketRef.current.emit('subscribeTimeframe', timeframe);
-    }
-  }, [timeframe]);
-
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={e => e.stopPropagation()}>
@@ -260,19 +214,5 @@ const ChartModal = ({ onClose }) => {
     </ModalOverlay>
   );
 };
-
-function getIntervalInSeconds(timeframe) {
-  const intervals = {
-    '1m': 60,
-    '5m': 300,
-    '15m': 900,
-    '30m': 1800,
-    '1h': 3600,
-    '4h': 14400,
-    '1D': 86400,
-    '3D': 259200
-  };
-  return intervals[timeframe];
-}
 
 export default ChartModal;
