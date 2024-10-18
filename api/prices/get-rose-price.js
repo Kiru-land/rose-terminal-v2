@@ -1,8 +1,7 @@
-import { authMiddleware } from '../auth/auth';
-import { pricesKV } from '../../config';
+import { authMiddleware } from '../auth/auth.js';
+import { pricesKV } from '../../config.js';
 
 export default authMiddleware(async function handler(req, res) {
-    console.log('Handler function called');
     try {
         // Set CORS headers
         res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins
@@ -30,10 +29,10 @@ export default authMiddleware(async function handler(req, res) {
 
         console.log(`Total entries fetched: ${entries.length}`);
 
-        // Parse the entries
-        const data = entries.map(([entry, score]) => {
-            const { price } = JSON.parse(entry);
-            return { price: Number(price), timestamp: Number(score) };
+        // Parse and format the entries
+        const data = entries.map(([priceEntry, score]) => {
+            const { price, timestamp } = JSON.parse(priceEntry);
+            return { price: Number(price), timestamp: Number(timestamp) };
         });
 
         // Return the data as JSON
