@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { useWeb3 } from '../contexts/Web3Context';
-import { usePopUp } from '../contexts/PopUpContext';
+import { useWeb3 } from '../contexts/Web3Context.js';
+import { usePopUp } from '../contexts/PopUpContext.js';
 import { FaEthereum } from 'react-icons/fa6';
 import { ethers } from 'ethers';
 import { debounce } from 'lodash';

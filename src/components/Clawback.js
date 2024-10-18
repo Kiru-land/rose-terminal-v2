@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styled, { keyframes, css } from 'styled-components';
-import { useWeb3 } from '../contexts/Web3Context';
-import { usePopUp } from '../contexts/PopUpContext';
+import { useWeb3 } from '../contexts/Web3Context.js';
+import { usePopUp } from '../contexts/PopUpContext.js';
 import { ethers } from 'ethers';
-import { generateProof } from './MerkleInclusion';
+import { generateProof } from './MerkleInclusion.js';
 import mogAscii from '../assets/mog-ascii.txt';
 import sprotoAscii from '../assets/sproto-ascii.txt';
 import miladyAscii from '../assets/milady-ascii.txt';

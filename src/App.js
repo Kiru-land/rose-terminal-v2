@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import Terminal from './components/Terminal';
-import GlobalStyles from './styles/GlobalStyles';
-import { Web3Provider } from './contexts/Web3Context';
-import { PopUpProvider } from './contexts/PopUpContext';
-import GlitterCursor from './components/GlitterCursor';
-import MobileStyles from './styles/MobileStyles';
+import Terminal from './components/Terminal.js';
+import GlobalStyles from './styles/GlobalStyles.js';
+import { Web3Provider } from './contexts/Web3Context.js';
+import { PopUpProvider } from './contexts/PopUpContext.js';
+import GlitterCursor from './components/GlitterCursor.js';
+import MobileStyles from './styles/MobileStyles.js';
 
 function App() {
   const [isMobile, setIsMobile] = useState(false);

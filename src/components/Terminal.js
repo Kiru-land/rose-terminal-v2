@@ -1,18 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ethers } from 'ethers';
 import styled, { keyframes, createGlobalStyle } from 'styled-components';
-import { useWeb3 } from '../contexts/Web3Context';
-import Prompt from './Prompt';
-import BottomBar from './BottomBar';
+import { useWeb3 } from '../contexts/Web3Context.js';
+import Prompt from './Prompt.js';
+import BottomBar from './BottomBar.js';
 import asciiArt from '../assets/ascii-art.txt';
 import { FaEthereum, FaGithub, FaTwitter, FaBook, FaBars, FaTelegram } from 'react-icons/fa';
-import Intro from './Intro';
-import { usePopUp } from '../contexts/PopUpContext';
-import Trade from './Trade';
-import Transfer from './Transfer';
-import Clawback from './Clawback';
-import ChartModal from './ChartModal';
-import Lore from './Lore';
+import Intro from './Intro.js';
+import { usePopUp } from '../contexts/PopUpContext.js';
+import Trade from './Trade.js';
+import Transfer from './Transfer.js';
+import Clawback from './Clawback.js';
+import ChartModal from './ChartModal.js';
+import Lore from './Lore.js';
 
 // Add this global style component
 const GlobalStyle = createGlobalStyle`
