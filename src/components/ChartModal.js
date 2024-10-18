@@ -133,7 +133,9 @@ const ChartModal = ({ onClose }) => {
   const fetchPriceData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`/api/proxy/get-rose-price?timeframe=${timeframe}`);
+      const response = await axios.get(`/api/proxy/get-rose-price`, {
+        params: { timeframe }
+      });
       setCandlestickData(response.data.data);
     } catch (error) {
       console.error('Error fetching price data:', error);

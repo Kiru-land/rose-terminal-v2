@@ -16,6 +16,7 @@ export default authMiddleware(async function handler(req, res) {
         }
 
         console.log('Incoming request:', req.method, req.url);
+        console.log('Query parameters:', req.query);
 
         // Check if it's a GET request
         if (req.method !== 'GET') {
