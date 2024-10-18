@@ -24,6 +24,13 @@ export default authMiddleware(async function handler(req, res) {
             return;
         }
 
+        const { timeframe } = req.query;
+        const validTimeframes = ['1m', '5m', '15m', '30m', '1h', '4h', '1D', '3D'];
+        if (!validTimeframes.includes(timeframe)) {
+            res.status(400).json({ success: false, error: 'Invalid timeframe' });
+            return;
+        }
+
         // Retrieve all entries from the sorted set
         const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
 
@@ -35,10 +42,45 @@ export default authMiddleware(async function handler(req, res) {
             return { price: Number(price), timestamp: Number(timestamp) };
         });
 
+        const candlestickData = aggregateDataToCandlesticks(data, timeframe);
+
         // Return the data as JSON
-        res.status(200).json({ success: true, data });
+        res.status(200).json({ success: true, data: candlestickData });
     } catch (error) {
         console.error('Error in handler:', error);
         res.status(500).json({ success: false, error: error.message || 'Internal Server Error' });
     }
 });
+
+function aggregateDataToCandlesticks(data, timeframe) {
+    const interval = getIntervalInSeconds(timeframe);
+    const candlesticks = {};
+
+    data.forEach(({ price, time }) => {
+        const candleTime = Math.floor(time / interval) * interval;
+        if (!candlesticks[candleTime]) {
+            candlesticks[candleTime] = { time: candleTime, open: price, high: price, low: price, close: price };
+        } else {
+            const candle = candlesticks[candleTime];
+            candle.high = Math.max(candle.high, price);
+            candle.low = Math.min(candle.low, price);
+            candle.close = price;
+        }
+    });
+
+    return Object.values(candlesticks);
+}
+
+function getIntervalInSeconds(timeframe) {
+    const intervals = {
+        '1m': 60,
+        '5m': 300,
+        '15m': 900,
+        '30m': 1800,
+        '1h': 3600,
+        '4h': 14400,
+        '1D': 86400,
+        '3D': 259200
+    };
+    return intervals[timeframe];
+}
