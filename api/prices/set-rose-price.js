@@ -13,19 +13,18 @@ export default authMiddleware(async function handler(req, res) {
             return res.status(400).json({ success: false, error: 'Missing price or timestamp values' });
         }
 
-
         if (isNaN(price)) {
             return res.status(400).json({ success: false, error: 'Invalid price value' });
         }
 
         // Create a value object containing both price and timestamp
         const priceEntry = JSON.stringify({
-            price: price,
-            timestamp: timestamp
+            price: parseFloat(price),
+            timestamp: parseInt(timestamp)
         });
 
         // Store the entry in Vercel KV database
-        await pricesKV.zadd('rose_prices', timestamp, priceEntry);
+        await pricesKV.zadd('rose_prices', { score: parseInt(timestamp), member: priceEntry });
 
         res.status(200).json({ success: true, timestamp, price });
     } catch (error) {
