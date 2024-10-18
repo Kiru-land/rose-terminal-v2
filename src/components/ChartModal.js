@@ -6,6 +6,7 @@ import { createChart, CrosshairMode } from 'lightweight-charts';
 import { ReactComponent as LineChartIcon } from '../assets/line-chart-icon.svg';
 import { ReactComponent as CandlestickIcon } from '../assets/candlestick-icon.svg';
 import axios from 'axios';
+import io from 'socket.io-client';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -115,138 +116,37 @@ const ChartModal = ({ onClose }) => {
   const chartContainerRef = useRef();
   const chartRef = useRef();
   const seriesRef = useRef();
-  const [chartType, setChartType] = useState('line');
   const [isLoading, setIsLoading] = useState(true);
-  const [lineData, setLineData] = useState([]);
   const [candlestickData, setCandlestickData] = useState([]);
-  const [timeframe, setTimeframe] = useState('3600'); // Default to 1 hour
-  const [rosePrice, setRosePrice] = useState(null);
+  const [timeframe, setTimeframe] = useState('1m');
+  const socketRef = useRef();
 
   const timeframeOptions = [
-    { label: '1h', value: '3600' },
-    { label: '4h', value: '14400' },
-    { label: '1D', value: '86400' },
-    { label: '3D', value: '259200' },
-    { label: '1W', value: '604800' },
-    { label: '1M', value: '2592000' },
+    { label: '1m', value: '1m' },
+    { label: '5m', value: '5m' },
+    { label: '15m', value: '15m' },
+    { label: '30m', value: '30m' },
+    { label: '1h', value: '1h' },
+    { label: '4h', value: '4h' },
+    { label: '1D', value: '1D' },
+    { label: '3D', value: '3D' },
   ];
 
-  const convertToCandlestickData = (data, timeframe) => {
-    const interval = parseInt(timeframe);
-    const candlestickData = [];
-    let currentCandle = null;
-
-    data.forEach(dataPoint => {
-      const time = Math.floor(dataPoint.time / interval) * interval;
-      if (!currentCandle || currentCandle.time !== time) {
-        if (currentCandle) {
-          candlestickData.push(currentCandle);
-        }
-        currentCandle = {
-          time: time,
-          open: dataPoint.value,
-          high: dataPoint.value,
-          low: dataPoint.value,
-          close: dataPoint.value,
-        };
-      } else {
-        currentCandle.high = Math.max(currentCandle.high, dataPoint.value);
-        currentCandle.low = Math.min(currentCandle.low, dataPoint.value);
-        currentCandle.close = dataPoint.value;
-      }
-    });
-
-    if (currentCandle) {
-      candlestickData.push(currentCandle);
-    }
-
-    return candlestickData;
-  };
-
-  const aggregateLineData = (data, timeframe) => {
-    const interval = parseInt(timeframe);
-    const aggregatedData = [];
-    let currentPoint = null;
-
-    data.forEach(dataPoint => {
-      const time = Math.floor(dataPoint.time / interval) * interval;
-      if (!currentPoint || currentPoint.time !== time) {
-        if (currentPoint) {
-          aggregatedData.push(currentPoint);
-        }
-        currentPoint = {
-          time: time,
-          value: dataPoint.value,
-        };
-      } else {
-        // For line charts, we can use the last value in the interval
-        currentPoint.value = dataPoint.value;
-      }
-    });
-
-    if (currentPoint) {
-      aggregatedData.push(currentPoint);
-    }
-
-    return aggregatedData;
-  };
-
-  const createChartSeries = useCallback(() => {
-    if (!chartRef.current) return;
-
-    const chart = chartRef.current;
-
-    if (seriesRef.current) {
-      chart.removeSeries(seriesRef.current);
-      seriesRef.current = null;
-    }
-
-    if (chartType === 'line') {
-      const lineSeries = chart.addLineSeries({
-        color: '#00FF00',
-        lineWidth: 2,
-      });
-      const aggregatedLineData = aggregateLineData(lineData, timeframe);
-      lineSeries.setData(aggregatedLineData);
-      seriesRef.current = lineSeries;
-    } else if (chartType === 'candlestick') {
-      const candlestickSeries = chart.addCandlestickSeries({
-        upColor: '#00FF00',
-        downColor: '#009900',
-        borderUpColor: '#00FF00',
-        borderDownColor: '#009900',
-        wickUpColor: '#00FF00',
-        wickDownColor: '#009900',
-      });
-      candlestickSeries.setData(candlestickData);
-      seriesRef.current = candlestickSeries;
-    }
-  }, [chartType, lineData, candlestickData, timeframe]);
-
-  const fetchRosePrice = async () => {
+  const fetchPriceData = useCallback(async () => {
+    setIsLoading(true);
     try {
-      const response = await axios.get('/api/proxy/get-rose-price');
-      const price = response.data.price;
-      setRosePrice(price);
+      const response = await axios.get(`/api/prices/get-rose-price?timeframe=${timeframe}`);
+      setCandlestickData(response.data.data);
     } catch (error) {
-      console.error('Error fetching ROSE price:', error);
-      setRosePrice(null);
+      console.error('Error fetching price data:', error);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [timeframe]);
 
   useEffect(() => {
-    fetchRosePrice();
-  }, []);
-
-  useEffect(() => {
-    if (!isLoading) {
-      createChartSeries();
-    }
-  }, [isLoading, createChartSeries, chartType, timeframe]);
-
-  const handleTimeframeChange = (event) => {
-    setTimeframe(event.target.value);
-  };
+    fetchPriceData();
+  }, [fetchPriceData]);
 
   useEffect(() => {
     const chart = createChart(chartContainerRef.current, {
@@ -262,31 +162,20 @@ const ChartModal = ({ onClose }) => {
       },
       crosshair: { mode: CrosshairMode.Normal },
       rightPriceScale: { borderColor: '#ccc' },
-      timeScale: { 
-        borderColor: '#ccc',
-        timeVisible: true,
-        secondsVisible: false,
-        tickMarkFormatter: (time, tickMarkType, locale) => {
-          const date = new Date(time * 1000);
-          const hours = date.getHours().toString().padStart(2, '0');
-          const minutes = date.getMinutes().toString().padStart(2, '0');
-          
-          if (tickMarkType === 1) { // Day tick mark
-            return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
-          }
-          
-          return `${hours}:${minutes}`;
-        },
-      },
+      timeScale: { borderColor: '#ccc' },
     });
 
     chartRef.current = chart;
 
-    // Apply custom time scale options
-    chart.timeScale().applyOptions({
-      timeVisible: true,
-      secondsVisible: false,
+    const candlestickSeries = chart.addCandlestickSeries({
+      upColor: '#00FF00',
+      downColor: '#FF0000',
+      borderVisible: false,
+      wickUpColor: '#00FF00',
+      wickDownColor: '#FF0000',
     });
+
+    seriesRef.current = candlestickSeries;
 
     const handleResize = () => {
       chart.applyOptions({ width: chartContainerRef.current.clientWidth });
@@ -299,17 +188,66 @@ const ChartModal = ({ onClose }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isLoading && seriesRef.current) {
+      seriesRef.current.setData(candlestickData);
+      chartRef.current.timeScale().fitContent();
+    }
+  }, [isLoading, candlestickData]);
+
+  const handleTimeframeChange = (event) => {
+    setTimeframe(event.target.value);
+  };
+
+  useEffect(() => {
+    socketRef.current = io('http://your-websocket-server-url');
+
+    socketRef.current.on('priceUpdate', (newPrice) => {
+      setCandlestickData((prevData) => {
+        const lastCandle = prevData[prevData.length - 1];
+        const newTime = Math.floor(Date.now() / 1000);
+        
+        if (newTime - lastCandle.time < getIntervalInSeconds(timeframe)) {
+          // Update the last candle
+          const updatedCandle = {
+            ...lastCandle,
+            high: Math.max(lastCandle.high, newPrice),
+            low: Math.min(lastCandle.low, newPrice),
+            close: newPrice
+          };
+          return [...prevData.slice(0, -1), updatedCandle];
+        } else {
+          // Create a new candle
+          const newCandle = {
+            time: newTime,
+            open: newPrice,
+            high: newPrice,
+            low: newPrice,
+            close: newPrice
+          };
+          return [...prevData, newCandle];
+        }
+      });
+    });
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [timeframe]);
+
+  useEffect(() => {
+    if (socketRef.current) {
+      socketRef.current.emit('subscribeTimeframe', timeframe);
+    }
+  }, [timeframe]);
+
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={e => e.stopPropagation()}>
         <ContentWrapper>
           <ControlsContainer>
-            <ControlIcon onClick={() => setChartType('line')}>
-              <LineChartIcon />
-            </ControlIcon>
-            <ControlIcon onClick={() => setChartType('candlestick')}>
-              <CandlestickIcon />
-            </ControlIcon>
             <Select value={timeframe} onChange={handleTimeframeChange}>
               {timeframeOptions.map(option => (
                 <option key={option.value} value={option.value}>{option.label}</option>
@@ -322,5 +260,19 @@ const ChartModal = ({ onClose }) => {
     </ModalOverlay>
   );
 };
+
+function getIntervalInSeconds(timeframe) {
+  const intervals = {
+    '1m': 60,
+    '5m': 300,
+    '15m': 900,
+    '30m': 1800,
+    '1h': 3600,
+    '4h': 14400,
+    '1D': 86400,
+    '3D': 259200
+  };
+  return intervals[timeframe];
+}
 
 export default ChartModal;
