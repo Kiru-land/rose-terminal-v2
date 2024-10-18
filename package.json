@@ -2,6 +2,7 @@
   "name": "rose-terminal-v2",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@openzeppelin/merkle-tree": "^1.0.7",
     "@testing-library/jest-dom": "^5.17.0",
