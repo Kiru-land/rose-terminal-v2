@@ -147,7 +147,6 @@ const ControlButton = styled.button`
   border: none;
   color: #00ff00;
   font-size: 24px;
-  cursor: pointer;
   z-index: 1001;
   transition: opacity 0.3s ease-in-out;
   opacity: ${props => props.visible ? 1 : 0};
@@ -172,7 +171,6 @@ const TouchArea = styled.div`
   top: 0;
   bottom: 0;
   width: 50%;
-  cursor: pointer;
   z-index: 1000;
   display: none;
 
@@ -201,7 +199,7 @@ const loreData = [
     { artPath: 'centerHQ.txt', text: "At the time, we struggled to understand how unstoppable technologies would shape our future.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'cyber.txt', text: "Most of the things we now take for granted were very scarce.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'cyber.txt', text: "Health, food, water, energy... All of these were luxuries. Only the selected few could afford it.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'cyber.txt', text: "Citizens of the old world had to make a pact with the selected few and give up their freedom to fulfill their basic needs.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'cyber.txt', text: "Citizens of the old world had to make a pact with the selected few: give up their freedom to fulfill their basic needs.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'introHQ.txt', text: "The voices of the oppressed echoed...", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 255, 0.1)', fullscreenText: true },
     { artPath: 'cyborg2.txt', text: "A voice, unlike any other, foresaw a path to a new world.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'cyborg.txt', text: "\"Money is the new information, flowing freely, transcending borders.\"", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
@@ -216,15 +214,15 @@ const loreData = [
     { artPath: 'vertical1.txt', text: "Research in vertical agriculture allowed us to grow food in the most efficient way possible.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'vertical0.txt', text: "Monitored by humans and AI, plants grown in a controlled environment, in near perfect conditions.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'vertical3.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(0, 255, 0, 1)', fullscreenText: false },
-    { artPath: 'gen0.txt', text: "Rapid advancements in nuclear fusion allowed us to generate more energy than we needed.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
+    { artPath: 'gen0.txt', text: "Rapid advancements in nuclear fusion allowed us to generate more energy than we could dream of.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'gen1.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'med0.txt', text: "Open and Unrestricted medical research, in particular advances in stem cells and AI modeling, doubled the average life expectancy of Rose citizens.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(200, 200, 255, 1)', fullscreenText: false },
     { artPath: 'med1.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(200, 200, 255, 1)', fullscreenText: false },
     { artPath: 'coin2.txt', text: "The holy token kept peace and order in the network.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'coin2.txt', text: "It is widely known that the token possesses a mysterious power.", textColor: 'rgba(255, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'coin2.txt', text: "The Rose Economical Zone (REZ) flourished, powering the vast majority of trade and commerce of the network states.", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
-    { artPath: 'ekid.txt', text: "Ten years later, five more cities were created, about half Rose population was already automated", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 255, 1)', fullscreenText: false },
-    { artPath: 'oldcityHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 200, 255, 1)', fullscreenText: false },
+    { artPath: 'ekid.txt', text: "Ten years later, five more cities created, about half Rose population is already automated", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 255, 1)', fullscreenText: false },
+    { artPath: 'oldcityHQ.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 150, 50, 1)', fullscreenText: false },
     { artPath: 'capital.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
     { artPath: 'rosecult.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 0, 0, 1)', fullscreenText: false },
     { artPath: 'singleman.txt', text: "", textColor: 'rgba(0, 255, 0, 1)', color: 'rgba(255, 255, 255, 1)', fullscreenText: false },
