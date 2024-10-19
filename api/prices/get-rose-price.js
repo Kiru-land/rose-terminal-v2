@@ -33,10 +33,30 @@ export default authMiddleware(async function handler(req, res) {
             const score = entries[i + 1];
 
             try {
-                const parsedMember = JSON.parse(member);
+                let parsedMember;
+
+                if (typeof member === 'string') {
+                    if (member.startsWith('{') && member.endsWith('}')) {
+                        // Member is a JSON string
+                        parsedMember = JSON.parse(member);
+                    } else {
+                        // Member is a stringified object (e.g., "[object Object]")
+                        console.error('Member is not valid JSON:', member);
+                        // Skip this entry
+                        continue;
+                    }
+                } else if (typeof member === 'object') {
+                    // Member is already an object
+                    parsedMember = member;
+                } else {
+                    console.error('Member is of unknown type:', typeof member, 'Member:', member);
+                    // Skip this entry
+                    continue;
+                }
+
                 data.push({
                     price: parsedMember.price,
-                    timestamp: parseInt(score)
+                    timestamp: parsedMember.timestamp
                 });
             } catch (parseError) {
                 console.error('Error parsing member:', parseError, 'Member:', member);
