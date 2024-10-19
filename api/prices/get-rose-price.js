@@ -47,12 +47,15 @@ export default authMiddleware(async function handler(req, res) {
 
         // Parse and format the entries
         const data = [];
-        for (let i = 0; i < entries.length; i++) {
-            const entry = entries[i];
-            if (typeof entry === 'object' && entry !== null) {
+        for (let i = 0; i < entries.length; i += 2) {
+            const priceEntry = entries[i];
+            const timestamp = entries[i + 1];
+            if (priceEntry !== undefined && timestamp !== undefined) {
                 try {
-                    const { price, timestamp } = JSON.parse(entry.member);
-                    data.push({ price: Number(price), time: Number(timestamp) });
+                    const price = parseFloat(priceEntry);
+                    if (!isNaN(price)) {
+                        data.push({ price, time: Number(timestamp) });
+                    }
                 } catch (error) {
                     console.error('Error parsing entry:', error);
                 }
