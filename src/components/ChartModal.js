@@ -48,7 +48,12 @@ const ChartModal = ({ onClose }) => {
       try {
         const response = await axios.get('/api/proxy/get-rose-price');
         if (response.data.success && Array.isArray(response.data.data)) {
-          setPriceData(response.data.data);
+          // Ensure the data is in the correct format
+          const formattedData = response.data.data.map(item => ({
+            time: item.time,
+            value: parseFloat(item.value)
+          }));
+          setPriceData(formattedData);
         } else {
           console.error('Invalid data structure received:', response.data);
         }
@@ -104,7 +109,11 @@ const ChartModal = ({ onClose }) => {
   return (
     <ModalOverlay>
       <ModalContent>
-        <ChartContainer ref={chartContainerRef} />
+        {priceData.length > 0 ? (
+          <ChartContainer ref={chartContainerRef} />
+        ) : (
+          <div>No price data available</div>
+        )}
         <CloseButton onClick={onClose}>Close</CloseButton>
       </ModalContent>
     </ModalOverlay>

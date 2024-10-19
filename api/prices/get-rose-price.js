@@ -36,12 +36,10 @@ export default authMiddleware(async function handler(req, res) {
         // Parse and format the entries
         const data = [];
         for (let i = 0; i < entries.length; i += 2) {
-            const priceEntry = entries[i];
+            const priceEntry = JSON.parse(entries[i]);
             const timestamp = parseInt(entries[i + 1]);
             
-            if (typeof priceEntry === 'object' && priceEntry !== null && 'price' in priceEntry) {
-                data.push({ time: timestamp, value: parseFloat(priceEntry.price) });
-            }
+            data.push({ time: timestamp, value: priceEntry.price });
         }
 
         if (data.length === 0) {
@@ -49,10 +47,7 @@ export default authMiddleware(async function handler(req, res) {
             return;
         }
 
-        // Sort the data by time
-        data.sort((a, b) => a.time - b.time);
-
-        // Return the data as JSON
+        // Return the data as JSON (already sorted by time)
         res.status(200).json({ success: true, data: data });
     } catch (error) {
         console.error('Error in handler:', error);
