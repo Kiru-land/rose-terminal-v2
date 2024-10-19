@@ -42,13 +42,9 @@ export default authMiddleware(async function handler(req, res) {
             try {
                 const parsedEntry = JSON.parse(priceEntry);
                 if (parsedEntry && typeof parsedEntry.price === 'number') {
-                    // Use the timestamp from the score, not from the entry
                     data.push({
-                        time: timestamp / 1000, // Convert milliseconds to seconds for Lightweight Charts
-                        open: parsedEntry.price,
-                        high: parsedEntry.price,
-                        low: parsedEntry.price,
-                        close: parsedEntry.price
+                        time: timestamp, // Keep timestamp in milliseconds
+                        value: parsedEntry.price
                     });
                 }
             } catch (parseError) {
