@@ -136,21 +136,25 @@ const ChartModal = ({ onClose }) => {
       const response = await axios.get(`/api/proxy/get-rose-price`, {
         params: { timeframe }
       });
+      console.log('Raw response data:', response.data);
+
       if (response.data.success && Array.isArray(response.data.data)) {
-        setCandlestickData(response.data.data.map(candle => ({
+        const formattedData = response.data.data.map(candle => ({
           time: candle.time,
-          open: candle.open,
-          high: candle.high,
-          low: candle.low,
-          close: candle.close
-        })));
+          open: parseFloat(candle.open),
+          high: parseFloat(candle.high),
+          low: parseFloat(candle.low),
+          close: parseFloat(candle.close)
+        }));
+        console.log('Formatted data:', formattedData);
+        setCandlestickData(formattedData);
       } else {
         console.error('Invalid data structure received:', response.data);
-        // Optionally, you can set an error state here to display to the user
+        // Optionally, set an error state here
       }
     } catch (error) {
       console.error('Error fetching price data:', error);
-      // Optionally, you can set an error state here to display to the user
+      // Optionally, set an error state here
     } finally {
       setIsLoading(false);
     }
@@ -201,7 +205,8 @@ const ChartModal = ({ onClose }) => {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && seriesRef.current) {
+    if (!isLoading && seriesRef.current && candlestickData.length > 0) {
+      console.log('Setting chart data:', candlestickData); // Log data being set to chart
       seriesRef.current.setData(candlestickData);
       chartRef.current.timeScale().fitContent();
     }

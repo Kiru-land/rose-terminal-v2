@@ -36,7 +36,7 @@ export default authMiddleware(async function handler(req, res) {
         const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
 
         console.log(`Total entries fetched: ${entries.length}`);
-        console.log('Entries:', entries);
+        console.log('Entries:', JSON.stringify(entries));
 
         // Check if entries is an array and not empty
         if (!Array.isArray(entries) || entries.length === 0) {
@@ -46,15 +46,18 @@ export default authMiddleware(async function handler(req, res) {
         }
 
         // Parse and format the entries
-        const data = entries.map(([priceEntry, score]) => {
-            try {
-                const { price, timestamp } = JSON.parse(priceEntry);
-                return { price: Number(price), timestamp: Number(timestamp) };
-            } catch (error) {
-                console.error('Error parsing entry:', error);
-                return null;
+        const data = [];
+        for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+            if (typeof entry === 'object' && entry !== null) {
+                try {
+                    const { price, timestamp } = JSON.parse(entry.member);
+                    data.push({ price: Number(price), time: Number(timestamp) });
+                } catch (error) {
+                    console.error('Error parsing entry:', error);
+                }
             }
-        }).filter(Boolean);
+        }
 
         if (data.length === 0) {
             console.log('No valid data after parsing');
