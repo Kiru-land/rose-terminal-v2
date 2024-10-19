@@ -40,17 +40,16 @@ export default authMiddleware(async function handler(req, res) {
             const timestamp = parseInt(entries[i + 1]);
             
             try {
-                let parsedEntry;
-                if (typeof priceEntry === 'string') {
-                    parsedEntry = JSON.parse(priceEntry);
-                } else if (typeof priceEntry === 'object' && priceEntry !== null) {
-                    parsedEntry = priceEntry;
-                } else {
-                    throw new Error('Invalid price entry format');
-                }
-
-                if ('price' in parsedEntry) {
-                    data.push({ time: timestamp, value: parseFloat(parsedEntry.price) });
+                const parsedEntry = JSON.parse(priceEntry);
+                if (parsedEntry && typeof parsedEntry.price === 'number') {
+                    // Use the timestamp from the score, not from the entry
+                    data.push({
+                        time: timestamp / 1000, // Convert milliseconds to seconds for Lightweight Charts
+                        open: parsedEntry.price,
+                        high: parsedEntry.price,
+                        low: parsedEntry.price,
+                        close: parsedEntry.price
+                    });
                 }
             } catch (parseError) {
                 console.error('Error parsing price entry:', parseError, 'Entry:', priceEntry);
@@ -63,7 +62,10 @@ export default authMiddleware(async function handler(req, res) {
             return;
         }
 
-        // Return the data as JSON (already sorted by time)
+        // Sort the data by time
+        data.sort((a, b) => a.time - b.time);
+
+        // Return the data as JSON
         res.status(200).json({ success: true, data: data });
     } catch (error) {
         console.error('Error in handler:', error);
