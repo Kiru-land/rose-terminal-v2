@@ -36,10 +36,18 @@ export default authMiddleware(async function handler(req, res) {
         // Parse and format the entries
         const data = [];
         for (let i = 0; i < entries.length; i += 2) {
-            const priceEntry = JSON.parse(entries[i]);
+            const priceEntry = entries[i];
             const timestamp = parseInt(entries[i + 1]);
             
-            data.push({ time: timestamp, value: priceEntry.price });
+            try {
+                const parsedEntry = JSON.parse(priceEntry);
+                if (typeof parsedEntry === 'object' && parsedEntry !== null && 'price' in parsedEntry) {
+                    data.push({ time: timestamp, value: parseFloat(parsedEntry.price) });
+                }
+            } catch (parseError) {
+                console.error('Error parsing price entry:', parseError);
+                // Skip this entry and continue with the next one
+            }
         }
 
         if (data.length === 0) {
