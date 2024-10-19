@@ -35,6 +35,8 @@ export default authMiddleware(async function handler(req, res) {
         // Retrieve all entries from the sorted set
         const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
 
+        console.log('Raw entries:', entries); // Log raw entries for debugging
+
         if (!entries || entries.length === 0) {
             res.status(404).json({ success: false, error: 'No price data available' });
             return;
@@ -43,10 +45,28 @@ export default authMiddleware(async function handler(req, res) {
         // Parse and format the entries
         const data = [];
         for (let i = 0; i < entries.length; i += 2) {
-            const priceEntry = JSON.parse(entries[i]);
+            const priceEntry = entries[i];
             const timestamp = parseInt(entries[i + 1]);
-            data.push({ price: priceEntry.price, time: timestamp });
+            
+            console.log('Processing entry:', priceEntry, timestamp); // Log each entry being processed
+
+            let parsedPrice;
+            try {
+                parsedPrice = JSON.parse(priceEntry);
+            } catch (parseError) {
+                console.error('Error parsing price entry:', parseError);
+                console.log('Raw price entry:', priceEntry);
+                continue; // Skip this entry if it can't be parsed
+            }
+
+            if (typeof parsedPrice === 'object' && parsedPrice !== null && 'price' in parsedPrice) {
+                data.push({ price: parsedPrice.price, time: timestamp });
+            } else {
+                console.warn('Skipping invalid price entry:', parsedPrice);
+            }
         }
+
+        console.log('Processed data:', data); // Log processed data for debugging
 
         if (data.length === 0) {
             res.status(404).json({ success: false, error: 'No valid price data available' });
