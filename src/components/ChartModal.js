@@ -116,7 +116,7 @@ const ChartModal = ({ onClose }) => {
   const chartRef = useRef();
   const seriesRef = useRef();
   const [isLoading, setIsLoading] = useState(true);
-  const [candlestickData, setCandlestickData] = useState([]);
+  const [lineData, setLineData] = useState([]);
   const [timeframe, setTimeframe] = useState('1m');
 
   const timeframeOptions = [
@@ -139,15 +139,7 @@ const ChartModal = ({ onClose }) => {
       console.log('Raw response data:', response.data);
 
       if (response.data.success && Array.isArray(response.data.data)) {
-        const formattedData = response.data.data.map(candle => ({
-          time: candle.time,
-          open: candle.open,
-          high: candle.high,
-          low: candle.low,
-          close: candle.close
-        }));
-        console.log('Formatted data:', formattedData);
-        setCandlestickData(formattedData);
+        setLineData(response.data.data);
       } else {
         console.error('Invalid data structure received:', response.data);
       }
@@ -197,15 +189,12 @@ const ChartModal = ({ onClose }) => {
 
     chartRef.current = chart;
 
-    const candlestickSeries = chart.addCandlestickSeries({
-      upColor: '#00FF00',
-      downColor: '#FF0000',
-      borderVisible: false,
-      wickUpColor: '#00FF00',
-      wickDownColor: '#FF0000',
+    const lineSeries = chart.addLineSeries({
+      color: '#00FF00',
+      lineWidth: 2,
     });
 
-    seriesRef.current = candlestickSeries;
+    seriesRef.current = lineSeries;
 
     const handleResize = () => {
       chart.applyOptions({ width: chartContainerRef.current.clientWidth });
@@ -219,19 +208,19 @@ const ChartModal = ({ onClose }) => {
   }, [timeframe]);
 
   useEffect(() => {
-    if (!isLoading && seriesRef.current && candlestickData.length > 0) {
-      console.log('Setting chart data:', candlestickData);
-      seriesRef.current.setData(candlestickData);
+    if (!isLoading && seriesRef.current && lineData.length > 0) {
+      console.log('Setting chart data:', lineData);
+      seriesRef.current.setData(lineData);
       
       // Set visible range to start from the first data point and end at the last data point
-      const firstDataPointTime = candlestickData[0].time;
-      const lastDataPointTime = candlestickData[candlestickData.length - 1].time;
+      const firstDataPointTime = lineData[0].time;
+      const lastDataPointTime = lineData[lineData.length - 1].time;
       chartRef.current.timeScale().setVisibleRange({
         from: firstDataPointTime,
         to: lastDataPointTime,
       });
     }
-  }, [isLoading, candlestickData]);
+  }, [isLoading, lineData]);
 
   const handleTimeframeChange = (event) => {
     setTimeframe(event.target.value);

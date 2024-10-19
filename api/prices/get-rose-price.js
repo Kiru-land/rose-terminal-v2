@@ -47,7 +47,7 @@ export default authMiddleware(async function handler(req, res) {
             const timestamp = parseInt(entries[i + 1]);
             
             if (typeof priceEntry === 'object' && priceEntry !== null && 'price' in priceEntry) {
-                data.push({ price: priceEntry.price, time: timestamp });
+                data.push({ value: parseFloat(priceEntry.price), time: timestamp });
             }
         }
 
@@ -56,57 +56,13 @@ export default authMiddleware(async function handler(req, res) {
             return;
         }
 
-        const candlestickData = aggregateDataToCandlesticks(data, timeframe);
+        // Sort the data by time
+        data.sort((a, b) => a.time - b.time);
 
-        // Sort the candlestick data by time
-        candlestickData.sort((a, b) => a.time - b.time);
-
-        // Return only the essential candlestick data
-        const optimizedData = candlestickData.map(candle => ({
-            time: candle.time,  // Keep as seconds
-            open: parseFloat(candle.open.toFixed(8)),
-            high: parseFloat(candle.high.toFixed(8)),
-            low: parseFloat(candle.low.toFixed(8)),
-            close: parseFloat(candle.close.toFixed(8))
-        }));
-
-        // Return the optimized data as JSON
-        res.status(200).json({ success: true, data: optimizedData });
+        // Return the data as JSON
+        res.status(200).json({ success: true, data: data });
     } catch (error) {
         console.error('Error in handler:', error);
         res.status(500).json({ success: false, error: error.message || 'Internal Server Error' });
     }
 });
-
-function aggregateDataToCandlesticks(data, timeframe) {
-    const interval = getIntervalInSeconds(timeframe);
-    const candlesticks = {};
-
-    data.forEach(({ price, time }) => {
-        const candleTime = Math.floor(time / interval) * interval;
-        if (!candlesticks[candleTime]) {
-            candlesticks[candleTime] = { time: candleTime, open: price, high: price, low: price, close: price };
-        } else {
-            const candle = candlesticks[candleTime];
-            candle.high = Math.max(candle.high, price);
-            candle.low = Math.min(candle.low, price);
-            candle.close = price;
-        }
-    });
-
-    return Object.values(candlesticks);
-}
-
-function getIntervalInSeconds(timeframe) {
-    const intervals = {
-        '1m': 60,
-        '5m': 300,
-        '15m': 900,
-        '30m': 1800,
-        '1h': 3600,
-        '4h': 14400,
-        '1D': 86400,
-        '3D': 259200
-    };
-    return intervals[timeframe];
-}
