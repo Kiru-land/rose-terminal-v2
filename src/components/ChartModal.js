@@ -51,11 +51,22 @@ const ChartModal = ({ onClose }) => {
         if (response.data.success && Array.isArray(response.data.data)) {
           // Format the data as required by Lightweight Charts
           const formattedData = response.data.data
-            .map((item) => ({
-              time: item.timestamp, // Use the timestamp directly
-              value: parseFloat(item.price),
-            }))
-            .sort((a, b) => a.time - b.time); // Sort by timestamp
+            .map((item) => {
+              const date = new Date(item.timestamp * 1000);
+              return {
+                time: {
+                  year: date.getUTCFullYear(),
+                  month: date.getUTCMonth() + 1, // Months are zero-based, so we add 1
+                  day: date.getUTCDate(),
+                },
+                value: parseFloat(item.price),
+              };
+            })
+            .sort((a, b) => {
+              const timeA = new Date(Date.UTC(a.time.year, a.time.month - 1, a.time.day));
+              const timeB = new Date(Date.UTC(b.time.year, b.time.month - 1, b.time.day));
+              return timeA - timeB;
+            });
           setPriceData(formattedData);
         } else {
           console.error('Invalid data structure received:', response.data);
@@ -84,11 +95,7 @@ const ChartModal = ({ onClose }) => {
       },
       timeScale: {
         timeVisible: true,
-        secondsVisible: true,
-        tickMarkFormatter: (time) => {
-          const date = new Date(time * 1000);
-          return date.toLocaleString();
-        },
+        secondsVisible: false, // Since we're using daily data
       },
     });
 
