@@ -93,7 +93,22 @@ const ChartModal = ({ onClose }) => {
         borderColor: '#485c7b',
         visible: true,
         tickMarkFormatter: (time, tickMarkType, locale) => {
-          const date = new Date(time * 1000); // Convert seconds to milliseconds
+          let date;
+          if (typeof time === 'number') {
+            // time is a UTCTimestamp in seconds
+            date = new Date(time * 1000); // Convert seconds to milliseconds
+          } else if (
+            typeof time === 'object' &&
+            time.year !== undefined &&
+            time.month !== undefined &&
+            time.day !== undefined
+          ) {
+            // time is a BusinessDay object
+            date = new Date(Date.UTC(time.year, time.month - 1, time.day));
+          } else {
+            console.error('Unsupported time format:', time);
+            return '';
+          }
           return date.toLocaleString(locale, {
             hour12: false,
             year: 'numeric',
