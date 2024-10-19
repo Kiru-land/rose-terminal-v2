@@ -58,9 +58,12 @@ export default authMiddleware(async function handler(req, res) {
 
         const candlestickData = aggregateDataToCandlesticks(data, timeframe);
 
+        // Sort the candlestick data by time
+        candlestickData.sort((a, b) => a.time - b.time);
+
         // Return only the essential candlestick data
         const optimizedData = candlestickData.map(candle => ({
-            time: candle.time * 1000, // Convert to milliseconds for JavaScript Date object
+            time: candle.time,  // Keep as seconds
             open: parseFloat(candle.open.toFixed(8)),
             high: parseFloat(candle.high.toFixed(8)),
             low: parseFloat(candle.low.toFixed(8)),

@@ -140,7 +140,7 @@ const ChartModal = ({ onClose }) => {
 
       if (response.data.success && Array.isArray(response.data.data)) {
         const formattedData = response.data.data.map(candle => ({
-          time: candle.time / 1000, // Convert back to seconds for lightweight-charts
+          time: candle.time,  // Keep as seconds
           open: candle.open,
           high: candle.high,
           low: candle.low,
@@ -178,7 +178,11 @@ const ChartModal = ({ onClose }) => {
       },
       crosshair: { mode: CrosshairMode.Normal },
       rightPriceScale: { borderColor: '#ccc' },
-      timeScale: { borderColor: '#ccc' },
+      timeScale: { 
+        borderColor: '#ccc',
+        timeVisible: true,
+        secondsVisible: timeframe === '1m' || timeframe === '5m',
+      },
     });
 
     chartRef.current = chart;
@@ -202,13 +206,21 @@ const ChartModal = ({ onClose }) => {
       window.removeEventListener('resize', handleResize);
       chart.remove();
     };
-  }, []);
+  }, [timeframe]);
 
   useEffect(() => {
     if (!isLoading && seriesRef.current && candlestickData.length > 0) {
       console.log('Setting chart data:', candlestickData);
       seriesRef.current.setData(candlestickData);
       chartRef.current.timeScale().fitContent();
+      
+      // Set visible range to start from the first data point
+      const firstDataPointTime = candlestickData[0].time;
+      const lastDataPointTime = candlestickData[candlestickData.length - 1].time;
+      chartRef.current.timeScale().setVisibleRange({
+        from: firstDataPointTime,
+        to: lastDataPointTime,
+      });
     }
   }, [isLoading, candlestickData]);
 
