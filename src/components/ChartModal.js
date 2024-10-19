@@ -140,11 +140,11 @@ const ChartModal = ({ onClose }) => {
 
       if (response.data.success && Array.isArray(response.data.data)) {
         const formattedData = response.data.data.map(candle => ({
-          time: candle.t / 1000, // Convert back to seconds for lightweight-charts
-          open: candle.o,
-          high: candle.h,
-          low: candle.l,
-          close: candle.c
+          time: candle.time / 1000, // Convert back to seconds for lightweight-charts
+          open: candle.open,
+          high: candle.high,
+          low: candle.low,
+          close: candle.close
         }));
         console.log('Formatted data:', formattedData);
         setCandlestickData(formattedData);

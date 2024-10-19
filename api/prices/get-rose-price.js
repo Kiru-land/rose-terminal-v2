@@ -60,11 +60,11 @@ export default authMiddleware(async function handler(req, res) {
 
         // Return only the essential candlestick data
         const optimizedData = candlestickData.map(candle => ({
-            t: candle.time,  // Use 't' instead of 'time' to further reduce payload size
-            o: parseFloat(candle.open.toFixed(8)),
-            h: parseFloat(candle.high.toFixed(8)),
-            l: parseFloat(candle.low.toFixed(8)),
-            c: parseFloat(candle.close.toFixed(8))
+            time: candle.time * 1000, // Convert to milliseconds for JavaScript Date object
+            open: parseFloat(candle.open.toFixed(8)),
+            high: parseFloat(candle.high.toFixed(8)),
+            low: parseFloat(candle.low.toFixed(8)),
+            close: parseFloat(candle.close.toFixed(8))
         }));
 
         // Return the optimized data as JSON
