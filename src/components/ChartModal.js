@@ -47,12 +47,15 @@ const ChartModal = ({ onClose }) => {
     const fetchPriceData = async () => {
       try {
         const response = await axios.get('/api/proxy/get-rose-price');
+
         if (response.data.success && Array.isArray(response.data.data)) {
-          // Ensure the data is in the correct format
-          const formattedData = response.data.data.map(item => ({
-            time: item.time / 1000, // Convert milliseconds to seconds
-            value: parseFloat(item.value)
-          }));
+          // Ensure the data is in the correct format and sorted by timestamp
+          const formattedData = response.data.data
+            .map((item) => ({
+              time: Math.floor(item.timestamp), // Assuming timestamp is in seconds
+              value: parseFloat(item.price),
+            }))
+            .sort((a, b) => a.time - b.time);
           setPriceData(formattedData);
         } else {
           console.error('Invalid data structure received:', response.data);
@@ -72,7 +75,7 @@ const ChartModal = ({ onClose }) => {
       width: chartContainerRef.current.clientWidth,
       height: 400,
       layout: {
-        background: { type: 'solid', color: '#1e1e1e' },
+        backgroundColor: '#1e1e1e',
         textColor: '#d1d4dc',
       },
       grid: {
@@ -82,12 +85,48 @@ const ChartModal = ({ onClose }) => {
       timeScale: {
         timeVisible: true,
         secondsVisible: false,
+        rightOffset: 10,
+        barSpacing: 15,
+        fixLeftEdge: false,
+        fixRightEdge: false,
+        lockVisibleTimeRangeOnResize: false,
+        borderVisible: true,
+        borderColor: '#485c7b',
+        visible: true,
+        tickMarkFormatter: (time, tickMarkType, locale) => {
+          const date = new Date(time * 1000);
+          const options = {};
+          if (tickMarkType === 'year') {
+            options.year = 'numeric';
+          } else if (tickMarkType === 'month') {
+            options.month = 'short';
+          } else if (tickMarkType === 'day') {
+            options.month = 'short';
+            options.day = 'numeric';
+          } else if (tickMarkType === 'time') {
+            options.hour = '2-digit';
+            options.minute = '2-digit';
+          } else {
+            options.month = 'short';
+            options.day = 'numeric';
+            options.hour = '2-digit';
+            options.minute = '2-digit';
+          }
+          return date.toLocaleString(locale, options);
+        },
       },
     });
 
     const lineSeries = chart.addLineSeries({
       color: '#2962FF',
       lineWidth: 2,
+      priceFormat: {
+        type: 'custom',
+        formatter: (price) => {
+          // Format price using scientific notation with two decimal places
+          return price.toExponential(2);
+        },
+      },
     });
 
     lineSeries.setData(priceData);
@@ -95,7 +134,9 @@ const ChartModal = ({ onClose }) => {
     chart.timeScale().fitContent();
 
     const handleResize = () => {
-      chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+      if (chartContainerRef.current) {
+        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+      }
     };
 
     window.addEventListener('resize', handleResize);
