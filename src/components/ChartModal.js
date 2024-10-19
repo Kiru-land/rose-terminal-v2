@@ -94,7 +94,7 @@ const ChartModal = ({ onClose }) => {
         borderColor: '#485c7b',
         visible: true,
         tickMarkFormatter: (time, tickMarkType, locale) => {
-          const date = new Date(time * 1000);
+          const date = new Date(time * 1000); // Assuming 'time' is in seconds
           const options = {};
           if (tickMarkType === 'year') {
             options.year = 'numeric';
