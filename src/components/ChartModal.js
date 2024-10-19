@@ -136,9 +136,21 @@ const ChartModal = ({ onClose }) => {
       const response = await axios.get(`/api/proxy/get-rose-price`, {
         params: { timeframe }
       });
-      setCandlestickData(response.data.data);
+      if (response.data.success && Array.isArray(response.data.data)) {
+        setCandlestickData(response.data.data.map(candle => ({
+          time: candle.time,
+          open: candle.open,
+          high: candle.high,
+          low: candle.low,
+          close: candle.close
+        })));
+      } else {
+        console.error('Invalid data structure received:', response.data);
+        // Optionally, you can set an error state here to display to the user
+      }
     } catch (error) {
       console.error('Error fetching price data:', error);
+      // Optionally, you can set an error state here to display to the user
     } finally {
       setIsLoading(false);
     }
