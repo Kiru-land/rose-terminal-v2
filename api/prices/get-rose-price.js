@@ -35,25 +35,20 @@ export default authMiddleware(async function handler(req, res) {
         // Retrieve all entries from the sorted set
         const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
 
-        console.log(`Total entries fetched: ${entries.length}`);
-        console.log('Entries:', JSON.stringify(entries));
-
-        // Check if entries is an array and not empty
-        if (!Array.isArray(entries) || entries.length === 0) {
-            console.log('No entries found or invalid data structure');
+        if (!entries || entries.length === 0) {
             res.status(404).json({ success: false, error: 'No price data available' });
             return;
         }
 
         // Parse and format the entries
-        const data = entries.map(entry => {
-            const [priceEntry, timestamp] = entry;
-            const { price } = JSON.parse(priceEntry);
-            return { price, time: Number(timestamp) };
-        });
+        const data = [];
+        for (let i = 0; i < entries.length; i += 2) {
+            const priceEntry = JSON.parse(entries[i]);
+            const timestamp = parseInt(entries[i + 1]);
+            data.push({ price: priceEntry.price, time: timestamp });
+        }
 
         if (data.length === 0) {
-            console.log('No valid data after parsing');
             res.status(404).json({ success: false, error: 'No valid price data available' });
             return;
         }
