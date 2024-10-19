@@ -140,11 +140,11 @@ const ChartModal = ({ onClose }) => {
 
       if (response.data.success && Array.isArray(response.data.data)) {
         const formattedData = response.data.data.map(candle => ({
-          time: candle.time,
-          open: parseFloat(candle.open),
-          high: parseFloat(candle.high),
-          low: parseFloat(candle.low),
-          close: parseFloat(candle.close)
+          time: candle.t / 1000, // Convert back to seconds for lightweight-charts
+          open: candle.o,
+          high: candle.h,
+          low: candle.l,
+          close: candle.c
         }));
         console.log('Formatted data:', formattedData);
         setCandlestickData(formattedData);
@@ -206,7 +206,7 @@ const ChartModal = ({ onClose }) => {
 
   useEffect(() => {
     if (!isLoading && seriesRef.current && candlestickData.length > 0) {
-      console.log('Setting chart data:', candlestickData); // Log data being set to chart
+      console.log('Setting chart data:', candlestickData);
       seriesRef.current.setData(candlestickData);
       chartRef.current.timeScale().fitContent();
     }
