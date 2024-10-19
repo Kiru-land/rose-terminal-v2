@@ -50,19 +50,10 @@ export default authMiddleware(async function handler(req, res) {
             
             console.log('Processing entry:', priceEntry, timestamp); // Log each entry being processed
 
-            let parsedPrice;
-            try {
-                parsedPrice = JSON.parse(priceEntry);
-            } catch (parseError) {
-                console.error('Error parsing price entry:', parseError);
-                console.log('Raw price entry:', priceEntry);
-                continue; // Skip this entry if it can't be parsed
-            }
-
-            if (typeof parsedPrice === 'object' && parsedPrice !== null && 'price' in parsedPrice) {
-                data.push({ price: parsedPrice.price, time: timestamp });
+            if (typeof priceEntry === 'object' && priceEntry !== null && 'price' in priceEntry) {
+                data.push({ price: priceEntry.price, time: timestamp });
             } else {
-                console.warn('Skipping invalid price entry:', parsedPrice);
+                console.warn('Skipping invalid price entry:', priceEntry);
             }
         }
 
