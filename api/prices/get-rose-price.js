@@ -25,13 +25,6 @@ export default authMiddleware(async function handler(req, res) {
             return;
         }
 
-        const { timeframe } = req.query;
-        const validTimeframes = ['1m', '5m', '15m', '30m', '1h', '4h', '1D', '3D'];
-        if (!validTimeframes.includes(timeframe)) {
-            res.status(400).json({ success: false, error: 'Invalid timeframe' });
-            return;
-        }
-
         // Retrieve all entries from the sorted set
         const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
 
@@ -47,7 +40,7 @@ export default authMiddleware(async function handler(req, res) {
             const timestamp = parseInt(entries[i + 1]);
             
             if (typeof priceEntry === 'object' && priceEntry !== null && 'price' in priceEntry) {
-                data.push({ value: parseFloat(priceEntry.price), time: timestamp });
+                data.push({ time: timestamp, value: parseFloat(priceEntry.price) });
             }
         }
 
