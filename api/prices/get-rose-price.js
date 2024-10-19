@@ -6,65 +6,55 @@ export default authMiddleware(async function handler(req, res) {
         // Set CORS headers
         res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS'); // Allow specific methods
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // Allow specific headers
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Allow specific headers
 
         // Handle preflight OPTIONS request
         if (req.method === 'OPTIONS') {
-            console.log('CORS preflight request received');
             res.status(200).end();
             return;
         }
 
-        console.log('Incoming request:', req.method, req.url);
-        console.log('Query parameters:', req.query);
-
-        // Check if it's a GET request
+        // Ensure it's a GET request
         if (req.method !== 'GET') {
-            console.log('Invalid method:', req.method);
-            res.status(405).json({ success: false, error: 'Method Not Allowed' });
-            return;
+            return res.status(405).json({ success: false, error: 'Method Not Allowed' });
         }
 
-        // Retrieve all entries from the sorted set
+        // Retrieve all entries from the sorted set with scores
         const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
 
         if (!entries || entries.length === 0) {
-            res.status(404).json({ success: false, error: 'No price data available' });
-            return;
+            return res.status(404).json({ success: false, error: 'No price data available' });
         }
 
         // Parse and format the entries
         const data = [];
         for (let i = 0; i < entries.length; i += 2) {
-            const priceEntry = entries[i];
-            const timestamp = parseInt(entries[i + 1]);
-            
+            const member = entries[i];
+            const score = entries[i + 1];
+
             try {
-                const parsedEntry = JSON.parse(priceEntry);
-                if (parsedEntry && typeof parsedEntry.price === 'number') {
-                    data.push({
-                        time: timestamp, // Keep timestamp in milliseconds
-                        value: parsedEntry.price
-                    });
-                }
+                const parsedMember = JSON.parse(member);
+                data.push({
+                    price: parsedMember.price,
+                    timestamp: parseInt(score)
+                });
             } catch (parseError) {
-                console.error('Error parsing price entry:', parseError, 'Entry:', priceEntry);
+                console.error('Error parsing member:', parseError, 'Member:', member);
                 // Skip this entry and continue with the next one
             }
         }
 
         if (data.length === 0) {
-            res.status(404).json({ success: false, error: 'No valid price data available' });
-            return;
+            return res.status(404).json({ success: false, error: 'No valid price data available' });
         }
 
-        // Sort the data by time
-        data.sort((a, b) => a.time - b.time);
+        // Sort the data by timestamp in ascending order
+        data.sort((a, b) => a.timestamp - b.timestamp);
 
         // Return the data as JSON
-        res.status(200).json({ success: true, data: data });
+        res.status(200).json({ success: true, data });
     } catch (error) {
-        console.error('Error in handler:', error);
-        res.status(500).json({ success: false, error: error.message || 'Internal Server Error' });
+        console.error('Error in get-rose-price:', error);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
     }
 });
