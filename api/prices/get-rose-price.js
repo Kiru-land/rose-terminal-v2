@@ -35,8 +35,6 @@ export default authMiddleware(async function handler(req, res) {
         // Retrieve all entries from the sorted set
         const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
 
-        console.log('Raw entries:', entries); // Log raw entries for debugging
-
         if (!entries || entries.length === 0) {
             res.status(404).json({ success: false, error: 'No price data available' });
             return;
@@ -48,16 +46,10 @@ export default authMiddleware(async function handler(req, res) {
             const priceEntry = entries[i];
             const timestamp = parseInt(entries[i + 1]);
             
-            console.log('Processing entry:', priceEntry, timestamp); // Log each entry being processed
-
             if (typeof priceEntry === 'object' && priceEntry !== null && 'price' in priceEntry) {
                 data.push({ price: priceEntry.price, time: timestamp });
-            } else {
-                console.warn('Skipping invalid price entry:', priceEntry);
             }
         }
-
-        console.log('Processed data:', data); // Log processed data for debugging
 
         if (data.length === 0) {
             res.status(404).json({ success: false, error: 'No valid price data available' });
@@ -66,8 +58,17 @@ export default authMiddleware(async function handler(req, res) {
 
         const candlestickData = aggregateDataToCandlesticks(data, timeframe);
 
-        // Return the data as JSON
-        res.status(200).json({ success: true, data: candlestickData });
+        // Return only the essential candlestick data
+        const optimizedData = candlestickData.map(candle => ({
+            t: candle.time,  // Use 't' instead of 'time' to further reduce payload size
+            o: parseFloat(candle.open.toFixed(8)),
+            h: parseFloat(candle.high.toFixed(8)),
+            l: parseFloat(candle.low.toFixed(8)),
+            c: parseFloat(candle.close.toFixed(8))
+        }));
+
+        // Return the optimized data as JSON
+        res.status(200).json({ success: true, data: optimizedData });
     } catch (error) {
         console.error('Error in handler:', error);
         res.status(500).json({ success: false, error: error.message || 'Internal Server Error' });
