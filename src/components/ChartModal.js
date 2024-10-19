@@ -52,10 +52,10 @@ const ChartModal = ({ onClose }) => {
           // Format the data as required by Lightweight Charts
           const formattedData = response.data.data
             .map((item) => ({
-              time: item.timestamp, // Assuming timestamp is in seconds since epoch
+              time: new Date(item.timestamp * 1000).toISOString().split('T')[0], // Convert timestamp to 'YYYY-MM-DD' format
               value: parseFloat(item.price),
             }))
-            .sort((a, b) => a.time - b.time);
+            .sort((a, b) => a.time.localeCompare(b.time)); // Sort by time
           setPriceData(formattedData);
         } else {
           console.error('Invalid data structure received:', response.data);
