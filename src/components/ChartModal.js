@@ -49,10 +49,10 @@ const ChartModal = ({ onClose }) => {
         const response = await axios.get('/api/proxy/get-rose-price');
 
         if (response.data.success && Array.isArray(response.data.data)) {
-          // Ensure the data is in the correct format and sorted by timestamp
+          // Format the data as required by Lightweight Charts
           const formattedData = response.data.data
             .map((item) => ({
-              time: Math.floor(item.timestamp), // Assuming timestamp is in seconds
+              time: item.timestamp, // Assuming timestamp is in seconds since epoch
               value: parseFloat(item.price),
             }))
             .sort((a, b) => a.time - b.time);
@@ -84,9 +84,8 @@ const ChartModal = ({ onClose }) => {
       },
       timeScale: {
         timeVisible: true,
-        secondsVisible: false,
+        secondsVisible: true,
         rightOffset: 10,
-        barSpacing: 15,
         fixLeftEdge: false,
         fixRightEdge: false,
         lockVisibleTimeRangeOnResize: false,
@@ -94,25 +93,16 @@ const ChartModal = ({ onClose }) => {
         borderColor: '#485c7b',
         visible: true,
         tickMarkFormatter: (time, tickMarkType, locale) => {
-          const date = new Date(time * 1000); // Assuming 'time' is in seconds
-          const options = {};
-          if (tickMarkType === 'year') {
-            options.year = 'numeric';
-          } else if (tickMarkType === 'month') {
-            options.month = 'short';
-          } else if (tickMarkType === 'day') {
-            options.month = 'short';
-            options.day = 'numeric';
-          } else if (tickMarkType === 'time') {
-            options.hour = '2-digit';
-            options.minute = '2-digit';
-          } else {
-            options.month = 'short';
-            options.day = 'numeric';
-            options.hour = '2-digit';
-            options.minute = '2-digit';
-          }
-          return date.toLocaleString(locale, options);
+          const date = new Date(time * 1000); // Convert seconds to milliseconds
+          return date.toLocaleString(locale, {
+            hour12: false,
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          });
         },
       },
     });
