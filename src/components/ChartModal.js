@@ -85,6 +85,10 @@ const ChartModal = ({ onClose }) => {
       timeScale: {
         timeVisible: true,
         secondsVisible: true,
+        tickMarkFormatter: (time) => {
+          const date = new Date(time * 1000);
+          return date.toLocaleString();
+        },
       },
     });
 
