@@ -40,12 +40,20 @@ export default authMiddleware(async function handler(req, res) {
             const timestamp = parseInt(entries[i + 1]);
             
             try {
-                const parsedEntry = JSON.parse(priceEntry);
-                if (typeof parsedEntry === 'object' && parsedEntry !== null && 'price' in parsedEntry) {
+                let parsedEntry;
+                if (typeof priceEntry === 'string') {
+                    parsedEntry = JSON.parse(priceEntry);
+                } else if (typeof priceEntry === 'object' && priceEntry !== null) {
+                    parsedEntry = priceEntry;
+                } else {
+                    throw new Error('Invalid price entry format');
+                }
+
+                if ('price' in parsedEntry) {
                     data.push({ time: timestamp, value: parseFloat(parsedEntry.price) });
                 }
             } catch (parseError) {
-                console.error('Error parsing price entry:', parseError);
+                console.error('Error parsing price entry:', parseError, 'Entry:', priceEntry);
                 // Skip this entry and continue with the next one
             }
         }

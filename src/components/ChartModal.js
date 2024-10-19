@@ -50,7 +50,7 @@ const ChartModal = ({ onClose }) => {
         if (response.data.success && Array.isArray(response.data.data)) {
           // Ensure the data is in the correct format
           const formattedData = response.data.data.map(item => ({
-            time: item.time,
+            time: item.time / 1000, // Convert milliseconds to seconds
             value: parseFloat(item.value)
           }));
           setPriceData(formattedData);
