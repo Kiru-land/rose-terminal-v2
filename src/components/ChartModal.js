@@ -140,7 +140,7 @@ const ChartModal = ({ onClose }) => {
 
       if (response.data.success && Array.isArray(response.data.data)) {
         const formattedData = response.data.data.map(candle => ({
-          time: candle.time,  // Keep as seconds
+          time: candle.time,
           open: candle.open,
           high: candle.high,
           low: candle.low,
@@ -150,11 +150,9 @@ const ChartModal = ({ onClose }) => {
         setCandlestickData(formattedData);
       } else {
         console.error('Invalid data structure received:', response.data);
-        // Optionally, set an error state here
       }
     } catch (error) {
       console.error('Error fetching price data:', error);
-      // Optionally, set an error state here
     } finally {
       setIsLoading(false);
     }
@@ -177,11 +175,23 @@ const ChartModal = ({ onClose }) => {
         horzLines: { color: '#444' },
       },
       crosshair: { mode: CrosshairMode.Normal },
-      rightPriceScale: { borderColor: '#ccc' },
+      rightPriceScale: { 
+        borderColor: '#ccc',
+        visible: true,
+        scaleMargins: {
+          top: 0.1,
+          bottom: 0.1,
+        },
+      },
       timeScale: { 
         borderColor: '#ccc',
         timeVisible: true,
         secondsVisible: timeframe === '1m' || timeframe === '5m',
+        tickMarkFormatter: (time, tickMarkType, locale) => {
+          const date = new Date(time * 1000);
+          const formatOptions = getFormatOptions(timeframe);
+          return date.toLocaleString(locale, formatOptions);
+        },
       },
     });
 
@@ -212,9 +222,8 @@ const ChartModal = ({ onClose }) => {
     if (!isLoading && seriesRef.current && candlestickData.length > 0) {
       console.log('Setting chart data:', candlestickData);
       seriesRef.current.setData(candlestickData);
-      chartRef.current.timeScale().fitContent();
       
-      // Set visible range to start from the first data point
+      // Set visible range to start from the first data point and end at the last data point
       const firstDataPointTime = candlestickData[0].time;
       const lastDataPointTime = candlestickData[candlestickData.length - 1].time;
       chartRef.current.timeScale().setVisibleRange({
@@ -244,6 +253,25 @@ const ChartModal = ({ onClose }) => {
       </ModalContent>
     </ModalOverlay>
   );
+};
+
+// Helper function to get format options based on timeframe
+const getFormatOptions = (timeframe) => {
+  switch (timeframe) {
+    case '1m':
+    case '5m':
+    case '15m':
+    case '30m':
+      return { hour: '2-digit', minute: '2-digit' };
+    case '1h':
+    case '4h':
+      return { month: 'short', day: 'numeric', hour: '2-digit' };
+    case '1D':
+    case '3D':
+      return { month: 'short', day: 'numeric' };
+    default:
+      return { dateStyle: 'short', timeStyle: 'short' };
+  }
 };
 
 export default ChartModal;
