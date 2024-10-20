@@ -19,6 +19,9 @@ export default authMiddleware(async function handler(req, res) {
             return res.status(405).json({ success: false, error: 'Method Not Allowed' });
         }
 
+        const { timeframe } = req.query;
+        console.log(`Requested timeframe: ${timeframe}`);
+
         // Retrieve all entries from the sorted set with scores
         const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
 
@@ -33,34 +36,13 @@ export default authMiddleware(async function handler(req, res) {
             const score = entries[i + 1];
 
             try {
-                let parsedMember;
-
-                if (typeof member === 'string') {
-                    if (member.startsWith('{') && member.endsWith('}')) {
-                        // Member is a JSON string
-                        parsedMember = JSON.parse(member);
-                    } else {
-                        // Member is a stringified object (e.g., "[object Object]")
-                        console.error('Member is not valid JSON:', member);
-                        // Skip this entry
-                        continue;
-                    }
-                } else if (typeof member === 'object') {
-                    // Member is already an object
-                    parsedMember = member;
-                } else {
-                    console.error('Member is of unknown type:', typeof member, 'Member:', member);
-                    // Skip this entry
-                    continue;
-                }
-
+                let parsedMember = typeof member === 'string' ? JSON.parse(member) : member;
                 data.push({
-                    price: parsedMember.price,
-                    timestamp: parsedMember.timestamp
+                    time: parsedMember.timestamp,
+                    value: parsedMember.price
                 });
             } catch (parseError) {
                 console.error('Error parsing member:', parseError, 'Member:', member);
-                // Skip this entry and continue with the next one
             }
         }
 
@@ -69,7 +51,7 @@ export default authMiddleware(async function handler(req, res) {
         }
 
         // Sort the data by timestamp in ascending order
-        data.sort((a, b) => a.timestamp - b.timestamp);
+        data.sort((a, b) => a.time - b.time);
 
         // Return the data as JSON
         res.status(200).json({ success: true, data });
