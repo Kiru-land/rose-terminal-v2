@@ -1,4 +1,3 @@
-// src/components/ChartModal.js
 import React, { useRef, useEffect, useState } from 'react';
 import { createChart } from 'lightweight-charts';
 import axios from 'axios';
