@@ -49,8 +49,8 @@ const ChartModal = ({ onClose }) => {
         console.log('API Response:', response.data); // Log the entire response
 
         if (response.data.success && Array.isArray(response.data.data)) {
-          const formattedData = allPriceData.map(item => ({
-            time: new Date(item.timestamp * 1000).toISOString().split('T')[0], // Convert to YYYY-MM-DD
+          const formattedData = response.data.data.map(item => ({
+            time: item.timestamp,
             value: item.price
           }));
           console.log('Formatted Data:', formattedData); // Log the formatted data
@@ -155,3 +155,4 @@ const ChartModal = ({ onClose }) => {
 };
 
 export default ChartModal;
+
