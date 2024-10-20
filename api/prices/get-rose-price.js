@@ -19,38 +19,36 @@ export default authMiddleware(async function handler(req, res) {
             return res.status(405).json({ success: false, error: 'Method Not Allowed' });
         }
 
-        // Retrieve all entries from the sorted set with scores
+        console.log('Fetching rose prices from KV store');
         const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
+        console.log('Fetched entries:', entries);
 
         if (!entries || entries.length === 0) {
+            console.log('No price data available');
             return res.status(404).json({ success: false, error: 'No price data available' });
         }
 
-        // Parse and format the entries
         const data = [];
         for (let i = 0; i < entries.length; i += 2) {
             const member = entries[i];
             const score = entries[i + 1];
+
+            console.log('Processing entry:', { member, score });
 
             try {
                 let parsedMember;
 
                 if (typeof member === 'string') {
                     if (member.startsWith('{') && member.endsWith('}')) {
-                        // Member is a JSON string
                         parsedMember = JSON.parse(member);
                     } else {
-                        // Member is a stringified object (e.g., "[object Object]")
                         console.error('Member is not valid JSON:', member);
-                        // Skip this entry
                         continue;
                     }
                 } else if (typeof member === 'object') {
-                    // Member is already an object
                     parsedMember = member;
                 } else {
                     console.error('Member is of unknown type:', typeof member, 'Member:', member);
-                    // Skip this entry
                     continue;
                 }
 
@@ -60,18 +58,19 @@ export default authMiddleware(async function handler(req, res) {
                 });
             } catch (parseError) {
                 console.error('Error parsing member:', parseError, 'Member:', member);
-                // Skip this entry and continue with the next one
             }
         }
 
+        console.log('Processed data:', data);
+
         if (data.length === 0) {
+            console.log('No valid price data available');
             return res.status(404).json({ success: false, error: 'No valid price data available' });
         }
 
-        // Sort the data by timestamp in ascending order
         data.sort((a, b) => a.timestamp - b.timestamp);
+        console.log('Sorted data:', data);
 
-        // Return the data as JSON
         res.status(200).json({ success: true, data });
     } catch (error) {
         console.error('Error in get-rose-price:', error);

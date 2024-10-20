@@ -46,11 +46,14 @@ const ChartModal = ({ onClose }) => {
     const fetchAllPriceData = async () => {
       try {
         const response = await axios.get('/api/proxy/get-rose-price?timeframe=all');
+        console.log('API Response:', response.data); // Log the entire response
+
         if (response.data.success && Array.isArray(response.data.data)) {
           const formattedData = response.data.data.map(item => ({
             time: item.timestamp,
             value: item.price
           }));
+          console.log('Formatted Data:', formattedData); // Log the formatted data
           setAllPriceData(formattedData);
         } else {
           console.error('Invalid data structure received:', response.data);
@@ -75,13 +78,17 @@ const ChartModal = ({ onClose }) => {
       'all': Infinity
     };
 
-    return allPriceData.filter(item => 
+    const filtered = allPriceData.filter(item => 
       now - new Date(item.time).getTime() <= timeframeInMs[timeframe]
     );
+    console.log('Filtered Data:', filtered); // Log the filtered data
+    return filtered;
   }, [allPriceData, timeframe]);
 
   useEffect(() => {
-    if (!chartContainerRef.current) return;
+    if (!chartContainerRef.current || !filteredData.length) return;
+
+    console.log('Creating chart with data:', filteredData); // Log data used to create chart
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
@@ -112,10 +119,8 @@ const ChartModal = ({ onClose }) => {
       lineWidth: 2,
     });
 
-    if (filteredData.length > 0) {
-      lineSeries.setData(filteredData);
-      chart.timeScale().fitContent();
-    }
+    lineSeries.setData(filteredData);
+    chart.timeScale().fitContent();
 
     const handleResize = () => {
       chart.applyOptions({ width: chartContainerRef.current.clientWidth });
