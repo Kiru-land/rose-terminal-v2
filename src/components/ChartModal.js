@@ -47,26 +47,11 @@ const ChartModal = ({ onClose }) => {
     const fetchPriceData = async () => {
       try {
         const response = await axios.get('/api/proxy/get-rose-price');
-
         if (response.data.success && Array.isArray(response.data.data)) {
-          // Format the data as required by Lightweight Charts
-          const formattedData = response.data.data
-            .map((item) => {
-              const date = new Date(item.timestamp * 1000);
-              return {
-                time: {
-                  year: date.getUTCFullYear(),
-                  month: date.getUTCMonth() + 1, // Months are zero-based, so we add 1
-                  day: date.getUTCDate(),
-                },
-                value: parseFloat(item.price),
-              };
-            })
-            .sort((a, b) => {
-              const timeA = new Date(Date.UTC(a.time.year, a.time.month - 1, a.time.day));
-              const timeB = new Date(Date.UTC(b.time.year, b.time.month - 1, b.time.day));
-              return timeA - timeB;
-            });
+          const formattedData = response.data.data.map(item => ({
+            time: item.timestamp,
+            value: item.price
+          }));
           setPriceData(formattedData);
         } else {
           console.error('Invalid data structure received:', response.data);
@@ -95,7 +80,7 @@ const ChartModal = ({ onClose }) => {
       },
       timeScale: {
         timeVisible: true,
-        secondsVisible: false, // Since we're using daily data
+        secondsVisible: false,
       },
     });
 
@@ -109,9 +94,7 @@ const ChartModal = ({ onClose }) => {
     chart.timeScale().fitContent();
 
     const handleResize = () => {
-      if (chartContainerRef.current) {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
-      }
+      chart.applyOptions({ width: chartContainerRef.current.clientWidth });
     };
 
     window.addEventListener('resize', handleResize);
@@ -125,11 +108,7 @@ const ChartModal = ({ onClose }) => {
   return (
     <ModalOverlay>
       <ModalContent>
-        {priceData.length > 0 ? (
-          <ChartContainer ref={chartContainerRef} />
-        ) : (
-          <div>No price data available</div>
-        )}
+        <ChartContainer ref={chartContainerRef} />
         <CloseButton onClick={onClose}>Close</CloseButton>
       </ModalContent>
     </ModalOverlay>
