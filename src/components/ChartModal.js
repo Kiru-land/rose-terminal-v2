@@ -137,11 +137,11 @@ const ChartModal = ({ onClose }) => {
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <TimeframeSelect value={timeframe} onChange={handleTimeframeChange}>
-          <option value="15m">15 minutes</option>
-          <option value="1h">1 hour</option>
-          <option value="4h">4 hours</option>
-          <option value="1d">1 day</option>
-          <option value="all">All</option>
+          <option value="15m">15m</option>
+          <option value="1h">1h</option>
+          <option value="4h">4h</option>
+          <option value="1D">1D</option>
+          <option value="All">All</option>
         </TimeframeSelect>
         <ChartContainer ref={chartContainerRef} />
       </ModalContent>
