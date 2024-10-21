@@ -50,8 +50,9 @@ const ChartModal = ({ onClose }) => {
 
         if (response.data.success && Array.isArray(response.data.data)) {
           const formattedData = response.data.data.map(item => ({
-            time: item.timestamp,
-            value: item.price
+            // Use the correct field names from the API response
+            time: item.time,
+            value: item.value,
           }));
           console.log('Formatted Data:', formattedData); // Log the formatted data
           setAllPriceData(formattedData);
@@ -75,11 +76,12 @@ const ChartModal = ({ onClose }) => {
       '1h': 60 * 60 * 1000,
       '4h': 4 * 60 * 60 * 1000,
       '1d': 24 * 60 * 60 * 1000,
-      'all': Infinity
+      'all': Infinity,
     };
 
-    const filtered = allPriceData.filter(item => 
-      now - new Date(item.time).getTime() <= timeframeInMs[timeframe]
+    // Convert item.time from seconds to milliseconds for correct date calculations
+    const filtered = allPriceData.filter(item =>
+      now - item.time * 1000 <= timeframeInMs[timeframe]
     );
     console.log('Filtered Data:', filtered); // Log the filtered data
     return filtered;
@@ -110,6 +112,7 @@ const ChartModal = ({ onClose }) => {
           top: 0.1,
           bottom: 0.1,
         },
+        // Adjust formatter to display small exponential values correctly
         formatter: (price) => price.toExponential(2),
       },
     });
@@ -145,8 +148,8 @@ const ChartModal = ({ onClose }) => {
           <option value="15m">15m</option>
           <option value="1h">1h</option>
           <option value="4h">4h</option>
-          <option value="1D">1D</option>
-          <option value="All">All</option>
+          <option value="1d">1d</option>
+          <option value="all">All</option>
         </TimeframeSelect>
         <ChartContainer ref={chartContainerRef} />
       </ModalContent>
@@ -155,4 +158,3 @@ const ChartModal = ({ onClose }) => {
 };
 
 export default ChartModal;
-
