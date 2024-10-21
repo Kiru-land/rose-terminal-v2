@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { createChart, CrosshairMode } from 'lightweight-charts';
+import React, { useRef, useEffect, useState } from 'react';
+import { createChart, ColorType } from 'lightweight-charts';
 import axios from 'axios';
 import styled from 'styled-components';
 
@@ -28,30 +28,20 @@ const ChartContainer = styled.div`
   height: 400px;
 `;
 
-const TimeframeSelect = styled.select`
-  background-color: #333;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
-  margin-bottom: 10px;
-`;
-
 const ChartModal = ({ onClose }) => {
   const chartContainerRef = useRef();
-  const [allPriceData, setAllPriceData] = useState([]);
-  const [timeframe, setTimeframe] = useState('1h');
+  const [priceData, setPriceData] = useState([]);
 
   useEffect(() => {
-    const fetchAllPriceData = async () => {
+    const fetchPriceData = async () => {
       try {
         const response = await axios.get('/api/proxy/get-rose-price');
         if (response.data.success && Array.isArray(response.data.data)) {
           const formattedData = response.data.data.map(item => ({
-            time: item.time,
-            value: parseFloat(item.value), // Ensure value is a number
+            time: item.timestamp,
+            value: item.price,
           }));
-          setAllPriceData(formattedData);
+          setPriceData(formattedData);
         } else {
           console.error('Invalid data structure received:', response.data);
         }
@@ -60,95 +50,59 @@ const ChartModal = ({ onClose }) => {
       }
     };
 
-    fetchAllPriceData();
+    fetchPriceData();
   }, []);
 
-  const filteredData = useMemo(() => {
-    if (!allPriceData.length) return [];
-
-    const now = Date.now();
-    const timeframeInMs = {
-      '15m': 15 * 60 * 1000,
-      '1h': 60 * 60 * 1000,
-      '4h': 4 * 60 * 60 * 1000,
-      '1d': 24 * 60 * 60 * 1000,
-      'all': Infinity,
-    };
-
-    // Adjust the filtering logic
-    const filtered = allPriceData.filter(item => {
-      const itemTimeMs = item.time * 1000; // Convert time to milliseconds
-      return now - itemTimeMs <= timeframeInMs[timeframe];
-    });
-    console.log('Filtered Data:', filtered); // Log the filtered data
-    return filtered;
-  }, [allPriceData, timeframe]);
-
   useEffect(() => {
-    if (!chartContainerRef.current || !filteredData.length) return;
-
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: 400,
-      layout: {
-        backgroundColor: '#000000',
-        textColor: '#d1d4dc',
-      },
-      grid: {
-        vertLines: { color: '#2B2B43' },
-        horzLines: { color: '#2B2B43' },
-      },
-      timeScale: {
-        timeVisible: true,
-        secondsVisible: false,
-      },
-      rightPriceScale: {
-        scaleMargins: {
-          top: 0.1,
-          bottom: 0.1,
+    if (chartContainerRef.current && priceData.length > 0) {
+      const chart = createChart(chartContainerRef.current, {
+        width: chartContainerRef.current.clientWidth,
+        height: 400,
+        layout: {
+          background: { type: ColorType.Solid, color: '#000000' },
+          textColor: '#d1d4dc',
         },
-        // Adjust formatter to display small exponential values correctly
-        formatter: (price) => price.toExponential(2),
-      },
-      crosshair: {
-        mode: CrosshairMode.Normal,
-      },
-    });
+        grid: {
+          vertLines: { color: '#2B2B43' },
+          horzLines: { color: '#2B2B43' },
+        },
+        timeScale: {
+          timeVisible: true,
+          secondsVisible: false,
+        },
+        rightPriceScale: {
+          scaleMargins: {
+            top: 0.1,
+            bottom: 0.1,
+          },
+        },
+      });
 
-    const lineSeries = chart.addLineSeries({
-      color: '#00FF00',
-      lineWidth: 2,
-    });
+      const lineSeries = chart.addLineSeries({
+        color: '#00FF00',
+        lineWidth: 2,
+      });
 
-    lineSeries.setData(filteredData);
-    chart.timeScale().fitContent();
+      lineSeries.setData(priceData);
 
-    const handleResize = () => {
-      chart.applyOptions({ width: chartContainerRef.current.clientWidth });
-    };
+      chart.timeScale().fitContent();
 
-    window.addEventListener('resize', handleResize);
+      const handleResize = () => {
+        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+      };
 
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      chart.remove();
-    };
-  }, [filteredData]);
+      window.addEventListener('resize', handleResize);
 
-  const handleTimeframeChange = (event) => {
-    setTimeframe(event.target.value);
-  };
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        chart.remove();
+      };
+    }
+  }, [priceData]);
 
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
-        <TimeframeSelect value={timeframe} onChange={handleTimeframeChange}>
-          <option value="15m">15m</option>
-          <option value="1h">1h</option>
-          <option value="4h">4h</option>
-          <option value="1d">1d</option>
-          <option value="all">All</option>
-        </TimeframeSelect>
         <ChartContainer ref={chartContainerRef} />
       </ModalContent>
     </ModalOverlay>
