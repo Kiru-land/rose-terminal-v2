@@ -52,7 +52,7 @@ const TimeframeSelector = styled.select`
   border-radius: 10px;
   font-size: 12px;
   margin-bottom: 10px;
-  width: 60px; // Changed from 'auto' to a fixed width
+  width: 60px;
   cursor: pointer;
   outline: none;
   transition: background-color 0.3s ease;
@@ -70,7 +70,7 @@ const ChartModal = ({ onClose }) => {
   useEffect(() => {
     const fetchPriceData = async () => {
       try {
-        const response = await axios.get('https://fuck.forex/api/proxy/get-rose-price', { params: { timeframe } });
+        const response = await axios.get('/api/proxy/get-rose-price');
         if (response.data.success && Array.isArray(response.data.data)) {
           const formattedData = response.data.data.map(item => ({
             time: item.timestamp,
@@ -86,7 +86,7 @@ const ChartModal = ({ onClose }) => {
     };
 
     fetchPriceData();
-  }, [timeframe]);
+  }, []);
 
   useEffect(() => {
     if (chartContainerRef.current && priceData.length > 0) {
@@ -112,6 +112,9 @@ const ChartModal = ({ onClose }) => {
       });
 
       const lineSeries = chart.addLineSeries({ color: '#00ff00' });
+      lineSeries.setData(priceData);
+
+      chart.timeScale().fitContent();
 
       const handleResize = () => {
         chart.applyOptions({ width: chartContainerRef.current.clientWidth });
@@ -128,8 +131,8 @@ const ChartModal = ({ onClose }) => {
 
   const handleTimeframeChange = (event) => {
     setTimeframe(event.target.value);
-    // Here you would typically fetch new data based on the selected timeframe
-    // and update the chart
+    // For now, we're not using this to fetch data
+    console.log('Timeframe changed:', event.target.value);
   };
 
   return (
