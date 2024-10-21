@@ -45,7 +45,7 @@ const ChartModal = ({ onClose }) => {
   useEffect(() => {
     const fetchAllPriceData = async () => {
       try {
-        const response = await axios.get('/api/proxy/get-rose-price?timeframe=all');
+        const response = await axios.get('/api/proxy/get-rose-price');
         console.log('API Response:', response.data); // Log the entire response
 
         if (response.data.success && Array.isArray(response.data.data)) {
