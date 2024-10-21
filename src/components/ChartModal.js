@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { createChart } from 'lightweight-charts';
+import { createChart, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
 import styled from 'styled-components';
 
@@ -49,11 +49,14 @@ const ChartModal = ({ onClose }) => {
         console.log('API Response:', response.data); // Log the entire response
 
         if (response.data.success && Array.isArray(response.data.data)) {
-          const formattedData = response.data.data.map(item => ({
-            // Use the correct field names from the API response
-            time: item.time,
-            value: item.value,
-          }));
+          const formattedData = response.data.data.map(item => {
+            const date = new Date(item.time * 1000);
+            return {
+              // Convert timestamp to 'YYYY-MM-DD' format
+              time: date.toISOString().split('T')[0],
+              value: item.value,
+            };
+          });
           console.log('Formatted Data:', formattedData); // Log the formatted data
           setAllPriceData(formattedData);
         } else {
@@ -79,10 +82,10 @@ const ChartModal = ({ onClose }) => {
       'all': Infinity,
     };
 
-    // Convert item.time from seconds to milliseconds for correct date calculations
-    const filtered = allPriceData.filter(item =>
-      now - item.time * 1000 <= timeframeInMs[timeframe]
-    );
+    const filtered = allPriceData.filter(item => {
+      const itemTime = new Date(item.time).getTime();
+      return now - itemTime <= timeframeInMs[timeframe];
+    });
     console.log('Filtered Data:', filtered); // Log the filtered data
     return filtered;
   }, [allPriceData, timeframe]);
@@ -114,6 +117,9 @@ const ChartModal = ({ onClose }) => {
         },
         // Adjust formatter to display small exponential values correctly
         formatter: (price) => price.toExponential(2),
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
       },
     });
 
