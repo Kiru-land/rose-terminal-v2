@@ -49,14 +49,11 @@ const ChartModal = ({ onClose }) => {
         console.log('API Response:', response.data); // Log the entire response
 
         if (response.data.success && Array.isArray(response.data.data)) {
-          const formattedData = response.data.data.map(item => {
-            const date = new Date(item.time * 1000);
-            return {
-              // Convert timestamp to 'YYYY-MM-DD' format
-              time: date.toISOString().split('T')[0],
-              value: item.value,
-            };
-          });
+          const formattedData = response.data.data.map(item => ({
+            // Keep time as Unix timestamp in seconds
+            time: item.time,
+            value: item.value,
+          }));
           console.log('Formatted Data:', formattedData); // Log the formatted data
           setAllPriceData(formattedData);
         } else {
@@ -82,9 +79,10 @@ const ChartModal = ({ onClose }) => {
       'all': Infinity,
     };
 
+    // Adjust the filtering logic
     const filtered = allPriceData.filter(item => {
-      const itemTime = new Date(item.time).getTime();
-      return now - itemTime <= timeframeInMs[timeframe];
+      const itemTimeMs = item.time * 1000; // Convert time to milliseconds
+      return now - itemTimeMs <= timeframeInMs[timeframe];
     });
     console.log('Filtered Data:', filtered); // Log the filtered data
     return filtered;
