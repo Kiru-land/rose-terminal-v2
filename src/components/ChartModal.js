@@ -46,15 +46,11 @@ const ChartModal = ({ onClose }) => {
     const fetchAllPriceData = async () => {
       try {
         const response = await axios.get('/api/proxy/get-rose-price');
-        console.log('API Response:', response.data); // Log the entire response
-
         if (response.data.success && Array.isArray(response.data.data)) {
           const formattedData = response.data.data.map(item => ({
-            // Keep time as Unix timestamp in seconds
             time: item.time,
-            value: item.value,
+            value: parseFloat(item.value), // Ensure value is a number
           }));
-          console.log('Formatted Data:', formattedData); // Log the formatted data
           setAllPriceData(formattedData);
         } else {
           console.error('Invalid data structure received:', response.data);
@@ -90,8 +86,6 @@ const ChartModal = ({ onClose }) => {
 
   useEffect(() => {
     if (!chartContainerRef.current || !filteredData.length) return;
-
-    console.log('Creating chart with data:', filteredData); // Log data used to create chart
 
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
