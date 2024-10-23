@@ -63,100 +63,91 @@ const TimeframeSelector = styled.select`
 `;
 
 const ChartModal = ({ onClose }) => {
-    const chartContainerRef = useRef();
-    const [timeframe, setTimeframe] = useState('1h');
-    const [priceData, setPriceData] = useState([]);
-    const chartRef = useRef(null);
-    const lineSeriesRef = useRef(null);
+  const chartContainerRef = useRef();
+  const [timeframe, setTimeframe] = useState('1h');
+  const [priceData, setPriceData] = useState([]);
 
-    const fetchPriceData = async (selectedTimeframe) => {
-        try {
-            const response = await axios.get(`/api/proxy/get-rose-price?timeframe=${selectedTimeframe}`);
-            if (response.data.success && Array.isArray(response.data.data)) {
-                const formattedData = response.data.data.map(item => ({
-                    time: item.time, // Ensure 'time' field is used
-                    value: item.value,
-                }));
-                setPriceData(formattedData);
-            } else {
-                console.error('Invalid data structure received:', response.data);
-            }
-        } catch (error) {
-            console.error('Error fetching price data:', error);
+  useEffect(() => {
+    const fetchPriceData = async () => {
+      try {
+        const response = await axios.get('/api/proxy/get-rose-price');
+        if (response.data.success && Array.isArray(response.data.data)) {
+          const formattedData = response.data.data.map(item => ({
+            time: item.timestamp,
+            value: item.price,
+          }));
+          setPriceData(formattedData);
+        } else {
+          console.error('Invalid data structure received:', response.data);
         }
+      } catch (error) {
+        console.error('Error fetching price data:', error);
+      }
     };
 
-    useEffect(() => {
-        fetchPriceData(timeframe);
-    }, [timeframe]);
+    fetchPriceData();
+  }, []);
 
-    useEffect(() => {
-        if (chartContainerRef.current) {
-            if (!chartRef.current) {
-                // Initialize chart
-                const chart = createChart(chartContainerRef.current, {
-                    width: chartContainerRef.current.clientWidth,
-                    height: 400,
-                    layout: {
-                        background: { type: 'solid', color: '#000000' },
-                        textColor: '#00ff00',
-                    },
-                    grid: {
-                        vertLines: { color: '#2B2B43' },
-                        horzLines: { color: '#2B2B43' },
-                    },
-                    rightPriceScale: {
-                        borderColor: '#2B2B43',
-                    },
-                    timeScale: {
-                        borderColor: '#2B2B43',
-                        timeVisible: true,
-                        secondsVisible: false,
-                    },
-                });
+  useEffect(() => {
+    if (chartContainerRef.current && priceData.length > 0) {
+      const chart = createChart(chartContainerRef.current, {
+        width: chartContainerRef.current.clientWidth,
+        height: 400,
+        layout: {
+          background: { type: 'solid', color: '#000000' },
+          textColor: '#00ff00',
+        },
+        grid: {
+          vertLines: { color: '#2B2B43' },
+          horzLines: { color: '#2B2B43' },
+        },
+        rightPriceScale: {
+          borderColor: '#2B2B43',
+        },
+        timeScale: {
+          borderColor: '#2B2B43',
+          timeVisible: true,
+          secondsVisible: false,
+        },
+      });
 
-                const lineSeries = chart.addLineSeries({ color: '#00ff00' });
-                chartRef.current = chart;
-                lineSeriesRef.current = lineSeries;
+      const lineSeries = chart.addLineSeries({ color: '#00ff00' });
+      lineSeries.setData(priceData);
 
-                const handleResize = () => {
-                    chart.applyOptions({ width: chartContainerRef.current.clientWidth });
-                };
+      chart.timeScale().fitContent();
 
-                window.addEventListener('resize', handleResize);
+      const handleResize = () => {
+        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+      };
 
-                return () => {
-                    window.removeEventListener('resize', handleResize);
-                    chart.remove();
-                };
-            }
+      window.addEventListener('resize', handleResize);
 
-            // Update data
-            if (priceData.length > 0) {
-                lineSeriesRef.current.setData(priceData);
-                chartRef.current.timeScale().fitContent();
-            }
-        }
-    }, [priceData]);
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        chart.remove();
+      };
+    }
+  }, [priceData]);
 
-    const handleTimeframeChange = (event) => {
-        setTimeframe(event.target.value);
-        console.log('Timeframe changed:', event.target.value);
-    };
+  const handleTimeframeChange = (event) => {
+    setTimeframe(event.target.value);
+    // For now, we're not using this to fetch data
+    console.log('Timeframe changed:', event.target.value);
+  };
 
-    return (
-        <ModalOverlay onClick={onClose}>
-            <ChartContainer onClick={(e) => e.stopPropagation()}>
-                <TimeframeSelector value={timeframe} onChange={handleTimeframeChange}>
-                    <option value="1h">1H</option>
-                    <option value="4h">4H</option>
-                    <option value="1d">1D</option>
-                    <option value="1w">1W</option>
-                </TimeframeSelector>
-                <ChartWrapper ref={chartContainerRef} />
-            </ChartContainer>
-        </ModalOverlay>
-    );
+  return (
+    <ModalOverlay onClick={onClose}>
+      <ChartContainer onClick={(e) => e.stopPropagation()}>
+        <TimeframeSelector value={timeframe} onChange={handleTimeframeChange}>
+          <option value="1h">1H</option>
+          <option value="4h">4H</option>
+          <option value="1d">1D</option>
+          <option value="1w">1W</option>
+        </TimeframeSelector>
+        <ChartWrapper ref={chartContainerRef} />
+      </ChartContainer>
+    </ModalOverlay>
+  );
 };
 
 export default ChartModal;
