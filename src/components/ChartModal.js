@@ -69,16 +69,67 @@ const ChartModal = ({ onClose }) => {
   const [chart, setChart] = useState(null);
   const [lineSeries, setLineSeries] = useState(null);
 
-  // Separate fetch function to be reused
+  // Helper function to fill gaps in price data
+  const fillDataGaps = (data, timeframeInSeconds) => {
+    if (data.length < 2) return data;
+    
+    const filledData = [];
+    data.sort((a, b) => a.time - b.time);
+    
+    for (let i = 0; i < data.length - 1; i++) {
+      const currentPoint = data[i];
+      const nextPoint = data[i + 1];
+      
+      // Add the current point
+      filledData.push({
+        time: currentPoint.time,
+        value: currentPoint.value
+      });
+      
+      // Calculate how many intervals should exist between these points
+      const timeDiff = nextPoint.time - currentPoint.time;
+      const intervals = Math.floor(timeDiff / timeframeInSeconds) - 1;
+      
+      // If there's a gap, fill it with the last known price
+      if (intervals > 0) {
+        for (let j = 1; j <= intervals; j++) {
+          filledData.push({
+            time: currentPoint.time + (j * timeframeInSeconds),
+            value: currentPoint.value // Use the last known price
+          });
+        }
+      }
+    }
+    
+    // Don't forget to add the last point
+    filledData.push({
+      time: data[data.length - 1].time,
+      value: data[data.length - 1].value
+    });
+    
+    return filledData;
+  };
+
+  // Modified fetch function to include gap filling
   const fetchPriceData = async (selectedTimeframe) => {
     try {
       const response = await axios.get(`/api/proxy/get-rose-price?timeframe=${selectedTimeframe}`);
       if (response.data.success && Array.isArray(response.data.data)) {
+        const timeframeMap = {
+          '1h': 3600,    // 1 hour in seconds
+          '4h': 14400,   // 4 hours in seconds
+          '1d': 86400,   // 24 hours in seconds
+          '1w': 604800   // 1 week in seconds
+        };
+
         const formattedData = response.data.data.map(item => ({
           time: item.timestamp,
           value: item.price,
         }));
-        setPriceData(formattedData);
+
+        // Fill gaps in the data based on timeframe
+        const filledData = fillDataGaps(formattedData, timeframeMap[selectedTimeframe]);
+        setPriceData(filledData);
       } else {
         console.error('Invalid data structure received:', response.data);
       }
@@ -145,52 +196,6 @@ const ChartModal = ({ onClose }) => {
     const newTimeframe = event.target.value;
     setTimeframe(newTimeframe);
     await fetchPriceData(newTimeframe);
-  };
-
-  // Modified fillDataGaps function
-  const fillDataGaps = (data, selectedTimeframe) => {
-    if (data.length < 2) return data;
-
-    const intervals = {
-      '1h': 3600,      // 1 hour in seconds
-      '4h': 14400,     // 4 hours in seconds
-      '1d': 86400,     // 1 day in seconds
-      '1w': 604800,    // 1 week in seconds
-    };
-
-    const interval = intervals[selectedTimeframe];
-    const filledData = [];
-    data.sort((a, b) => a.time - b.time);
-
-    for (let i = 0; i < data.length - 1; i++) {
-      // Add current point
-      filledData.push(data[i]);
-      
-      const currentTime = data[i].time;
-      const nextTime = data[i + 1].time;
-      const timeDiff = nextTime - currentTime;
-
-      // If there's a gap larger than our interval
-      if (timeDiff > interval) {
-        // Use the current point's price (the one just before the gap)
-        const priceBeforeGap = data[i].value;
-        
-        // Fill the gap with points using the price from before the gap
-        let tempTime = currentTime + interval;
-        while (tempTime < nextTime) {
-          filledData.push({
-            time: tempTime,
-            value: priceBeforeGap  // Use price from before the gap
-          });
-          tempTime += interval;
-        }
-      }
-    }
-    
-    // Add the last point
-    filledData.push(data[data.length - 1]);
-    
-    return filledData;
   };
 
   return (
