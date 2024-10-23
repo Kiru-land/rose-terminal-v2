@@ -19,6 +19,25 @@ export default authMiddleware(async function handler(req, res) {
             return res.status(405).json({ success: false, error: 'Method Not Allowed' });
         }
 
+        // Get timeframe from query parameters
+        const timeframe = req.query.timeframe || '1h'; // Default to 1h if not specified
+        
+        // Define sampling intervals (in milliseconds)
+        const samplingIntervals = {
+            '1h': 5 * 60 * 1000,    // 5 minutes
+            '4h': 15 * 60 * 1000,   // 15 minutes
+            '1d': 1 * 60 * 60 * 1000, // 1 hour
+            '1w': 6 * 60 * 60 * 1000  // 6 hours
+        };
+
+        const interval = samplingIntervals[timeframe];
+        if (!interval) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Invalid timeframe. Use 1h, 4h, 1d, or 1w' 
+            });
+        }
+
         console.log('Fetching rose prices from KV store');
         const entries = await pricesKV.zrange('rose_prices', 0, -1, { withScores: true });
         console.log('Fetched entries:', entries);
@@ -77,12 +96,45 @@ export default authMiddleware(async function handler(req, res) {
         }
 
         data.sort((a, b) => a.timestamp - b.timestamp);
-        console.log('Sorted data:', data);
 
-        // Add this new log statement
-        console.log('Final data being sent:', JSON.stringify({ success: true, data }, null, 2));
+        // Downsample the data based on timeframe
+        const downsampledData = [];
+        if (data.length > 0) {
+            let currentBucket = Math.floor(data[0].timestamp / interval) * interval;
+            let bucketPrices = [];
 
-        res.status(200).json({ success: true, data });
+            for (const point of data) {
+                const pointBucket = Math.floor(point.timestamp / interval) * interval;
+                
+                if (pointBucket === currentBucket) {
+                    bucketPrices.push(point.price);
+                } else {
+                    if (bucketPrices.length > 0) {
+                        // Calculate average price for the bucket
+                        const avgPrice = bucketPrices.reduce((a, b) => a + b, 0) / bucketPrices.length;
+                        downsampledData.push({
+                            timestamp: currentBucket,
+                            price: avgPrice
+                        });
+                    }
+                    currentBucket = pointBucket;
+                    bucketPrices = [point.price];
+                }
+            }
+
+            // Don't forget the last bucket
+            if (bucketPrices.length > 0) {
+                const avgPrice = bucketPrices.reduce((a, b) => a + b, 0) / bucketPrices.length;
+                downsampledData.push({
+                    timestamp: currentBucket,
+                    price: avgPrice
+                });
+            }
+        }
+
+        console.log('Downsampled data:', JSON.stringify(downsampledData, null, 2));
+
+        res.status(200).json({ success: true, data: downsampledData });
     } catch (error) {
         console.error('Error in get-rose-price:', error);
         res.status(500).json({ success: false, error: 'Internal Server Error' });
