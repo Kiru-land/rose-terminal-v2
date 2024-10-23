@@ -66,31 +66,36 @@ const ChartModal = ({ onClose }) => {
   const chartContainerRef = useRef();
   const [timeframe, setTimeframe] = useState('1h');
   const [priceData, setPriceData] = useState([]);
+  const [chart, setChart] = useState(null);
+  const [lineSeries, setLineSeries] = useState(null);
 
-  useEffect(() => {
-    const fetchPriceData = async () => {
-      try {
-        const response = await axios.get('/api/proxy/get-rose-price');
-        if (response.data.success && Array.isArray(response.data.data)) {
-          const formattedData = response.data.data.map(item => ({
-            time: item.timestamp,
-            value: item.price,
-          }));
-          setPriceData(formattedData);
-        } else {
-          console.error('Invalid data structure received:', response.data);
-        }
-      } catch (error) {
-        console.error('Error fetching price data:', error);
+  // Separate fetch function to be reused
+  const fetchPriceData = async (selectedTimeframe) => {
+    try {
+      const response = await axios.get(`/api/proxy/get-rose-price?timeframe=${selectedTimeframe}`);
+      if (response.data.success && Array.isArray(response.data.data)) {
+        const formattedData = response.data.data.map(item => ({
+          time: item.timestamp,
+          value: item.price,
+        }));
+        setPriceData(formattedData);
+      } else {
+        console.error('Invalid data structure received:', response.data);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching price data:', error);
+    }
+  };
 
-    fetchPriceData();
+  // Initial data fetch
+  useEffect(() => {
+    fetchPriceData(timeframe);
   }, []);
 
+  // Chart initialization
   useEffect(() => {
-    if (chartContainerRef.current && priceData.length > 0) {
-      const chart = createChart(chartContainerRef.current, {
+    if (chartContainerRef.current) {
+      const chartInstance = createChart(chartContainerRef.current, {
         width: chartContainerRef.current.clientWidth,
         height: 400,
         layout: {
@@ -111,28 +116,35 @@ const ChartModal = ({ onClose }) => {
         },
       });
 
-      const lineSeries = chart.addLineSeries({ color: '#00ff00' });
-      lineSeries.setData(priceData);
-
-      chart.timeScale().fitContent();
+      const lineSeriesInstance = chartInstance.addLineSeries({ color: '#00ff00' });
+      setChart(chartInstance);
+      setLineSeries(lineSeriesInstance);
 
       const handleResize = () => {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+        chartInstance.applyOptions({ width: chartContainerRef.current.clientWidth });
       };
 
       window.addEventListener('resize', handleResize);
 
       return () => {
         window.removeEventListener('resize', handleResize);
-        chart.remove();
+        chartInstance.remove();
       };
     }
-  }, [priceData]);
+  }, []);
 
-  const handleTimeframeChange = (event) => {
-    setTimeframe(event.target.value);
-    // For now, we're not using this to fetch data
-    console.log('Timeframe changed:', event.target.value);
+  // Update chart data when priceData changes
+  useEffect(() => {
+    if (lineSeries && priceData.length > 0) {
+      lineSeries.setData(priceData);
+      chart.timeScale().fitContent();
+    }
+  }, [priceData, lineSeries]);
+
+  const handleTimeframeChange = async (event) => {
+    const newTimeframe = event.target.value;
+    setTimeframe(newTimeframe);
+    await fetchPriceData(newTimeframe);
   };
 
   return (

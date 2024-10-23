@@ -22,12 +22,12 @@ export default authMiddleware(async function handler(req, res) {
         // Get timeframe from query parameters
         const timeframe = req.query.timeframe || '1h'; // Default to 1h if not specified
         
-        // Define sampling intervals (in milliseconds)
+        // Define sampling intervals (in seconds instead of milliseconds)
         const samplingIntervals = {
-            '1h': 5 * 60 * 1000,    // 5 minutes
-            '4h': 15 * 60 * 1000,   // 15 minutes
-            '1d': 1 * 60 * 60 * 1000, // 1 hour
-            '1w': 6 * 60 * 60 * 1000  // 6 hours
+            '1h': 300,    // 5 minutes
+            '4h': 900,    // 15 minutes
+            '1d': 3600,   // 1 hour
+            '1w': 21600   // 6 hours
         };
 
         const interval = samplingIntervals[timeframe];
@@ -97,7 +97,7 @@ export default authMiddleware(async function handler(req, res) {
 
         data.sort((a, b) => a.timestamp - b.timestamp);
 
-        // Downsample the data based on timeframe
+        // Modified downsampling logic
         const downsampledData = [];
         if (data.length > 0) {
             let currentBucket = Math.floor(data[0].timestamp / interval) * interval;
@@ -110,12 +110,15 @@ export default authMiddleware(async function handler(req, res) {
                     bucketPrices.push(point.price);
                 } else {
                     if (bucketPrices.length > 0) {
-                        // Calculate average price for the bucket
                         const avgPrice = bucketPrices.reduce((a, b) => a + b, 0) / bucketPrices.length;
                         downsampledData.push({
                             timestamp: currentBucket,
                             price: avgPrice
                         });
+                    }
+                    // Fill in any missing buckets
+                    while (currentBucket + interval < pointBucket) {
+                        currentBucket += interval;
                     }
                     currentBucket = pointBucket;
                     bucketPrices = [point.price];
