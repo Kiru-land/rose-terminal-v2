@@ -147,6 +147,52 @@ const ChartModal = ({ onClose }) => {
     await fetchPriceData(newTimeframe);
   };
 
+  // Modified fillDataGaps function
+  const fillDataGaps = (data, selectedTimeframe) => {
+    if (data.length < 2) return data;
+
+    const intervals = {
+      '1h': 3600,      // 1 hour in seconds
+      '4h': 14400,     // 4 hours in seconds
+      '1d': 86400,     // 1 day in seconds
+      '1w': 604800,    // 1 week in seconds
+    };
+
+    const interval = intervals[selectedTimeframe];
+    const filledData = [];
+    data.sort((a, b) => a.time - b.time);
+
+    for (let i = 0; i < data.length - 1; i++) {
+      // Add current point
+      filledData.push(data[i]);
+      
+      const currentTime = data[i].time;
+      const nextTime = data[i + 1].time;
+      const timeDiff = nextTime - currentTime;
+
+      // If there's a gap larger than our interval
+      if (timeDiff > interval) {
+        // Use the current point's price (the one just before the gap)
+        const priceBeforeGap = data[i].value;
+        
+        // Fill the gap with points using the price from before the gap
+        let tempTime = currentTime + interval;
+        while (tempTime < nextTime) {
+          filledData.push({
+            time: tempTime,
+            value: priceBeforeGap  // Use price from before the gap
+          });
+          tempTime += interval;
+        }
+      }
+    }
+    
+    // Add the last point
+    filledData.push(data[data.length - 1]);
+    
+    return filledData;
+  };
+
   return (
     <ModalOverlay onClick={onClose}>
       <ChartContainer onClick={(e) => e.stopPropagation()}>

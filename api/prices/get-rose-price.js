@@ -53,8 +53,6 @@ export default authMiddleware(async function handler(req, res) {
             const member = entries[i];
             const score = entries[i + 1];
 
-            console.log('Processing entry:', { member, score });
-
             try {
                 let parsedMember;
 
