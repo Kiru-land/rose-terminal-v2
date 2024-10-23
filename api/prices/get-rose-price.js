@@ -4,9 +4,9 @@ import { pricesKV } from '../../config.js';
 export default authMiddleware(async function handler(req, res) {
     try {
         // Set CORS headers
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS'); // Allow specific methods
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Allow specific headers
 
         // Handle preflight OPTIONS request
         if (req.method === 'OPTIONS') {
@@ -20,26 +20,26 @@ export default authMiddleware(async function handler(req, res) {
         }
 
         // Parse timeframe from query parameters
-        const timeframe = req.query.timeframe || '1h';
+        const timeframe = req.query.timeframe || '1h'; // Default to '1h' if not provided
         console.log('Timeframe requested:', timeframe);
 
-        // Determine the downsampling interval based on the timeframe
+        // Determine the sampling interval based on the timeframe
         let interval;
         switch (timeframe) {
             case '1h':
-                interval = 5 * 60;
+                interval = 5 * 60; // Sample every 5 minutes
                 break;
             case '4h':
-                interval = 20 * 60;
+                interval = 20 * 60; // Sample every 20 minutes
                 break;
             case '1d':
-                interval = 60 * 60;
+                interval = 60 * 60; // Sample every 1 hour
                 break;
             case '1w':
-                interval = 6 * 60 * 60;
+                interval = 6 * 60 * 60; // Sample every 6 hours
                 break;
             default:
-                interval = 5 * 60;
+                interval = 5 * 60; // Default to every 5 minutes
                 break;
         }
 
@@ -53,78 +53,67 @@ export default authMiddleware(async function handler(req, res) {
             return res.status(404).json({ success: false, error: 'No price data available' });
         }
 
-        // Process and parse entries with duplicate removal
+        // Process entries, parse JSON, and remove duplicates
         const dataPointsMap = new Map();
 
+        // Since we're using zrange with "withScores", entries are in the form [member1, score1, member2, score2, ...]
         for (let i = 0; i < entries.length; i += 2) {
             const member = entries[i];
             try {
+                // member is expected to be a JSON string
                 const parsedMember = JSON.parse(member);
                 const { price, timestamp } = parsedMember;
 
-                // Check if timestamp already exists
-                if (dataPointsMap.has(timestamp)) {
-                    // Decide how to handle duplicates:
-                    // Option 1: Keep the latest entry (overwrite)
-                    dataPointsMap.set(timestamp, { time: timestamp, value: price });
-
-                    // Option 2: Keep the earliest entry (do nothing)
-                    // Option 3: Average the prices (compute average)
-                    // For simplicity, we'll use Option 1 (overwrite with latest)
-                } else {
-                    dataPointsMap.set(timestamp, { time: timestamp, value: price });
+                // Ensure timestamp is a number
+                const time = Number(timestamp);
+                if (isNaN(time)) {
+                    console.error('Invalid timestamp:', timestamp);
+                    continue;
                 }
+
+                // Remove duplicates by keeping the latest data point for each timestamp
+                dataPointsMap.set(time, { time, value: price });
             } catch (parseError) {
                 console.error('Error parsing member:', parseError, 'Member:', member);
             }
         }
 
-        // Convert Map to Array
-        let dataPoints = Array.from(dataPointsMap.values());
-
-        // Sort data by timestamp
+        // Convert Map to Array and sort by time
+        const dataPoints = Array.from(dataPointsMap.values());
         dataPoints.sort((a, b) => a.time - b.time);
 
-        // Downsample data
-        const downsampledData = [];
-        let bucketStartTime = Math.floor(dataPoints[0].time / interval) * interval;
-        let sumPrice = 0;
-        let count = 0;
-
-        dataPoints.forEach((point) => {
-            if (point.time < bucketStartTime + interval) {
-                sumPrice += point.value;
-                count += 1;
-            } else {
-                // Push average price for the bucket
-                downsampledData.push({
-                    time: bucketStartTime,
-                    value: sumPrice / count,
-                });
-                // Reset for next bucket
-                bucketStartTime = Math.floor(point.time / interval) * interval;
-                sumPrice = point.value;
-                count = 1;
-            }
-        });
-
-        // Add the last bucket
-        if (count > 0) {
-            downsampledData.push({
-                time: bucketStartTime,
-                value: sumPrice / count,
-            });
-        }
-
-        console.log('Downsampled data:', downsampledData);
-
-        if (downsampledData.length === 0) {
-            console.log('No valid price data available');
+        if (dataPoints.length === 0) {
+            console.log('No valid price data available after parsing');
             return res.status(404).json({ success: false, error: 'No valid price data available' });
         }
 
+        // Implement timeframe-based sampling
+        const sampledData = [];
+        let lastSampleTime = dataPoints[0].time - (dataPoints[0].time % interval);
+
+        for (const point of dataPoints) {
+            // If the current point's time is greater than or equal to the next scheduled sample time
+            if (point.time >= lastSampleTime + interval) {
+                sampledData.push(point);
+                // Update lastSampleTime to the time of the sampled point (aligned to interval)
+                lastSampleTime = point.time - (point.time % interval);
+            }
+        }
+
+        // Add the first data point if sampledData is empty
+        if (sampledData.length === 0 && dataPoints.length > 0) {
+            sampledData.push(dataPoints[0]);
+        }
+
+        console.log('Sampled data:', sampledData);
+
+        if (sampledData.length === 0) {
+            console.log('No data available after sampling');
+            return res.status(404).json({ success: false, error: 'No data available after sampling' });
+        }
+
         // Send response
-        res.status(200).json({ success: true, data: downsampledData });
+        res.status(200).json({ success: true, data: sampledData });
     } catch (error) {
         console.error('Error in get-rose-price:', error);
         res.status(500).json({ success: false, error: 'Internal Server Error' });
