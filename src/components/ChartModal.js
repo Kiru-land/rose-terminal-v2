@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { createChart } from 'lightweight-charts';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
+import config from '../config';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -70,6 +71,9 @@ const ChartModal = ({ onClose }) => {
   const [chart, setChart] = useState(null);
   const [lineSeries, setLineSeries] = useState(null);
 
+  // Add WebSocket state
+  const wsRef = useRef(null);
+
   // Fetch data on component mount
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -94,6 +98,57 @@ const ChartModal = ({ onClose }) => {
 
     fetchInitialData();
   }, []);
+
+  // Handle WebSocket connection
+  useEffect(() => {
+    // Replace 'ws://yourserver.com:8080' with your server's WebSocket URL
+    const socket = new WebSocket(config.SERVER_IP);
+    wsRef.current = socket;
+
+    socket.onopen = () => {
+      console.log('WebSocket connection established');
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      handleNewPriceData(data);
+    };
+
+    socket.onclose = () => {
+      console.log('WebSocket connection closed');
+      // Optionally implement reconnection logic here
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, []);
+
+  // Handle incoming price data
+  const handleNewPriceData = (data) => {
+    // Update originalPriceData with the new data point
+    setOriginalPriceData((prevData) => {
+      const newData = [...prevData, { time: data.timestamp, value: data.price }];
+      return newData;
+    });
+
+    // Re-aggregate the data based on the current timeframe
+    setPriceData((prevData) => {
+      const aggregatedData = aggregateData(originalPriceData, timeframe);
+      return aggregatedData;
+    });
+
+    // Update the chart with the new data point
+    if (lineSeries) {
+      lineSeries.update({ time: data.timestamp, value: data.price });
+      // Optionally adjust the time scale to keep the new data in view
+      chart.timeScale().scrollToRealTime();
+    }
+  };
 
   // Aggregate data based on selected timeframe and fill gaps
   const aggregateData = (data, selectedTimeframe) => {
