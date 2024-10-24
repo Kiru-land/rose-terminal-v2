@@ -165,6 +165,11 @@ const ChartModal = ({ onClose }) => {
           timeVisible: true,
           secondsVisible: false,
         },
+        localization: {
+          priceFormatter: (price) => {
+            return price.toExponential(2); // Shows 2 decimal places in scientific notation
+          },
+        },
       });
 
       const lineSeriesInstance = chartInstance.addLineSeries({ color: '#00ff00' });
