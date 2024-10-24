@@ -166,18 +166,21 @@ const ChartModal = ({ onClose }) => {
           secondsVisible: false,
         },
         localization: {
-          priceFormatter: (price) => {
-            return price.toExponential(2); // Shows 2 decimal places in scientific notation
-          },
+          priceFormatter: (price) => price.toExponential(2),
         },
       });
 
-      const lineSeriesInstance = chartInstance.addLineSeries({ color: '#00ff00' });
+      const lineSeriesInstance = chartInstance.addLineSeries({
+        color: '#00ff00',
+      });
+
       setChart(chartInstance);
       setLineSeries(lineSeriesInstance);
 
       const handleResize = () => {
-        chartInstance.applyOptions({ width: chartContainerRef.current.clientWidth });
+        chartInstance.applyOptions({
+          width: chartContainerRef.current.clientWidth,
+        });
       };
 
       window.addEventListener('resize', handleResize);
