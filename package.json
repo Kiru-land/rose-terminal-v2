@@ -41,7 +41,8 @@
     "workbox-range-requests": "^6.6.0",
     "workbox-routing": "^6.6.0",
     "workbox-strategies": "^6.6.0",
-    "workbox-streams": "^6.6.0"
+    "workbox-streams": "^6.6.0",
+    "ws": "^8.18.0"
   },
   "scripts": {
     "start": "react-scripts start",
