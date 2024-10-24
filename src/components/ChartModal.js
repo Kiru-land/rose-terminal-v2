@@ -76,7 +76,7 @@ const ChartModal = ({ onClose }) => {
       try {
         const response = await axios.get('/api/proxy/get-rose-price?timeframe=1h');
         if (response.data.success && Array.isArray(response.data.data)) {
-          const formattedData = response.data.data.map(item => ({
+          const formattedData = response.data.data.map((item) => ({
             time: item.timestamp,
             value: item.price,
           }));
@@ -93,7 +93,7 @@ const ChartModal = ({ onClose }) => {
     fetchInitialData();
   }, []);
 
-  // Aggregate data based on selected timeframe
+  // Aggregate data based on selected timeframe and fill gaps
   const aggregateData = (data, selectedTimeframe) => {
     const timeframeMap = {
       '1h': 3600,    // 1 hour in seconds
@@ -104,38 +104,52 @@ const ChartModal = ({ onClose }) => {
     const interval = timeframeMap[selectedTimeframe];
 
     const aggregatedData = [];
-    let bucketStart = null;
-    let bucketPrices = [];
+    if (data.length === 0) {
+      return aggregatedData;
+    }
 
-    data.forEach(point => {
-      const pointBucket = Math.floor(point.time / interval) * interval;
+    // Sort data by time
+    const sortedData = [...data].sort((a, b) => a.time - b.time);
 
-      if (bucketStart === null) {
-        bucketStart = pointBucket;
+    // Determine the start and end times based on the first and last data points
+    const startTime = Math.floor(sortedData[0].time / interval) * interval;
+    const endTime = Math.floor(sortedData[sortedData.length - 1].time / interval) * interval;
+
+    let currentTime = startTime;
+    let dataIndex = 0;
+    let previousPrice = sortedData[0].value;
+
+    while (currentTime <= endTime) {
+      const bucketPrices = [];
+
+      // Collect all prices within the current interval
+      while (
+        dataIndex < sortedData.length &&
+        sortedData[dataIndex].time >= currentTime &&
+        sortedData[dataIndex].time < currentTime + interval
+      ) {
+        bucketPrices.push(sortedData[dataIndex].value);
+        previousPrice = sortedData[dataIndex].value;
+        dataIndex++;
       }
 
-      if (pointBucket === bucketStart) {
-        bucketPrices.push(point.value);
-      } else {
-        // Calculate average price for the bucket
-        const avgValue = bucketPrices.reduce((sum, val) => sum + val, 0) / bucketPrices.length;
+      // If we have collected prices, calculate the average
+      if (bucketPrices.length > 0) {
+        const avgValue =
+          bucketPrices.reduce((sum, val) => sum + val, 0) / bucketPrices.length;
         aggregatedData.push({
-          time: bucketStart,
+          time: currentTime,
           value: avgValue,
         });
-        // Start a new bucket
-        bucketStart = pointBucket;
-        bucketPrices = [point.value];
+      } else {
+        // No data in this interval, use the previous price
+        aggregatedData.push({
+          time: currentTime,
+          value: previousPrice,
+        });
       }
-    });
 
-    // Add the last bucket
-    if (bucketPrices.length > 0) {
-      const avgValue = bucketPrices.reduce((sum, val) => sum + val, 0) / bucketPrices.length;
-      aggregatedData.push({
-        time: bucketStart,
-        value: avgValue,
-      });
+      currentTime += interval;
     }
 
     return aggregatedData;
