@@ -65,83 +65,94 @@ const TimeframeSelector = styled.select`
 const ChartModal = ({ onClose }) => {
   const chartContainerRef = useRef();
   const [timeframe, setTimeframe] = useState('1h');
+  const [originalPriceData, setOriginalPriceData] = useState([]); // Store original 1h data
   const [priceData, setPriceData] = useState([]);
   const [chart, setChart] = useState(null);
   const [lineSeries, setLineSeries] = useState(null);
 
-  // Helper function to fill gaps in price data
-  const fillDataGaps = (data, timeframeInSeconds) => {
-    if (data.length < 2) return data;
-    
-    const filledData = [];
-    data.sort((a, b) => a.time - b.time);
-    
-    for (let i = 0; i < data.length - 1; i++) {
-      const currentPoint = data[i];
-      const nextPoint = data[i + 1];
-      
-      // Add the current point
-      filledData.push({
-        time: currentPoint.time,
-        value: currentPoint.value
-      });
-      
-      // Calculate how many intervals should exist between these points
-      const timeDiff = nextPoint.time - currentPoint.time;
-      const intervals = Math.floor(timeDiff / timeframeInSeconds) - 1;
-      
-      // If there's a gap, fill it with the last known price
-      if (intervals > 0) {
-        for (let j = 1; j <= intervals; j++) {
-          filledData.push({
-            time: currentPoint.time + (j * timeframeInSeconds),
-            value: currentPoint.value // Use the last known price
-          });
-        }
-      }
-    }
-    
-    // Don't forget to add the last point
-    filledData.push({
-      time: data[data.length - 1].time,
-      value: data[data.length - 1].value
-    });
-    
-    return filledData;
-  };
-
-  // Modified fetch function to include gap filling
-  const fetchPriceData = async (selectedTimeframe) => {
-    try {
-      const response = await axios.get(`/api/proxy/get-rose-price?timeframe=${selectedTimeframe}`);
-      if (response.data.success && Array.isArray(response.data.data)) {
-        const timeframeMap = {
-          '1h': 3600,    // 1 hour in seconds
-          '4h': 14400,   // 4 hours in seconds
-          '1d': 86400,   // 24 hours in seconds
-          '1w': 604800   // 1 week in seconds
-        };
-
-        const formattedData = response.data.data.map(item => ({
-          time: item.timestamp,
-          value: item.price,
-        }));
-
-        // Fill gaps in the data based on timeframe
-        const filledData = fillDataGaps(formattedData, timeframeMap[selectedTimeframe]);
-        setPriceData(filledData);
-      } else {
-        console.error('Invalid data structure received:', response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching price data:', error);
-    }
-  };
-
-  // Initial data fetch
+  // Fetch '1h' data on component mount
   useEffect(() => {
-    fetchPriceData(timeframe);
+    const fetchInitialData = async () => {
+      try {
+        const response = await axios.get('/api/proxy/get-rose-price?timeframe=1h');
+        if (response.data.success && Array.isArray(response.data.data)) {
+          const formattedData = response.data.data.map(item => ({
+            time: item.timestamp,
+            value: item.price,
+          }));
+          setOriginalPriceData(formattedData); // Cache the data
+          setPriceData(formattedData); // Set initial data for the chart
+        } else {
+          console.error('Invalid data structure received:', response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching initial price data:', error);
+      }
+    };
+
+    fetchInitialData();
   }, []);
+
+  // Aggregate data based on selected timeframe
+  const aggregateData = (data, selectedTimeframe) => {
+    const timeframeMap = {
+      '1h': 3600,    // 1 hour in seconds
+      '4h': 14400,   // 4 hours in seconds
+      '1d': 86400,   // 1 day in seconds
+      '1w': 604800,  // 1 week in seconds
+    };
+    const interval = timeframeMap[selectedTimeframe];
+
+    const aggregatedData = [];
+    let bucketStart = null;
+    let bucketPrices = [];
+
+    data.forEach(point => {
+      const pointBucket = Math.floor(point.time / interval) * interval;
+
+      if (bucketStart === null) {
+        bucketStart = pointBucket;
+      }
+
+      if (pointBucket === bucketStart) {
+        bucketPrices.push(point.value);
+      } else {
+        // Calculate average price for the bucket
+        const avgValue = bucketPrices.reduce((sum, val) => sum + val, 0) / bucketPrices.length;
+        aggregatedData.push({
+          time: bucketStart,
+          value: avgValue,
+        });
+        // Start a new bucket
+        bucketStart = pointBucket;
+        bucketPrices = [point.value];
+      }
+    });
+
+    // Add the last bucket
+    if (bucketPrices.length > 0) {
+      const avgValue = bucketPrices.reduce((sum, val) => sum + val, 0) / bucketPrices.length;
+      aggregatedData.push({
+        time: bucketStart,
+        value: avgValue,
+      });
+    }
+
+    return aggregatedData;
+  };
+
+  // Handle timeframe changes
+  const handleTimeframeChange = (event) => {
+    const newTimeframe = event.target.value;
+    setTimeframe(newTimeframe);
+
+    if (newTimeframe === '1h') {
+      setPriceData(originalPriceData);
+    } else {
+      const aggregatedData = aggregateData(originalPriceData, newTimeframe);
+      setPriceData(aggregatedData);
+    }
+  };
 
   // Chart initialization
   useEffect(() => {
@@ -199,12 +210,6 @@ const ChartModal = ({ onClose }) => {
       chart.timeScale().fitContent();
     }
   }, [priceData, lineSeries]);
-
-  const handleTimeframeChange = async (event) => {
-    const newTimeframe = event.target.value;
-    setTimeframe(newTimeframe);
-    await fetchPriceData(newTimeframe);
-  };
 
   return (
     <ModalOverlay onClick={onClose}>
