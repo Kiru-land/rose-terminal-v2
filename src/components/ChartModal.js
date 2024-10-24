@@ -101,9 +101,13 @@ const ChartModal = ({ onClose }) => {
       '1h': 3600,    // 1 hour in seconds
       '4h': 14400,   // 4 hours in seconds
       '1d': 86400,   // 1 day in seconds
-      '1w': 604800,  // 1 week in seconds
+      // '1w': 604800,  // 1 week in seconds (Removed)
     };
     const interval = timeframeMap[selectedTimeframe];
+    if (!interval) {
+      console.error(`Invalid timeframe selected: ${selectedTimeframe}`);
+      return [];
+    }
 
     const aggregatedData = [];
     if (data.length === 0) {
@@ -230,7 +234,8 @@ const ChartModal = ({ onClose }) => {
           <option value="1h">1H</option>
           <option value="4h">4H</option>
           <option value="1d">1D</option>
-          <option value="1w">1W</option>
+          {/* Removed the '1w' option */}
+          {/* <option value="1w">1W</option> */}
         </TimeframeSelector>
         <ChartWrapper ref={chartContainerRef} />
       </ChartContainer>
