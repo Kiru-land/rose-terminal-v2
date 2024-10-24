@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { createChart } from 'lightweight-charts';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
-import config from '../config';
+import config from '../config.js';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
