@@ -65,12 +65,12 @@ const TimeframeSelector = styled.select`
 const ChartModal = ({ onClose }) => {
   const chartContainerRef = useRef();
   const [timeframe, setTimeframe] = useState('1h');
-  const [originalPriceData, setOriginalPriceData] = useState([]); // Store original 1h data
+  const [originalPriceData, setOriginalPriceData] = useState([]); // Store original data
   const [priceData, setPriceData] = useState([]);
   const [chart, setChart] = useState(null);
   const [lineSeries, setLineSeries] = useState(null);
 
-  // Fetch '1h' data on component mount
+  // Fetch data on component mount
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -81,7 +81,9 @@ const ChartModal = ({ onClose }) => {
             value: item.price,
           }));
           setOriginalPriceData(formattedData); // Cache the data
-          setPriceData(formattedData); // Set initial data for the chart
+          // Initially aggregate data for the default timeframe
+          const aggregatedData = aggregateData(formattedData, timeframe);
+          setPriceData(aggregatedData);
         } else {
           console.error('Invalid data structure received:', response.data);
         }
@@ -160,12 +162,8 @@ const ChartModal = ({ onClose }) => {
     const newTimeframe = event.target.value;
     setTimeframe(newTimeframe);
 
-    if (newTimeframe === '1h') {
-      setPriceData(originalPriceData);
-    } else {
-      const aggregatedData = aggregateData(originalPriceData, newTimeframe);
-      setPriceData(aggregatedData);
-    }
+    const aggregatedData = aggregateData(originalPriceData, newTimeframe);
+    setPriceData(aggregatedData);
   };
 
   // Chart initialization
