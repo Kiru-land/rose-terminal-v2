@@ -156,7 +156,6 @@ const ChartModal = ({ onClose }) => {
       '1h': 3600,    // 1 hour in seconds
       '4h': 14400,   // 4 hours in seconds
       '1d': 86400,   // 1 day in seconds
-      // '1w': 604800,  // 1 week in seconds (Removed)
     };
     const interval = timeframeMap[selectedTimeframe];
     if (!interval) {
@@ -172,9 +171,11 @@ const ChartModal = ({ onClose }) => {
     // Sort data by time
     const sortedData = [...data].sort((a, b) => a.time - b.time);
 
-    // Determine the start and end times based on the first and last data points
+    // Determine the start and end times
     const startTime = Math.floor(sortedData[0].time / interval) * interval;
-    const endTime = Math.floor(sortedData[sortedData.length - 1].time / interval) * interval;
+    // Ensure the end time includes the current incomplete bucket
+    const lastDataTime = sortedData[sortedData.length - 1].time;
+    const endTime = Math.ceil(lastDataTime / interval) * interval;
 
     let currentTime = startTime;
     let dataIndex = 0;
@@ -182,12 +183,13 @@ const ChartModal = ({ onClose }) => {
 
     while (currentTime <= endTime) {
       const bucketPrices = [];
+      const nextInterval = currentTime + interval;
 
       // Collect all prices within the current interval
       while (
         dataIndex < sortedData.length &&
         sortedData[dataIndex].time >= currentTime &&
-        sortedData[dataIndex].time < currentTime + interval
+        sortedData[dataIndex].time < nextInterval
       ) {
         bucketPrices.push(sortedData[dataIndex].value);
         previousPrice = sortedData[dataIndex].value;
@@ -196,21 +198,32 @@ const ChartModal = ({ onClose }) => {
 
       // If we have collected prices, calculate the average
       if (bucketPrices.length > 0) {
-        const avgValue =
-          bucketPrices.reduce((sum, val) => sum + val, 0) / bucketPrices.length;
+        const avgValue = bucketPrices.reduce((sum, val) => sum + val, 0) / bucketPrices.length;
         aggregatedData.push({
           time: currentTime,
           value: avgValue,
         });
       } else {
-        // No data in this interval, use the previous price
-        aggregatedData.push({
-          time: currentTime,
-          value: previousPrice,
-        });
+        // For empty intervals, use the previous price
+        // But only add if we're not beyond the last actual data point
+        if (currentTime <= lastDataTime) {
+          aggregatedData.push({
+            time: currentTime,
+            value: previousPrice,
+          });
+        }
       }
 
       currentTime += interval;
+    }
+
+    // Ensure the last actual price point is included
+    const lastAggregatedPoint = aggregatedData[aggregatedData.length - 1];
+    if (lastAggregatedPoint && lastAggregatedPoint.time !== lastDataTime) {
+      aggregatedData.push({
+        time: lastDataTime,
+        value: sortedData[sortedData.length - 1].value,
+      });
     }
 
     return aggregatedData;
