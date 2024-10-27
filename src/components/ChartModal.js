@@ -3,6 +3,7 @@ import { createChart } from 'lightweight-charts';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import config from '../config.js';
+console.log('Config loaded:', config); // Add this line to debug
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -101,9 +102,9 @@ const ChartModal = ({ onClose }) => {
 
   // Handle WebSocket connection
   useEffect(() => {
-    console.log('Attempting to connect to:', config.SERVER_IP);
+    console.log('Attempting to connect to:', config.NEXT_PUBLIC_SERVER_IP);
     
-    const socket = new WebSocket(config.SERVER_IP);
+    const socket = new WebSocket(config.NEXT_PUBLIC_SERVER_IP);
     wsRef.current = socket;
 
     socket.onopen = () => {
