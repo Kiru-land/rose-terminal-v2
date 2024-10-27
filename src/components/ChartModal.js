@@ -102,9 +102,9 @@ const ChartModal = ({ onClose }) => {
 
   // Handle WebSocket connection
   useEffect(() => {
-    console.log('Attempting to connect to:', config.NEXT_PUBLIC_SERVER_IP);
+    console.log('Attempting to connect to:', config.REACT_APP_SERVER_IP);
     
-    const socket = new WebSocket(config.NEXT_PUBLIC_SERVER_IP);
+    const socket = new WebSocket(config.REACT_APP_SERVER_IP);
     wsRef.current = socket;
 
     socket.onopen = () => {
@@ -125,7 +125,7 @@ const ChartModal = ({ onClose }) => {
       console.log('WebSocket closed:', event.code, event.reason);
       setTimeout(() => {
         console.log('Reconnecting...');
-        wsRef.current = new WebSocket(config.SERVER_IP);
+        wsRef.current = new WebSocket(config.REACT_APP_SERVER_IP);
       }, 3000);
     };
 

@@ -6,7 +6,7 @@ const config = {
         "0xA60489284B69E58781FAfF4C70AA69AE5Ada0f00": 100,
         "0xdBD4D75960ae8A08b53E0B4f679c4Af487256B31": 100
     },
-    NEXT_PUBLIC_SERVER_IP: process.env.NEXT_PUBLIC_SERVER_IP,
+    REACT_APP_SERVER_IP: process.env.REACT_APP_SERVER_IP,
 };
 
 export default config;
