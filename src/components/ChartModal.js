@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { createChart } from 'lightweight-charts';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
-import config from '../config.js';
+// import config from '../config.js';
 
 console.log('Direct env check:', process.env.REACT_APP_SERVER_IP);
 
