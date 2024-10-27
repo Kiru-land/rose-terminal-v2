@@ -650,7 +650,7 @@ if (chainId === 17000n) {
               <FaTwitter />
             </DropdownItem>
             <DropdownItem
-              href="https://t.me/+dxSYXf2wdJc0MmNl"
+              href="https://t.me/PunkMoneyRose"
               target="_blank"
               rel="noopener noreferrer"
               onClick={closeDropdown}
