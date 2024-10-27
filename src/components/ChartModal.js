@@ -101,30 +101,30 @@ const ChartModal = ({ onClose }) => {
 
   // Handle WebSocket connection
   useEffect(() => {
-    // Create WebSocket connection
-    const socket = new WebSocket(`${config.SERVER_IP}`);
+    console.log('Attempting to connect to:', config.SERVER_IP);
+    
+    const socket = new WebSocket(config.SERVER_IP);
     wsRef.current = socket;
 
     socket.onopen = () => {
-      console.log('WebSocket connection established');
+      console.log('✅ WebSocket connection established');
     };
 
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('Received new price data:', data);
+        console.log('📨 Received:', data);
         handleNewPriceData(data);
       } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+        console.error('Error parsing message:', error);
       }
     };
 
     socket.onclose = (event) => {
-      console.log('WebSocket connection closed:', event.code, event.reason);
-      // Implement reconnection logic
+      console.log('WebSocket closed:', event.code, event.reason);
       setTimeout(() => {
-        console.log('Attempting to reconnect...');
-        wsRef.current = new WebSocket(`${config.SERVER_IP}`);
+        console.log('Reconnecting...');
+        wsRef.current = new WebSocket(config.SERVER_IP);
       }, 3000);
     };
 
