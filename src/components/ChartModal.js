@@ -103,43 +103,59 @@ const ChartModal = ({ onClose }) => {
 
   // Handle WebSocket connection
   useEffect(() => {
-    console.log('Attempting to connect to:', config.REACT_APP_SERVER_IP);
+    let reconnectTimeout;
     
-    const socket = new WebSocket(config.REACT_APP_SERVER_IP);
-    wsRef.current = socket;
+    const connectWebSocket = () => {
+      console.log('Attempting to connect to:', process.env.REACT_APP_SERVER_IP);
+      
+      const socket = new WebSocket(process.env.REACT_APP_SERVER_IP);
+      wsRef.current = socket;
 
-    socket.onopen = () => {
-      console.log('✅ WebSocket connection established');
+      socket.onopen = () => {
+        console.log('✅ WebSocket connection established');
+        // Clear any existing reconnect timeout
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout);
+        }
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('📨 Received:', data);
+          handleNewPriceData(data);
+        } catch (error) {
+          console.error('Error parsing message:', error);
+        }
+      };
+
+      socket.onclose = (event) => {
+        console.log('WebSocket closed:', event.code, event.reason);
+        // Only attempt to reconnect if the component is still mounted
+        reconnectTimeout = setTimeout(() => {
+          console.log('Reconnecting...');
+          connectWebSocket();
+        }, 3000);
+      };
+
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
     };
 
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('📨 Received:', data);
-        handleNewPriceData(data);
-      } catch (error) {
-        console.error('Error parsing message:', error);
-      }
-    };
+    // Initial connection
+    connectWebSocket();
 
-    socket.onclose = (event) => {
-      console.log('WebSocket closed:', event.code, event.reason);
-      setTimeout(() => {
-        console.log('Reconnecting...');
-        wsRef.current = new WebSocket(config.REACT_APP_SERVER_IP);
-      }, 3000);
-    };
-
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
+    // Cleanup function
     return () => {
-      if (wsRef.current && wsRef.current.readyState === 1) {
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      if (wsRef.current) {
         wsRef.current.close();
       }
     };
-  }, []);
+  }, []); // Empty dependency array to only run on mount
 
   // Handle incoming price data
   const handleNewPriceData = (data) => {
