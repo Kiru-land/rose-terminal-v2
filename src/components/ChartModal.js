@@ -101,8 +101,8 @@ const ChartModal = ({ onClose }) => {
 
   // Handle WebSocket connection
   useEffect(() => {
-    // Replace 'ws://yourserver.com:8080' with your server's WebSocket URL
-    const socket = new WebSocket(config.SERVER_IP);
+    // Create WebSocket connection
+    const socket = new WebSocket(`${config.SERVER_IP}`);
     wsRef.current = socket;
 
     socket.onopen = () => {
@@ -110,13 +110,22 @@ const ChartModal = ({ onClose }) => {
     };
 
     socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      handleNewPriceData(data);
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Received new price data:', data);
+        handleNewPriceData(data);
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
     };
 
-    socket.onclose = () => {
-      console.log('WebSocket connection closed');
-      // Optionally implement reconnection logic here
+    socket.onclose = (event) => {
+      console.log('WebSocket connection closed:', event.code, event.reason);
+      // Implement reconnection logic
+      setTimeout(() => {
+        console.log('Attempting to reconnect...');
+        wsRef.current = new WebSocket(`${config.SERVER_IP}`);
+      }, 3000);
     };
 
     socket.onerror = (error) => {
@@ -124,30 +133,28 @@ const ChartModal = ({ onClose }) => {
     };
 
     return () => {
-      socket.close();
+      if (wsRef.current && wsRef.current.readyState === 1) {
+        wsRef.current.close();
+      }
     };
   }, []);
 
   // Handle incoming price data
   const handleNewPriceData = (data) => {
-    // Update originalPriceData with the new data point
     setOriginalPriceData((prevData) => {
       const newData = [...prevData, { time: data.timestamp, value: data.price }];
+      // Re-aggregate the data with the new point
+      const aggregatedData = aggregateData(newData, timeframe);
+      setPriceData(aggregatedData);
+      
+      // Update the chart
+      if (lineSeries) {
+        lineSeries.update({ time: data.timestamp, value: data.price });
+        chart?.timeScale().scrollToRealTime();
+      }
+      
       return newData;
     });
-
-    // Re-aggregate the data based on the current timeframe
-    setPriceData((prevData) => {
-      const aggregatedData = aggregateData(originalPriceData, timeframe);
-      return aggregatedData;
-    });
-
-    // Update the chart with the new data point
-    if (lineSeries) {
-      lineSeries.update({ time: data.timestamp, value: data.price });
-      // Optionally adjust the time scale to keep the new data in view
-      chart.timeScale().scrollToRealTime();
-    }
   };
 
   // Aggregate data based on selected timeframe and fill gaps
