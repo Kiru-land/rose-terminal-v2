@@ -3,7 +3,8 @@ import { createChart } from 'lightweight-charts';
 import styled, { keyframes } from 'styled-components';
 import axios from 'axios';
 import config from '../config.js';
-console.log('Config loaded:', config); // Add this line to debug
+
+console.log('Direct env check:', process.env.REACT_APP_SERVER_IP);
 
 const fadeIn = keyframes`
   from { opacity: 0; }
