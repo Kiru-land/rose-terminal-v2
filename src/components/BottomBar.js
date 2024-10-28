@@ -2,9 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { useWeb3 } from '../contexts/Web3Context.js';
 import { usePopUp } from '../contexts/PopUpContext.js';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { FaEthereum } from 'react-icons/fa6';
 import { getEthPrice } from '../utils/getEthPrice.js';
+
 const BarContainer = styled.div`
   display: flex;
   justify-content: space-between;
@@ -77,6 +78,9 @@ const BottomBar = () => {
   const { isConnected, balance, roseBalance, connectWallet, disconnectWallet, totalSupply, reserve0, reserve1 } = useWeb3();
   const { showPopUp } = usePopUp();
   const [showEth, setShowEth] = useState(false);
+  const [marketCap, setMarketCap] = useState('N/A');
+  const [marketCapError, setMarketCapError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleConnect = async () => {
     if (isConnected) {
@@ -111,12 +115,49 @@ const BottomBar = () => {
       .catch(err => showPopUp('Failed to copy balance: ' + err.message));
   }, [showEth, balance, roseBalance, showPopUp]);
 
+  const calculateMarketCap = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      if (!reserve0 || !reserve1 || !totalSupply) {
+        setMarketCap('N/A');
+        return;
+      }
+
+      const ethPrice = await getEthPrice();
+      const mc = (parseFloat(reserve0) / parseFloat(reserve1) * parseFloat(totalSupply)) * ethPrice;
+      
+      const formattedMc = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(mc);
+
+      setMarketCap(formattedMc);
+      setMarketCapError(null);
+    } catch (error) {
+      console.error('Error calculating market cap:', error);
+      setMarketCap('N/A');
+      setMarketCapError('Failed to calculate market cap');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [reserve0, reserve1, totalSupply]);
+
+  useEffect(() => {
+    calculateMarketCap();
+  }, [calculateMarketCap]);
+
   return (
     <BarContainer>
       <McValue>
-        mc: {reserve0 && reserve1 && totalSupply ? 
-          ((parseFloat(reserve0) / parseFloat(reserve1) * parseFloat(totalSupply)) * getEthPrice()).toFixed(4) 
-          : 'N/A'}<FaEthereum />
+        mc: {isLoading ? (
+          'Loading...'
+        ) : marketCapError ? (
+          <span style={{ color: 'red' }}>{marketCapError}</span>
+        ) : (
+          <>
+            ${marketCap} <FaEthereum />
+          </>
+        )}
       </McValue>
       <ConnectButton $isConnected={isConnected} onClick={handleConnect}>
         {isConnected ? 'Disconnect' : 'Connect'}
