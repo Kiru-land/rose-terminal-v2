@@ -16,7 +16,7 @@ const BarContainer = styled.div`
   position: relative;
 `;
 
-const AlphaValue = styled.div`
+const McValue = styled.div`
   font-size: 12px;
   color: #00ff00;
   position: absolute;
@@ -74,9 +74,9 @@ const BalanceText = styled.span`
 `;
 
 const BottomBar = () => {
-  const { isConnected, balance, roseBalance, connectWallet, disconnectWallet, alpha } = useWeb3();
+  const { isConnected, balance, roseBalance, connectWallet, disconnectWallet, totalSupply, reserve0, reserve1 } = useWeb3();
   const { showPopUp } = usePopUp();
-  const [showEth, setShowEth] = useState(true);
+  const [showEth, setShowEth] = useState(false);
 
   const handleConnect = async () => {
     if (isConnected) {
@@ -113,7 +113,11 @@ const BottomBar = () => {
 
   return (
     <BarContainer>
-      <AlphaValue>α: {alpha !== undefined ? parseFloat(1-alpha).toFixed(4) : 'N/A'}</AlphaValue>
+      <McValue>
+        mc: {reserve0 && reserve1 && totalSupply ? 
+          (parseFloat(reserve0) / parseFloat(reserve1) * parseFloat(totalSupply)).toFixed(4) 
+          : 'N/A'}<FaEthereum />
+      </McValue>
       <ConnectButton $isConnected={isConnected} onClick={handleConnect}>
         {isConnected ? 'Disconnect' : 'Connect'}
       </ConnectButton>

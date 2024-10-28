@@ -20,6 +20,7 @@ export const Web3Provider = ({ children }) => {
   const [reserve0, setReserve0] = useState('0');
   const [reserve1, setReserve1] = useState('0');
   const [alpha, setAlpha] = useState('0');
+  const [totalSupply, setTotalSupply] = useState('0');
 
   const updateWeb3State = useCallback(async () => {
     if (typeof window.ethereum !== 'undefined' && isConnected) {
@@ -36,15 +37,20 @@ export const Web3Provider = ({ children }) => {
         const launch = newChainId === 1n ? LAUNCH_ADDRESS : newChainId === 17000n ? LAUNCH_ADDRESS_TESTNET : null;
         const roseContract = new ethers.Contract(
           rose,
-          ['function balanceOf(address) view returns (uint256)'],
+          [
+            'function balanceOf(address) view returns (uint256)',
+            'function totalSupply() view returns (uint256)'
+          ],
           newProvider
         );
 
         let roseBalance = '0';
+        let supply = '0';
         try {
           roseBalance = await roseContract.balanceOf(address);
+          supply = await roseContract.totalSupply();
         } catch (error) {
-          console.error('Error getting Rose balance:', error);
+          console.error('Error getting Rose balance or supply:', error);
         }
 
         // Add the new function call
@@ -70,6 +76,7 @@ export const Web3Provider = ({ children }) => {
         setRoseBalance(ethers.formatEther(roseBalance));
         setRose(rose);
         setLaunch(launch);
+        setTotalSupply(ethers.formatEther(supply));
         console.log('Web3 state updated');
       } catch (error) {
         console.error('Error updating Web3 state:', error);
@@ -148,7 +155,8 @@ export const Web3Provider = ({ children }) => {
       reserve0,
       reserve1,
       alpha,
-      launch
+      launch,
+      totalSupply
     }}>
       {children}
     </Web3Context.Provider>

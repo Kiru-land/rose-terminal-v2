@@ -315,8 +315,13 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
   );
 
   const handleAmountChange = (e) => {
-    const newAmount = e.target.value.slice(0, 8);
-    setAmount(newAmount);
+    const newAmount = e.target.value;
+    // Only limit decimals when ETH is on top
+    if (isEthOnTop) {
+      setAmount(newAmount.slice(0, 8));
+    } else {
+      setAmount(newAmount);
+    }
     setPriceImpact(null);
     setIsQuoteLoading(true);
     debouncedGetQuote(newAmount);
@@ -504,6 +509,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       const maxEth = parseFloat(nativeBalance) - 0.01;
       setAmount(maxEth > 0 ? maxEth.toFixed(6) : '0');
     } else {
+      // Don't format ROSE balance when setting max
       setAmount(roseBalance);
     }
   };
