@@ -155,7 +155,7 @@ const BottomBar = () => {
           <span style={{ color: 'red' }}>{marketCapError}</span>
         ) : (
           <>
-            ${marketCap} <FaEthereum />
+            ${marketCap}
           </>
         )}
       </McValue>
