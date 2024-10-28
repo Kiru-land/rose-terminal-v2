@@ -4,7 +4,7 @@ import { useWeb3 } from '../contexts/Web3Context.js';
 import { usePopUp } from '../contexts/PopUpContext.js';
 import { useState, useCallback } from 'react';
 import { FaEthereum } from 'react-icons/fa6';
-
+import { getEthPrice } from '../utils/getEthPrice.js';
 const BarContainer = styled.div`
   display: flex;
   justify-content: space-between;
@@ -115,7 +115,7 @@ const BottomBar = () => {
     <BarContainer>
       <McValue>
         mc: {reserve0 && reserve1 && totalSupply ? 
-          (parseFloat(reserve0) / parseFloat(reserve1) * parseFloat(totalSupply)).toFixed(4) 
+          ((parseFloat(reserve0) / parseFloat(reserve1) * parseFloat(totalSupply)) * getEthPrice()).toFixed(4) 
           : 'N/A'}<FaEthereum />
       </McValue>
       <ConnectButton $isConnected={isConnected} onClick={handleConnect}>
