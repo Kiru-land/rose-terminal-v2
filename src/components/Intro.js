@@ -65,7 +65,7 @@ const Intro = ({ asciiLogo, onIntroComplete }) => {
   const [introText, setIntroText] = useState('');
   const [glitterCount, setGlitterCount] = useState(0);
   const [isTypingComplete, setIsTypingComplete] = useState(false);
-  const fullText = "Kiru Terminal v0.4.0";
+  const fullText = "Kiru Terminal v0.4.1";
 
   const maxGlitters = 100;
 

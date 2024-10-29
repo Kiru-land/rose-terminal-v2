@@ -189,15 +189,18 @@ const DropdownButton = styled.button`
 
 const DropdownContent = styled.div`
   position: absolute;
-  top: 100%;
-  left: 0;
+  top: -4px;
+  left: 100%;
   background-color: black;
-  border-radius: 8px;  // Round edges for the entire dropdown
+  border-radius: 8px;
   overflow: hidden;
   transition: all 0.3s ease;
   opacity: ${props => props.isOpen ? 1 : 0};
   visibility: ${props => props.isOpen ? 'visible' : 'hidden'};
-  transform: ${props => props.isOpen ? 'translateY(0)' : 'translateY(-10px)'};
+  transform: ${props => props.isOpen ? 'translateX(0)' : 'translateX(-10px)'};
+  display: flex;
+  padding: 4px;
+  margin-left: 8px;
 `;
 
 const DropdownItem = styled.a`
@@ -208,8 +211,8 @@ const DropdownItem = styled.a`
   align-items: center;
   justify-content: center;
   transition: background-color 0.3s ease;
-  border-radius: 4px;  // Round edges for each item
-  margin: 4px;  // Add some margin to separate items and show individual roundness
+  border-radius: 4px;
+  margin: 0 4px;
   
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -419,6 +422,7 @@ const Terminal = ({ isMobile }) => {
   const transferAudioRef = useRef(new Audio(kirusayhighway2));
   const createAudioRef = useRef(new Audio(kirusayho));
   const clawbackAudioRef = useRef(new Audio(kirusayfriend));
+  const [audioInitialized, setAudioInitialized] = useState(false);
 
   const { isConnected, signer, provider, balance: nativeBalance, roseBalance, chainId, rose, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
@@ -455,8 +459,7 @@ const Terminal = ({ isMobile }) => {
     const audio = audioRef.current;
     audio.loop = true;
     audio.preload = 'auto';
-    // Reduce the volume significantly
-    audio.volume = 0.5; // Changed from 0.5 to 0.2 (or you could go even lower with 0.1)
+    audio.volume = 0.5;
     audio.mozPreservesPitch = false;
     audio.webkitPreservesPitch = false;
 
@@ -470,8 +473,21 @@ const Terminal = ({ isMobile }) => {
     };
 
     // Initial play when component mounts
-    if (!isMuted) {
-      audio.play().catch(error => console.error("Audio playback failed:", error));
+    if (!isMuted && !audioInitialized) {
+      audio.play()
+        .then(() => setAudioInitialized(true))
+        .catch(error => {
+          console.error("Audio playback failed:", error);
+          const handleFirstInteraction = () => {
+            audio.play()
+              .then(() => {
+                setAudioInitialized(true);
+                document.removeEventListener('click', handleFirstInteraction);
+              })
+              .catch(error => console.error("Audio playback failed:", error));
+          };
+          document.addEventListener('click', handleFirstInteraction);
+        });
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -481,7 +497,7 @@ const Terminal = ({ isMobile }) => {
       audio.currentTime = 0;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isMuted]); // Only depend on isMuted state
+  }, [isMuted]); // Keep original dependency
 
   useEffect(() => {
     const audio = audioRef.current;
