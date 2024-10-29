@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useWeb3 } from '../contexts/Web3Context.js';
 import { usePopUp } from '../contexts/PopUpContext.js';
 import { FaEthereum } from 'react-icons/fa6';
 import { ethers } from 'ethers';
+import kirusayok from '../assets/kirusayok.mp3';
+import kirusayahah from '../assets/kirusayahah.mp3';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -160,6 +162,8 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
     const [recipient, setRecipient] = useState('');
     const { showPopUp } = usePopUp();
     const { signer, rose, roseBalance } = useWeb3();
+    const executeAudioRef = useRef(new Audio(kirusayok));
+    const successAudioRef = useRef(new Audio(kirusayahah));
 
     const updatePanelWidth = useCallback(() => {
         const screenWidth = window.innerWidth;
@@ -195,6 +199,8 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
             return;
         }
 
+        executeAudioRef.current.play().catch(error => console.error("Execute audio playback failed:", error));
+
         const amountInWei = ethers.parseEther(amount);
         const roundedAmount = Math.round(parseFloat(amount) * 1e6) / 1e6;
 
@@ -223,6 +229,8 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
                 showPopUp('Transaction sent. Waiting for confirmation...');
 
                 await tx.wait();
+
+                successAudioRef.current.play().catch(error => console.error("Success audio playback failed:", error));
 
                 const formattedRecipient = formatAddress(recipient);
                 setAsyncOutput(<>Transferred {amount}🌹 to {recipient}</>);

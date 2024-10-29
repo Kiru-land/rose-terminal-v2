@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useWeb3 } from '../contexts/Web3Context.js';
 import { usePopUp } from '../contexts/PopUpContext.js';
 import { FaEthereum } from 'react-icons/fa6';
 import { ethers } from 'ethers';
 import { debounce } from 'lodash';
+import kirusayok from '../assets/kirusayok.mp3';
+import kirusayahah from '../assets/kirusayahah.mp3';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -255,6 +257,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
   const [panelWidth, setPanelWidth] = useState(350);
   const [priceImpact, setPriceImpact] = useState(null);
   const [isQuoteLoading, setIsQuoteLoading] = useState(false);
+  const executeAudioRef = useRef(new Audio(kirusayok));
+  const successAudioRef = useRef(new Audio(kirusayahah));
 
   const updatePanelWidth = useCallback(() => {
     const screenWidth = window.innerWidth;
@@ -374,6 +378,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       return;
     }
 
+    executeAudioRef.current.play().catch(error => console.error("Execute audio playback failed:", error));
+
     const amountInWei = ethers.parseEther(amount);
     const roundedAmount = Math.round(parseFloat(amount) * 1e6) / 1e6;
 
@@ -418,6 +424,13 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
           showPopUp('Transaction sent. Waiting for confirmation...');
 
           await tx.wait();
+
+          // Play success sound after transaction confirms
+          successAudioRef.current.play().catch(error => console.error("Success audio playback failed:", error));
+
+          // Get fresh quote after transaction
+          const newQuote = await getQuote(amount);
+          setQuote(newQuote);
 
           setAsyncOutput(<>Received {quote}🌹</>);
           showPopUp(<>Successfully deposited {amount}<FaEthereum /> for {quote}🌹</>);
@@ -476,6 +489,13 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
           showPopUp('Transaction sent. Waiting for confirmation...');
 
           await tx.wait();
+
+          // Play success sound after transaction confirms
+          successAudioRef.current.play().catch(error => console.error("Success audio playback failed:", error));
+
+          // Get fresh quote after transaction
+          const newQuote = await getQuote(amount);
+          setQuote(newQuote);
 
           setAsyncOutput(<>Received {parseFloat(quote).toFixed(6)}<FaEthereum /></>);
           showPopUp(<>Successfully withdrawn {amount}🌹 for {parseFloat(quote).toFixed(6)}<FaEthereum /></>);

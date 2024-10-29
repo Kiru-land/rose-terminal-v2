@@ -2,9 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { useWeb3 } from '../contexts/Web3Context.js';
 import { usePopUp } from '../contexts/PopUpContext.js';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { FaEthereum } from 'react-icons/fa6';
 import { getEthPrice } from '../utils/getEthPrice.js';
+import kirusayho from '../assets/kirusayho.mp3';
 
 const BarContainer = styled.div`
   display: flex;
@@ -81,6 +82,7 @@ const BottomBar = () => {
   const [marketCap, setMarketCap] = useState('N/A');
   const [marketCapError, setMarketCapError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const connectAudioRef = useRef(new Audio(kirusayho));
 
   const handleConnect = async () => {
     if (isConnected) {
@@ -88,6 +90,7 @@ const BottomBar = () => {
     } else {
       try {
         await connectWallet();
+        connectAudioRef.current.play().catch(error => console.error("Connect audio playback failed:", error));
       } catch (error) {
         showPopUp('Failed to connect wallet: ' + error.message);
         console.error('Failed to connect wallet:', error);
@@ -136,7 +139,7 @@ const BottomBar = () => {
     } catch (error) {
       console.error('Error calculating market cap:', error);
       setMarketCap('N/A');
-      setMarketCapError('Failed to calculate market cap');
+      setMarketCapError('Ø');
     } finally {
       setIsLoading(false);
     }
@@ -152,7 +155,7 @@ const BottomBar = () => {
         mc: {isLoading ? (
           'Loading...'
         ) : marketCapError ? (
-          <span style={{ color: 'red' }}>{marketCapError}</span>
+          <span style={{ color: '#00ff00' }}>{marketCapError}</span>
         ) : (
           <>
             ${marketCap}

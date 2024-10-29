@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import { useWeb3 } from '../contexts/Web3Context.js';
 import { usePopUp } from '../contexts/PopUpContext.js';
@@ -13,6 +13,8 @@ import spxAscii from '../assets/spx-ascii.txt';
 import roseCultAscii from '../assets/rosecult.txt';
 import { FaEthereum, FaInfoCircle } from 'react-icons/fa';
 import axios from 'axios';
+import kirusayahah from '../assets/kirusayahah.mp3';
+import kirusayok from '../assets/kirusayok.mp3';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -377,6 +379,8 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showRoseCult, setShowRoseCult] = useState(false);
   const [roseCultArt, setRoseCultArt] = useState('');
+  const eligibleAudioRef = useRef(new Audio(kirusayahah));
+  const registerAudioRef = useRef(new Audio(kirusayok));
 
   const updatePanelWidth = useCallback(() => {
     const screenWidth = window.innerWidth;
@@ -438,7 +442,12 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
         
         const active = response.data.communities.map(p => p.toLowerCase());
         setActiveProjects(active);
-        setAllocation(active.length > 0);
+        const isEligible = active.length > 0;
+        setAllocation(isEligible);
+        
+        if (isEligible) {
+          eligibleAudioRef.current.play().catch(error => console.error("Eligible audio playback failed:", error));
+        }
       } catch (error) {
         console.error('Error fetching active communities:', error);
         setActiveProjects([]);
@@ -466,6 +475,8 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
       showPopUp('Invalid Ethereum address.');
       return;
     }
+
+    registerAudioRef.current.play().catch(error => console.error("Register audio playback failed:", error));
 
     animateLogo(async () => {
       setAsyncOutput(<>Processing clawback registration for {address?.substring(0, 6)}...{address?.substring(address.length - 4)} ...</>);

@@ -5,14 +5,19 @@ import { useWeb3 } from '../contexts/Web3Context.js';
 import Prompt from './Prompt.js';
 import BottomBar from './BottomBar.js';
 import asciiArt from '../assets/ascii-art.txt';
-import { FaEthereum, FaGithub, FaTwitter, FaBook, FaBars, FaTelegram } from 'react-icons/fa';
+import { FaEthereum, FaGithub, FaTwitter, FaBook, FaBars, FaTelegram, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 import Intro from './Intro.js';
 import { usePopUp } from '../contexts/PopUpContext.js';
 import Trade from './Trade.js';
 import Transfer from './Transfer.js';
 import Clawback from './Clawback.js';
 import ChartModal from './ChartModal.js';
-import Lore from './Lore.js';
+import Create from './Create.js';
+import lore1Music from '../assets/lore1.mp3';
+import kirusaysmoney from '../assets/kirusaymoney.mp3';
+import kirusayhighway2 from '../assets/kirusayhighway2.mp3';
+import kirusayho from '../assets/kirusayho.mp3';
+import kirusayfriend from '../assets/kirusayfriend.mp3';
 
 // Add this global style component
 const GlobalStyle = createGlobalStyle`
@@ -369,6 +374,26 @@ const RoseUsdButton = styled.span`
   left: 39px;
 `;
 
+const ControlButton = styled.button`
+  position: fixed;
+  background: none;
+  border: none;
+  color: #00ff00;
+  font-size: 24px;
+  transition: opacity 0.3s ease-in-out;
+  opacity: ${props => props.visible ? 1 : 0};
+  cursor: pointer;
+  &:hover {
+    transform: scale(1.1);
+  }
+`;
+
+const AudioButton = styled(ControlButton)`
+  top: 20px;
+  right: 20px;
+  z-index: 1002;  // Ensure it's above other elements
+`;
+
 const Terminal = ({ isMobile }) => {
   const [history, setHistory] = useState([]);
   const [asyncOutput, setAsyncOutput] = useState(null);
@@ -381,10 +406,19 @@ const Terminal = ({ isMobile }) => {
   const [showClawback, setShowClawback] = useState(false);
   const [selectedCommand, setSelectedCommand] = useState(null);
   const [isChartModalOpen, setIsChartModalOpen] = useState(false);
-  const [showLore, setShowLore] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
   const terminalContentRef = useRef(null);
   const outputRef = useRef(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const audioRef = useRef(new Audio(lore1Music));
+  const timeoutRef = useRef(null);
+  const [isPageVisible, setIsPageVisible] = useState(true);
+  const tradeAudioRef = useRef(new Audio(kirusaysmoney));
+  const transferAudioRef = useRef(new Audio(kirusayhighway2));
+  const createAudioRef = useRef(new Audio(kirusayho));
+  const clawbackAudioRef = useRef(new Audio(kirusayfriend));
 
   const { isConnected, signer, provider, balance: nativeBalance, roseBalance, chainId, rose, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
@@ -414,6 +448,63 @@ const Terminal = ({ isMobile }) => {
     }
   }, [asyncOutput]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    audio.loop = true;
+
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+      if (!document.hidden && !isMuted) {
+        audio.play().catch(error => console.error("Audio playback failed:", error));
+      } else {
+        audio.pause();
+      }
+    };
+
+    // Initial play when component mounts
+    if (!isMuted) {
+      audio.play().catch(error => console.error("Audio playback failed:", error));
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isMuted]); // Only depend on isMuted state
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (isPageVisible && !isMuted) {
+      audio.play().catch(error => console.error("Audio playback failed:", error));
+    } else {
+      audio.pause();
+    }
+  }, [isPageVisible, isMuted]);
+
+  useEffect(() => {
+    const handleMouseMove = () => {
+      setControlsVisible(true);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        setControlsVisible(false);
+      }, 1000);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   const animateLogo = async (callback) => {
     setIsAnimating(true);
     try {
@@ -424,7 +515,7 @@ const Terminal = ({ isMobile }) => {
   };
 
   const handleMenuClick = (command) => {
-    if (!isConnected && command !== 'clawback' && command !== 'launch' && command !== 'lore') {
+    if (!isConnected && command !== 'clawback' && command !== 'launch' && command !== 'create') {
       setHistory(prev => [...prev, { type: 'output', content: 'Please connect your wallet.' }]);
       return;
     }
@@ -444,7 +535,7 @@ const Terminal = ({ isMobile }) => {
     setShowTrade(false);
     setShowTransfer(false);
     setShowClawback(false);
-    setShowLore(false);
+    setShowCreate(false);
 
     let output = '';
     switch (command) {
@@ -458,7 +549,7 @@ const Terminal = ({ isMobile }) => {
           setShowTrade(false);
           setShowTransfer(false);
           setShowClawback(false);
-          setShowLore(false);
+          setShowCreate(false);
           setSelectedCommand('launch');
           output = 'Opening launch interface...';
         }
@@ -473,9 +564,10 @@ const Terminal = ({ isMobile }) => {
           setShowLaunch(false);
           setShowTransfer(false);
           setShowClawback(false);
-          setShowLore(false);
+          setShowCreate(false);
           setSelectedCommand('trade');
           output = 'Opening trade interface...';
+          tradeAudioRef.current.play().catch(error => console.error("Trade audio playback failed:", error));
         }
         break;
       case 'transfer':
@@ -488,9 +580,10 @@ const Terminal = ({ isMobile }) => {
           setShowLaunch(false);
           setShowTrade(false);
           setShowClawback(false);
-          setShowLore(false);
+          setShowCreate(false);
           setSelectedCommand('transfer');
           output = 'Opening transfer interface...';
+          transferAudioRef.current.play().catch(error => console.error("Transfer audio playback failed:", error));
         }
         break;
       case 'clawback':
@@ -503,24 +596,26 @@ const Terminal = ({ isMobile }) => {
           setShowLaunch(false);
           setShowTrade(false);
           setShowTransfer(false);
-          setShowLore(false);
+          setShowCreate(false);
           setSelectedCommand('clawback');
           output = 'Opening clawback interface...';
+          clawbackAudioRef.current.play().catch(error => console.error("Clawback audio playback failed:", error));
         }
         break;
-      case 'lore':
-        if (showLore) {
-          setShowLore(false);
+      case 'create':
+        if (showCreate) {
+          setShowCreate(false);
           setSelectedCommand(null);
-          output = 'Closing lore interface...';
+          output = 'Closing create interface...';
         } else {
-          setShowLore(true);
+          setShowCreate(true);
           setShowLaunch(false);
           setShowTrade(false);
           setShowTransfer(false);
           setShowClawback(false);
-          setSelectedCommand('lore');
-          output = 'Opening lore interface...';
+          setSelectedCommand('create');
+          output = 'Opening create interface...';
+          createAudioRef.current.play().catch(error => console.error("Create audio playback failed:", error));
         }
         break;
       default:
@@ -582,13 +677,9 @@ const Terminal = ({ isMobile }) => {
   };
 
   const renderMenuItems = () => {
-    // if (!isConnected) {
-    //   return null;
-    // }
-
-if (chainId === 17000n) {
+    if (chainId === 17000n) {
       // Holesky Testnet options
-      return ['trade', 'transfer', 'lore'].map(command => (
+      return ['trade', 'transfer', 'create'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -600,7 +691,7 @@ if (chainId === 17000n) {
       ));
     } else {
       // Mainnet options
-      return ['clawback', 'lore'].map(command => (
+      return ['clawback', 'create'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -610,7 +701,7 @@ if (chainId === 17000n) {
           {command}
         </RippleButton>
       ));
-    };
+    }
   }
 
   const toggleDropdown = (e) => {
@@ -622,10 +713,17 @@ if (chainId === 17000n) {
     setIsDropdownOpen(false);
   };
 
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
+
   return (
     <>
       <GlobalStyle />
       <TerminalContainer onClick={handleContainerClick} isMobile={isMobile}>
+        <AudioButton onClick={toggleMute} visible={controlsVisible}>
+          {!isMuted ? <FaVolumeUp /> : <FaVolumeMute />}
+        </AudioButton>
         <DropdownContainer>
           <DropdownButton onClick={toggleDropdown}>
             <FaBars />
@@ -735,9 +833,9 @@ if (chainId === 17000n) {
             setAsyncOutput={setAsyncOutput}
           />
         )}
-        {showLore && (
-          <Lore 
-            onClose={() => setShowLore(false)} 
+        {showCreate && (
+          <Create 
+            onClose={() => setShowCreate(false)} 
             animateLogo={animateLogo} 
             setAsyncOutput={setAsyncOutput}
           />
