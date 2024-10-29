@@ -423,6 +423,9 @@ const Terminal = ({ isMobile }) => {
   const { isConnected, signer, provider, balance: nativeBalance, roseBalance, chainId, rose, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
 
+  // Add ref for components container
+  const componentsRef = useRef(null);
+
   useEffect(() => {
     fetch(asciiArt)
       .then(response => response.text())
@@ -451,6 +454,11 @@ const Terminal = ({ isMobile }) => {
   useEffect(() => {
     const audio = audioRef.current;
     audio.loop = true;
+    audio.preload = 'auto';
+    // Reduce the volume significantly
+    audio.volume = 0.5; // Changed from 0.5 to 0.2 (or you could go even lower with 0.1)
+    audio.mozPreservesPitch = false;
+    audio.webkitPreservesPitch = false;
 
     const handleVisibilityChange = () => {
       setIsPageVisible(!document.hidden);
@@ -478,9 +486,20 @@ const Terminal = ({ isMobile }) => {
   useEffect(() => {
     const audio = audioRef.current;
     if (isPageVisible && !isMuted) {
-      audio.play().catch(error => console.error("Audio playback failed:", error));
+      setTimeout(() => {
+        audio.volume = 0.2; // Make sure to set the same lower volume here
+        audio.play().catch(error => console.error("Visibility audio playback failed:", error));
+      }, 100);
     } else {
-      audio.pause();
+      const fadeOut = setInterval(() => {
+        if (audio.volume > 0.1) {
+          audio.volume -= 0.1;
+        } else {
+          audio.pause();
+          audio.volume = 0.2; // Update reset volume here too
+          clearInterval(fadeOut);
+        }
+      }, 50);
     }
   }, [isPageVisible, isMuted]);
 
@@ -504,6 +523,39 @@ const Terminal = ({ isMobile }) => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (componentsRef.current && !componentsRef.current.contains(event.target)) {
+        // Close all open components
+        if (showTrade) {
+          setShowTrade(false);
+          setSelectedCommand(null);
+        }
+        if (showTransfer) {
+          setShowTransfer(false);
+          setSelectedCommand(null);
+        }
+        if (showClawback) {
+          setShowClawback(false);
+          setSelectedCommand(null);
+        }
+        if (showCreate) {
+          setShowCreate(false);
+          setSelectedCommand(null);
+        }
+        if (showLaunch) {
+          setShowLaunch(false);
+          setSelectedCommand(null);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showTrade, showTransfer, showClawback, showCreate, showLaunch]); // Add dependencies for all components
 
   const animateLogo = async (callback) => {
     setIsAnimating(true);
@@ -812,35 +864,38 @@ const Terminal = ({ isMobile }) => {
         </MenuContainer>
         <RoseUsdButton onClick={handleOpenChartModal} isMobile={isMobile}>💹</RoseUsdButton>
         <BottomBar />
-        {showTrade && (
-          <Trade 
-            onClose={() => setShowTrade(false)} 
-            animateLogo={animateLogo} 
-            setAsyncOutput={setAsyncOutput}
-          />
-        )}
-        {showTransfer && (
-          <Transfer 
-            onClose={() => setShowTransfer(false)} 
-            animateLogo={animateLogo} 
-            setAsyncOutput={setAsyncOutput}
-          />
-        )}
-        {showClawback && (
-          <Clawback 
-            onClose={() => setShowClawback(false)} 
-            animateLogo={animateLogo} 
-            setAsyncOutput={setAsyncOutput}
-          />
-        )}
-        {showCreate && (
-          <Create 
-            onClose={() => setShowCreate(false)} 
-            animateLogo={animateLogo} 
-            setAsyncOutput={setAsyncOutput}
-          />
-        )}
-        {isChartModalOpen && <ChartModal onClose={handleCloseChartModal} />}
+        {/* Wrap all component renders in a div with the ref */}
+        <div ref={componentsRef}>
+          {showTrade && (
+            <Trade 
+              onClose={() => setShowTrade(false)} 
+              animateLogo={animateLogo} 
+              setAsyncOutput={setAsyncOutput}
+            />
+          )}
+          {showTransfer && (
+            <Transfer 
+              onClose={() => setShowTransfer(false)} 
+              animateLogo={animateLogo} 
+              setAsyncOutput={setAsyncOutput}
+            />
+          )}
+          {showClawback && (
+            <Clawback 
+              onClose={() => setShowClawback(false)} 
+              animateLogo={animateLogo} 
+              setAsyncOutput={setAsyncOutput}
+            />
+          )}
+          {showCreate && (
+            <Create 
+              onClose={() => setShowCreate(false)} 
+              animateLogo={animateLogo} 
+              setAsyncOutput={setAsyncOutput}
+            />
+          )}
+          {isChartModalOpen && <ChartModal onClose={handleCloseChartModal} />}
+        </div>
       </TerminalContainer>
     </>
   );

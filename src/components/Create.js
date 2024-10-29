@@ -334,6 +334,8 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
 
   const imageWrapperRef = useRef(null);
   const downloadAudioRef = useRef(new Audio(kirusaythankyou));
+  const imageRef = useRef(null);
+  const textRefs = useRef([]);
 
   const images = useMemo(() => {
     const ordered_images = [kiru, kirubluescreen, kirublur, kirububble, kirububble2, kirubutterfly, kirucamescope, kirucamescope2, kiruchinese, kirudemon, kirudemon2, kirudemon3, kirudiddy, kiruduplicate, kirufight, kirufisheye, kiruglass, kiruhighlight, kirulight, kirulove, kiruold, kiruold2, kirutarget, kiruwhite, kiruwhite2, kiruwhite3];
@@ -357,8 +359,8 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
       setTextElements(prev => [...prev, {
         text: e.target.value,
         position: { 
-          x: imageSize.width / 2,  // Remove the offset
-          y: imageSize.height / 2   // Remove the offset
+          x: 0,  // Center position
+          y: 0   // Center position
         }
       }]);
       setIsNewText(false);
@@ -389,47 +391,90 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
   };
 
   const handleDownload = () => {
-    downloadAudioRef.current.play().catch(error => console.error("Download audio playback failed:", error));
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    const img = new window.Image();
-    img.crossOrigin = "Anonymous";
-    img.src = images[currentImageIndex];
+    const imageSrc = images[currentImageIndex];
+    const img = document.createElement('img');
+    img.crossOrigin = 'anonymous';
+    img.src = imageSrc;
 
     img.onload = () => {
-      // Set canvas size to match image
-      canvas.width = img.width;
-      canvas.height = img.height;
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      // Draw the image
-      ctx.drawImage(img, 0, 0);
+      const imageRect = imageWrapperRef.current.getBoundingClientRect();
+      const scaleX = canvas.width / imageRect.width;
+      const scaleY = canvas.height / imageRect.height;
 
-      // Draw each text element
-      textElements.forEach(element => {
-        // Set text styles
-        ctx.font = `bold ${element.fontSize || fontSize}px ${element.fontFamily || fontFamily}`;
-        ctx.fillStyle = element.color || textColor;
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2;
+      textElements.forEach((element, index) => {
+        const textElement = textRefs.current[index];
+        if (!textElement) return;
+
+        const textRect = textElement.getBoundingClientRect();
+        const imageRect = imageWrapperRef.current.getBoundingClientRect();
+
+        const relativeX = textRect.left - imageRect.left + (textRect.width / 2);
+        const relativeY = textRect.top - imageRect.top + (textRect.height / 2);
+
+        const canvasX = relativeX * scaleX;
+        const canvasY = relativeY * scaleY;
+
+        // Calculate the scaled max width based on the displayed text element
+        const maxWidth = (textRect.width * scaleX) * 0.95;
+
+        const scaledFontSize = Math.round(fontSize * scaleX);
+        ctx.font = `${scaledFontSize}px ${fontFamily}`;
+        ctx.fillStyle = textColor;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+        ctx.shadowOffsetX = 2 * scaleX;
+        ctx.shadowOffsetY = 2 * scaleY;
+        ctx.shadowBlur = 4 * scaleX;
 
-        // Calculate position
-        const x = (element.position.x / imageWrapperRef.current.offsetWidth) * canvas.width;
-        const y = (element.position.y / imageWrapperRef.current.offsetHeight) * canvas.height;
+        // Split text into words and reconstruct with proper wrapping
+        const words = element.text.split(' ');
+        let lines = [];
+        let currentLine = words[0];
 
-        // Draw text with stroke for better visibility
-        ctx.strokeText(element.text, x, y);
-        ctx.fillText(element.text, x, y);
+        for (let i = 1; i < words.length; i++) {
+          const testLine = currentLine + ' ' + words[i];
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth) {
+            lines.push(currentLine);
+            currentLine = words[i];
+          } else {
+            currentLine = testLine;
+          }
+        }
+        lines.push(currentLine);
+
+        // Draw each line
+        const lineHeight = scaledFontSize * 1.2;
+        const totalHeight = lineHeight * lines.length;
+        const startY = canvasY - (totalHeight / 2) + (lineHeight / 2);
+
+        lines.forEach((line, i) => {
+          ctx.fillText(line, canvasX, startY + (i * lineHeight), maxWidth);
+        });
       });
 
-      // Create download link
+      const dataURL = canvas.toDataURL('image/png');
       const link = document.createElement('a');
-      link.download = 'meme.png';
-      link.href = canvas.toDataURL('image/png');
+      link.href = dataURL;
+      link.download = 'image.png';
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
+
+      if (downloadAudioRef.current) {
+        downloadAudioRef.current.play();
+      }
+    };
+
+    img.onerror = (err) => {
+      console.error('Image loading failed', err);
     };
   };
 
@@ -520,8 +565,8 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
       </ControlsContainer>
       <ImageContainer>
         <ArrowButton left onClick={handlePrevImage}>&lt;</ArrowButton>
-        <ImageWrapper>
-          <Image src={images[currentImageIndex]} alt="Meme" />
+        <ImageWrapper ref={imageWrapperRef}>
+          <Image ref={imageRef} src={images[currentImageIndex]} alt="Meme" />
           {textElements.map((element, index) => (
             <Draggable
               key={index}
@@ -531,6 +576,7 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
               onStop={handleDragStop}
             >
               <ImageText 
+                ref={el => textRefs.current[index] = el}
                 fontSize={fontSize}
                 color={textColor}
                 fontFamily={fontFamily}
