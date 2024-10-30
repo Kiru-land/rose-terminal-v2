@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { FaEthereum, FaInfoCircle } from 'react-icons/fa';
 
 // Import all angel GIFs
 import angel0 from '../assets/angel0.GIF';
@@ -10,6 +11,9 @@ import angel4 from '../assets/angel4.GIF';
 import angel5 from '../assets/angel5.GIF';
 import angel6 from '../assets/angel6.GIF';
 import angel7 from '../assets/angel7.GIF';
+import angel8 from '../assets/angel8.GIF';
+import angel9 from '../assets/angel9.GIF';
+import angel10 from '../assets/angel10.GIF';
 
 const PersonaContainer = styled.div`
   position: fixed;
@@ -48,18 +52,21 @@ const Personas = ({ isVisible }) => {
   const [currentPersona, setCurrentPersona] = useState(null);
   const [currentText, setCurrentText] = useState('');
 
-  const personas = [angel0, angel1, angel2, angel3, angel4, angel5, angel6, angel7];
+  const personas = [angel0, angel1, angel2, angel3, angel4, angel5, angel6, angel7, angel8, angel9, angel10];
   const texts = [
     "Welcome to Kiru's realm!",
     "Ready to create something wonderful? Just click on create!",
+    "Connect your wallet. It's here, at the bottom!",
     "Got a question? Come ask on Telegram!",
-    "Did you know Kiru sprinkled little magic on this coin?",
-    "Kiru is watching all of us",
+    "Did you know that Kiru sprinkled little magics on this coin?",
+    "Kiru is watching over all of us",
     "Time to create something amazing",
     "Kiru is silly but he's adorable",
-    "Oh, you're part of an amazing community? Check if you are eligible for the Clawback!",
+    <>Most symbols are clickable! You can tap on tickers <FaEthereum /> and help symbols <FaInfoCircle />!</>,
+    "Exchange your silly tokens for another silly token! Click on Trade!",
+    "So, you're part of an amazing community? Check if you are eligible to the Clawback!",
     "You're in for an incredible adventure!",
-    "You look so cool ahahaha. Come with us!",
+    "You look so cool ahahaha. Come play with us!",
     "Kiru casts spells left and right! Someone has to stop him!"
   ];
 
