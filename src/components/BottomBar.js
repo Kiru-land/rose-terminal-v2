@@ -168,7 +168,7 @@ const BottomBar = () => {
       <Balance>
         <BalanceText onClick={copyBalance}>{displayBalance()}</BalanceText>
         <CurrencyToggle onClick={toggleCurrency}>
-          {showEth ? <FaEthereum /> : '🌹'}
+          {showEth ? <FaEthereum /> : '👼🏻'}
         </CurrencyToggle>
       </Balance>
     </BarContainer>

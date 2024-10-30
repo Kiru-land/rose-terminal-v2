@@ -432,8 +432,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
           const newQuote = await getQuote(amount);
           setQuote(newQuote);
 
-          setAsyncOutput(<>Received {quote}🌹</>);
-          showPopUp(<>Successfully deposited {amount}<FaEthereum /> for {quote}🌹</>);
+          setAsyncOutput(<>Received {quote}👼🏻</>);
+          showPopUp(<>Successfully deposited {amount}<FaEthereum /> for {quote}👼🏻</>);
         } catch (error) {
           console.error('Error during deposit:', error);
           let errorMessage = "An error occurred during the transaction.";
@@ -456,18 +456,18 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         ///////////////////////////  Withdraw  /////////////////////////////
         ////////////////////////////////////////////////////////////////////
         if (amountInWei > ethers.parseEther(kiruBalance)) {
-          showPopUp(<>Insufficient KIRU balance. <br /> Current balance: {parseFloat(kiruBalance).toFixed(6)}🌹</>);
+          showPopUp(<>Insufficient KIRU balance. <br /> Current balance: {parseFloat(kiruBalance).toFixed(6)}👼🏻</>);
           return;
         }
 
         const numericReserve1 = parseFloat(reserve1);
         if (parseFloat(amount) > (numericReserve1 / 20)) {
-          showPopUp(`Amount too large, can only sell up to 5% of the pool at a time. Max sell: ${(numericReserve1/20).toFixed(6)}🌹`);
+          showPopUp(`Amount too large, can only sell up to 5% of the pool at a time. Max sell: ${(numericReserve1 / 20).toFixed(6)}👼🏻`);
           return;
         }
 
         try {
-          setAsyncOutput(<>Processing withdrawal of {amount}🌹 ...</>);
+          setAsyncOutput(<>Processing withdrawal of {amount}👼🏻 ...</>);
 
           const kiruContract = new ethers.Contract(
             kiru,
@@ -498,7 +498,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
           setQuote(newQuote);
 
           setAsyncOutput(<>Received {parseFloat(quote).toFixed(6)}<FaEthereum /></>);
-          showPopUp(<>Successfully withdrawn {amount}🌹 for {parseFloat(quote).toFixed(6)}<FaEthereum /></>);
+          showPopUp(<>Successfully withdrawn {amount}👼🏻 for {parseFloat(quote).toFixed(6)}<FaEthereum /></>);
         } catch (error) {
           console.error('Error during withdrawal:', error);
           let errorMessage = "An error occurred during the transaction.";
@@ -538,7 +538,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
     <TradeContainer width={panelWidth}>
       <TradeRow>
         <IconButton onClick={handleIconClick}>
-          {isEthOnTop ? <FaEthereum /> : '🌹'}
+          {isEthOnTop ? <FaEthereum /> : '👼🏻'}
         </IconButton>
         <Panel>
           <InputWrapper>
@@ -555,7 +555,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       </TradeRow>
       <TradeRow>
         <IconButton onClick={handleIconClick}>
-          {isEthOnTop ? '🌹' : <FaEthereum />}
+          {isEthOnTop ? '👼🏻' : <FaEthereum />}
         </IconButton>
         <Panel>
           <QuoteText isLoading={!quote && amount !== ''}>

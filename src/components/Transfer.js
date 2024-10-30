@@ -205,7 +205,7 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
         const roundedAmount = Math.round(parseFloat(amount) * 1e6) / 1e6;
 
         if (roundedAmount > kiruBalance) {
-            showPopUp(<>Amount greater than balance. <br /> &nbsp; &nbsp; &nbsp; &nbsp; Current kiru balance: {kiruBalance}🌹</>);
+          showPopUp(<>Amount greater than balance. <br /> &nbsp; &nbsp; &nbsp; &nbsp; Current kiru balance: {kiruBalance}👼🏻</>);
             return;
         }
 
@@ -216,7 +216,7 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
 
         animateLogo(async () => {
             try {
-                setAsyncOutput(<>Processing transfer of {amount}🌹 to {recipient} ...</>);
+              setAsyncOutput(<>Processing transfer of {amount}👼🏻 to {recipient} ...</>);
 
                 const kiruContract = new ethers.Contract(
                     kiru,
@@ -233,8 +233,8 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
                 successAudioRef.current.play().catch(error => console.error("Success audio playback failed:", error));
 
                 const formattedRecipient = formatAddress(recipient);
-                setAsyncOutput(<>Transferred {amount}🌹 to {recipient}</>);
-                showPopUp(<>Transferred {amount}🌹 to {formattedRecipient}</>);
+              setAsyncOutput(<>Transferred {amount}👼🏻 to {recipient}</>);
+              showPopUp(<>Transferred {amount}👼🏻 to {formattedRecipient}</>);
             } catch (error) {
                 console.error('Error during transfer:', error);
                 let errorMessage = "An error occurred during the transaction.";
