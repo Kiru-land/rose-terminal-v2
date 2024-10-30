@@ -492,17 +492,16 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
         const textRect = textElement.getBoundingClientRect();
         const imageRect = imageWrapperRef.current.getBoundingClientRect();
 
-        const relativeX = textRect.left - imageRect.left + (textRect.width / 2);
-        const relativeY = textRect.top - imageRect.top + (textRect.height / 2);
+        // Calculate center position relative to the image
+        const relativeX = (textRect.left + textRect.width / 2) - imageRect.left;
+        const relativeY = (textRect.top + textRect.height / 2) - imageRect.top;
 
+        // Convert to canvas coordinates
         const canvasX = relativeX * scaleX;
         const canvasY = relativeY * scaleY;
 
-        // Calculate the scaled max width based on the displayed text element
-        const maxWidth = (textRect.width * scaleX) * 0.95;
-
         const scaledFontSize = Math.round(fontSize * scaleX);
-        ctx.font = `${scaledFontSize}px ${fontFamily}`;
+        ctx.font = `bold ${scaledFontSize}px ${fontFamily}`;
         ctx.fillStyle = textColor;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -511,31 +510,8 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
         ctx.shadowOffsetY = 2 * scaleY;
         ctx.shadowBlur = 4 * scaleX;
 
-        // Split text into words and reconstruct with proper wrapping
-        const words = element.text.split(' ');
-        let lines = [];
-        let currentLine = words[0];
-
-        for (let i = 1; i < words.length; i++) {
-          const testLine = currentLine + ' ' + words[i];
-          const metrics = ctx.measureText(testLine);
-          if (metrics.width > maxWidth) {
-            lines.push(currentLine);
-            currentLine = words[i];
-          } else {
-            currentLine = testLine;
-          }
-        }
-        lines.push(currentLine);
-
-        // Draw each line
-        const lineHeight = scaledFontSize * 1.2;
-        const totalHeight = lineHeight * lines.length;
-        const startY = canvasY - (totalHeight / 2) + (lineHeight / 2);
-
-        lines.forEach((line, i) => {
-          ctx.fillText(line, canvasX, startY + (i * lineHeight), maxWidth);
-        });
+        // Draw text without wrapping
+        ctx.fillText(element.text, canvasX, canvasY);
       });
 
       const dataURL = canvas.toDataURL('image/png');
