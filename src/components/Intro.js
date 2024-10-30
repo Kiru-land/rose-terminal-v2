@@ -1,117 +1,104 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
 
 const IntroContainer = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #1e1e1e;
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   z-index: 1000;
+  cursor: pointer;
 `;
 
-const AsciiArtContainer = styled.pre`
-  font-size: 0.5em; 
-  line-height: 1; 
-  color: #00ff00;
-  text-align: center;
-  margin-bottom: 20px;
-`;
-
-const IntroText = styled.div`
-  color: #00ff00;
-  font-size: 1.5em;
-  margin-top: 20px;
-`;
-
-const glitterAnimation = keyframes`
-  0%, 100% { opacity: 0; }
-  50% { opacity: 1; }
-`;
-
-const GlitterContainer = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-`;
-
-const Glitter = styled.div`
-  position: absolute;
-  width: 3px;
-  height: 3px;
-  background-color: #fff;
-  border-radius: 50%;
-  opacity: 0;
-  animation: ${glitterAnimation} ${props => props.duration}s infinite;
-  animation-delay: ${props => props.delay}s;
-  top: ${props => props.top}%;
-  left: ${props => props.left}%;
-`;
-
-const AsciiArtWrapper = styled.div`
+const AsciiContainer = styled.div`
+  flex-grow: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
   position: relative;
-  display: inline-block;
+`;
+
+const AsciiPre = styled.pre`
+  color: rgba(255, 255, 255, 1);
+  font-size: 8px;
+  line-height: 1;
+  white-space: pre;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(${props => props.scale});
+  animation: ${fadeIn} 0.5s ease-in-out;
+`;
+
+const TextContainer = styled.div`
+  width: 100%;
+  padding: 20px 100px;
+  color: rgba(0, 255, 0, 1);
+  font-family: monospace;
+  text-align: center;
+  animation: ${fadeIn} 0.5s ease-in-out;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+    padding: 20px 40px;
+  }
+
+  @media (max-width: 600px) {
+    position: absolute;
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    padding: 10px;
+    font-size: 12px;
+  }
 `;
 
 const Intro = ({ asciiLogo, onIntroComplete }) => {
-  const [introText, setIntroText] = useState('');
-  const [glitterCount, setGlitterCount] = useState(0);
-  const [isTypingComplete, setIsTypingComplete] = useState(false);
-  const fullText = "Kiru Terminal v0.4.1";
-
-  const maxGlitters = 100;
-
-  const typeText = useCallback((index = 0) => {
-    if (index < fullText.length) {
-      setIntroText(fullText.slice(0, index + 1));
-      setGlitterCount(Math.min(maxGlitters, Math.floor((index / fullText.length) * maxGlitters)));
-      setTimeout(() => typeText(index + 1), 100);
-    } else {
-      setIsTypingComplete(true);
-      setGlitterCount(maxGlitters);
-      setTimeout(onIntroComplete, 50);
-    }
-  }, [fullText, onIntroComplete]);
+  const [scale, setScale] = useState(1);
+  const preRef = useRef(null);
 
   useEffect(() => {
-    typeText();
-  }, [typeText]);
+    const handleResize = () => {
+      if (preRef.current) {
+        const containerWidth = window.innerWidth;
+        const contentWidth = preRef.current.offsetWidth;
+        const newScale = containerWidth / contentWidth;
+        setScale(newScale * 0.98);
+      }
+    };
 
-  const glitters = useMemo(() => {
-    return Array.from({ length: maxGlitters }, (_, i) => ({
-      key: i,
-      delay: Math.random() * 2,
-      duration: 0.5 + Math.random() * 1.5,
-      top: Math.random() * 100,
-      left: Math.random() * 100,
-    }));
-  }, []);
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, [asciiLogo]);
 
   return (
-    <IntroContainer>
-      <AsciiArtWrapper>
-        <AsciiArtContainer>{asciiLogo}</AsciiArtContainer>
-        <GlitterContainer>
-          {glitters.slice(0, glitterCount).map(glitter => (
-            <Glitter
-              key={glitter.key}
-              delay={glitter.delay}
-              duration={glitter.duration}
-              top={glitter.top}
-              left={glitter.left}
-            />
-          ))}
-        </GlitterContainer>
-      </AsciiArtWrapper>
-      <IntroText>{introText}</IntroText>
+    <IntroContainer onClick={onIntroComplete}>
+      <AsciiContainer>
+        <AsciiPre ref={preRef} scale={scale}>
+          {asciiLogo}
+        </AsciiPre>
+      </AsciiContainer>
+      <TextContainer>
+        <p>I've put a little bit of magic in this coin.</p>
+      </TextContainer>
     </IntroContainer>
   );
 };
