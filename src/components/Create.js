@@ -54,7 +54,7 @@ const fadeIn = keyframes`
 
 const CreateContainer = styled.div`
   position: absolute;
-  top: 55%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: rgba(0, 0, 0, 0.9);
@@ -216,6 +216,11 @@ const StyledSelect = styled.select`
   font-size: 14px;
   cursor: pointer;
   flex: 1;
+  text-align: center;
+  text-align-last: center;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 
   &:hover {
     background-color: rgba(0, 255, 0, 0.2);
@@ -224,6 +229,7 @@ const StyledSelect = styled.select`
   option {
     background-color: black;
     color: #00ff00;
+    text-align: center;
   }
 `;
 
@@ -247,7 +253,7 @@ const ColorButton = styled.button`
   position: absolute;
   width: 32px;
   height: 32px;
-  border: 2px solid #00ff00;
+  border: 1px solid #00ff00;
   border-radius: 5px;
   background-color: ${props => props.color};
   cursor: pointer;
@@ -344,8 +350,8 @@ const HelpButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 60px;
-  width: 40px;
+  height: 20px;
+  width: 15px;
   
   &:hover {
     color: #ffffff;
@@ -708,7 +714,7 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
       </InputContainer>
       <DownloadButton onClick={handleDownload}> <FaDownload /> </DownloadButton>
       {showHelp && (
-        <HelpMenu>
+        <HelpMenu onClick={() => setShowHelp(false)}>
           <ul>
             <li>🖊️ write what's on your mind</li>
             <li>✊ grab the text to move it around</li>
