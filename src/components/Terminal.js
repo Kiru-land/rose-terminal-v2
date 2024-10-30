@@ -851,7 +851,7 @@ const Terminal = ({ isMobile }) => {
           </DropdownButton>
           <DropdownContent isOpen={isDropdownOpen}>
             <DropdownItem 
-              href="https://github.com/Kiru-land/Kiru" 
+              href="https://github.com/Kiru-land/" 
               target="_blank" 
               rel="noopener noreferrer"
               onClick={closeDropdown}
