@@ -5,26 +5,42 @@ import Draggable from 'react-draggable';
 import kiru from '../assets/kiru.JPG';
 import kirubluescreen from '../assets/kirubluescreen.JPG';
 import kirublur from '../assets/kirublur.PNG';
+import kirublur3 from '../assets/kirublur3.jpeg';
+import kirublur5 from '../assets/kirublur5.jpeg';
 import kirububble from '../assets/kirububble.PNG';
 import kirububble2 from '../assets/kirububble2.JPG';
+import kirububble3 from '../assets/kirububble3.jpeg';
+import kirubullet from '../assets/kirubullet.jpeg';
 import kirubutterfly from '../assets/kirubutterfly.JPG';
 import kirucamescope from '../assets/kirucamescope.JPG';
 import kirucamescope2 from '../assets/kirucamescope2.PNG';
 import kiruchinese from '../assets/kiruchinese.JPG';
+import kiruclear from '../assets/kiruclear.jpeg';
 import kirudemon from '../assets/kirudemon.JPG';
 import kirudemon2 from '../assets/kirudemon2.JPG';
 import kirudemon3 from '../assets/kirudemon3.JPG';
 import kirudiddy from '../assets/kirudiddy.jpeg';
 import kiruduplicate from '../assets/kiruduplicate.JPG';
+import kirufade from '../assets/kirufade.jpeg';
 import kirufight from '../assets/kirufight.JPG';
 import kirufisheye from '../assets/kirufisheye.JPG';
 import kiruglass from '../assets/kiruglass.JPG';
+import kiruglitch from '../assets/kiruglitch.jpeg';
+import kiruglitters from '../assets/kiruglitters.jpeg';
 import kiruhighlight from '../assets/kiruhighlight.JPG';
 import kirulight from '../assets/kirulight.JPG';
+import kirulight3 from '../assets/kirulight3.jpeg';
 import kirulove from '../assets/kirulove.JPG';
+import kirumodernart from '../assets/kirumodernart.jpeg';
+import kirunightvision from '../assets/kirunightvision.jpeg';
 import kiruold from '../assets/kiruold.JPG';
 import kiruold2 from '../assets/kiruold2.JPG';
 import kirutarget from '../assets/kirutarget.JPG';
+import kirutv from '../assets/kirutv.jpeg';
+import kirutv2 from '../assets/kirutv2.jpeg';
+import kirutv3 from '../assets/kirutv3.jpeg';
+import kirutv4 from '../assets/kirutv4.jpeg';
+import kiruvhd from '../assets/kiruvhd.jpeg';
 import kiruwhite from '../assets/kiruwhite.JPG';
 import kiruwhite2 from '../assets/kiruwhite2.JPG';
 import kiruwhite3 from '../assets/kiruwhite3.JPG';
@@ -183,6 +199,7 @@ const ImageText = styled.div`
   transform: translate(-50%, -50%);
   left: 50%;
   top: 50%;
+  touch-action: manipulation;
 `;
 
 const ControlsContainer = styled.div`
@@ -319,6 +336,48 @@ const SizeLabel = styled.span`
   min-width: 30px;
 `;
 
+const HelpButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #00ff00;
+  cursor: pointer;
+  z-index: 1001;
+  
+  &:hover {
+    color: #ffffff;
+  }
+`;
+
+const HelpMenu = styled.div`
+  position: absolute;
+  top: 40px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.95);
+  border: 1px solid #00ff00;
+  border-radius: 10px;
+  padding: 15px;
+  color: #00ff00;
+  z-index: 1001;
+  width: 200px;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+`;
+
 const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [text, setText] = useState('');
@@ -331,6 +390,7 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
   const [textColor, setTextColor] = useState('#FFFFFF');
   const [fontFamily, setFontFamily] = useState('Arial');
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const imageWrapperRef = useRef(null);
   const downloadAudioRef = useRef(new Audio(kirusaythankyou));
@@ -338,7 +398,7 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
   const textRefs = useRef([]);
 
   const images = useMemo(() => {
-    const ordered_images = [kiru, kirubluescreen, kirublur, kirububble, kirububble2, kirubutterfly, kirucamescope, kirucamescope2, kiruchinese, kirudemon, kirudemon2, kirudemon3, kirudiddy, kiruduplicate, kirufight, kirufisheye, kiruglass, kiruhighlight, kirulight, kirulove, kiruold, kiruold2, kirutarget, kiruwhite, kiruwhite2, kiruwhite3];
+    const ordered_images = [kiru, kirubluescreen, kirublur, kirublur3, kirublur5, kirububble, kirububble2, kirububble3, kirubullet, kirubutterfly, kirucamescope, kirucamescope2, kiruchinese, kiruclear, kirudemon, kirudemon2, kirudemon3, kirudiddy, kiruduplicate, kirufade, kirufight, kirufisheye, kiruglass, kiruglitch, kiruglitters, kiruhighlight, kirulight, kirulight3, kirulove, kirumodernart, kirunightvision, kiruold, kiruold2, kirutarget, kiruwhite, kiruwhite2, kiruwhite3, kirutv, kirutv2, kirutv3, kirutv4, kiruvhd];
     return ordered_images.sort(() => Math.random() - 0.5);
   }, []);
 
@@ -530,8 +590,33 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
     }
   }, [showColorPicker]); // Add showColorPicker to dependency array
 
+  const [lastTap, setLastTap] = useState(0);
+  const DOUBLE_TAP_DELAY = 300; // milliseconds
+
+  const handleTap = (index, event) => {
+    event.preventDefault();
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTap;
+    
+    if (tapLength < DOUBLE_TAP_DELAY && tapLength > 0) {
+      handleDelete(index);
+    }
+    setLastTap(currentTime);
+  };
+
   return (
     <CreateContainer width={panelWidth}>
+      <HelpButton onClick={() => setShowHelp(!showHelp)}>
+        <FaInfoCircle size={20} />
+      </HelpButton>
+      {showHelp && (
+        <HelpMenu>
+          <ul>
+            <li>🖊️ Write text inside the input box</li>
+            <li>✊ Drag the text to move it around</li>
+          </ul>
+        </HelpMenu>
+      )}
       <ControlsContainer>
         <SliderContainer>
           <SizeLabel>{fontSize}px</SizeLabel>
@@ -581,6 +666,7 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
                 color={textColor}
                 fontFamily={fontFamily}
                 onDoubleClick={() => handleDelete(index)}
+                onTouchStart={(e) => handleTap(index, e)}
               >
                 {element.text}
               </ImageText>

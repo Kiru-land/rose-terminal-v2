@@ -10,7 +10,7 @@ import miladyAscii from '../assets/milady-ascii.txt';
 import hposAscii from '../assets/hpos-ascii.txt';
 import aeonAscii from '../assets/aeon-ascii.txt';
 import spxAscii from '../assets/spx-ascii.txt';
-import roseCultAscii from '../assets/rosecult.txt';
+import kirCultAscii from '../assets/rosecult.txt';
 import { FaEthereum, FaInfoCircle } from 'react-icons/fa';
 import axios from 'axios';
 import kirusayahah from '../assets/kirusayahah.mp3';
@@ -335,7 +335,7 @@ const FullScreenOverlay = styled.div`
   z-index: 9999;
 `;
 
-const RoseCultAscii = styled.pre`
+const KirCultAscii = styled.pre`
   color: #ff0000;
   white-space: pre;
   text-align: center;
@@ -366,7 +366,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   const [allocation, setAllocation] = useState(null);
   const [activeProjects, setActiveProjects] = useState([]);
   const { showPopUp } = usePopUp();
-  const { signer, rose } = useWeb3();
+  const { signer, kir } = useWeb3();
   const [panelWidth, setPanelWidth] = useState(450);
   const [isDashboardVisible, setIsDashboardVisible] = useState(false);
   const [isContentVisible, setIsContentVisible] = useState(false);
@@ -377,8 +377,8 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   const [aeonAsciiArt, setAeonAsciiArt] = useState('');
   const [spxAsciiArt, setSpxAsciiArt] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
-  const [showRoseCult, setShowRoseCult] = useState(false);
-  const [roseCultArt, setRoseCultArt] = useState('');
+  const [showKirCult, setShowKirCult] = useState(false);
+  const [kirCultArt, setKirCultArt] = useState('');
   const eligibleAudioRef = useRef(new Audio(kirusayahah));
   const registerAudioRef = useRef(new Audio(kirusayok));
 
@@ -417,17 +417,17 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   }, []);
 
   useEffect(() => {
-    const fetchRoseCultArt = async () => {
+    const fetchKirCultArt = async () => {
       try {
-        const response = await fetch(roseCultAscii);
+        const response = await fetch(kirCultAscii);
         const text = await response.text();
-        setRoseCultArt(text);
+        setKirCultArt(text);
       } catch (error) {
-        console.error('Error loading Rose Cult ASCII art:', error);
+        console.error('Error loading Kir Cult ASCII art:', error);
       }
     };
 
-    fetchRoseCultArt();
+    fetchKirCultArt();
   }, []);
 
   const handleAddressChange = async (e) => {
@@ -489,7 +489,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
         if (response.data) {
           setAsyncOutput(<>Clawback registration successful for {address?.substring(0, 6)}...{address?.substring(address.length - 4)} </>);
           showPopUp(<>Successfully registered {address?.substring(0, 6)}...{address?.substring(address.length - 4)} </>);
-          setShowRoseCult(true);
+          setShowKirCult(true);
         }
       } catch (error) {
           setAsyncOutput(<>address {address.substring(0, 6)}...{address.substring(address.length - 4)} already registered</>);
@@ -635,7 +635,7 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
           onClick={handleTooltipClick}
         >
           <strong>Single Eligibility Clawback</strong><br /><br />
-          The Clawback mechanism allows selected <em>high-status technocratic post-scarcity cult adepts</em> to get an entry into the <em>Rose economical zone</em> (🌹), and embark on the journey to hyperfinancialization.<br /><br />
+          The Clawback mechanism allows selected <em>high-status technocratic post-scarcity cult adepts</em> to get an entry into the <em>Kir economical zone</em> (🌹), and embark on the journey to hyperfinancialization.<br /><br />
           Eligibility is granted based on appartenance to the following digital religions:<br /><br />
           - Milady Maker<br />
           - Sprotos Gremlins<br />
@@ -646,10 +646,10 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
           <em>Note: Snapshot taken on september 27th. For ERC20s, an address needs at least 0.2<FaEthereum /> worth of holdings to be eligible. The claimable amount is fixed for all eligible addresses and does not increase with the number of communities the claimee is apart of. A 5% supply allocation is reserved for the Clawback mechanism.</em>
         </HelpTooltip>
       </ClawbackContainer>
-      {showRoseCult && (
-        <FullScreenOverlay onClick={() => setShowRoseCult(false)}>
-          <RoseCultAscii>{roseCultArt}</RoseCultAscii>
-          <WelcomeMessage>Welcome to Rose Community</WelcomeMessage>
+      {showKirCult && (
+        <FullScreenOverlay onClick={() => setShowKirCult(false)}>
+          <KirCultAscii>{kirCultArt}</KirCultAscii>
+          <WelcomeMessage>Welcome to Kir Community</WelcomeMessage>
         </FullScreenOverlay>
       )}
     </>

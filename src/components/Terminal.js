@@ -349,6 +349,7 @@ const RippleButton = ({ children, onClick, isMobile, isSelected }) => {
       onClick={handleClick} 
       isMobile={isMobile}
       isSelected={isSelected}
+      role="menuitem"
     >
       {children}
       {isMobile && (
@@ -368,7 +369,7 @@ const RippleButton = ({ children, onClick, isMobile, isSelected }) => {
   );
 };
 
-const RoseUsdButton = styled.span`
+const KiruUsdButton = styled.span`
   font-family: 'Fira Code', monospace;
   color: #00FF00;
   font-size: 12px;
@@ -424,7 +425,7 @@ const Terminal = ({ isMobile }) => {
   const clawbackAudioRef = useRef(new Audio(kirusayfriend));
   const [audioInitialized, setAudioInitialized] = useState(false);
 
-  const { isConnected, signer, provider, balance: nativeBalance, roseBalance, chainId, rose, reserve0, reserve1, alpha } = useWeb3();
+  const { isConnected, signer, provider, balance: nativeBalance, kiruBalance, chainId, kiru, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
 
   // Add ref for components container
@@ -459,7 +460,7 @@ const Terminal = ({ isMobile }) => {
     const audio = audioRef.current;
     audio.loop = true;
     audio.preload = 'auto';
-    audio.volume = 0.5;
+    audio.volume = 0.8;
     audio.mozPreservesPitch = false;
     audio.webkitPreservesPitch = false;
 
@@ -542,6 +543,11 @@ const Terminal = ({ isMobile }) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Stop if we clicked on a menu button
+      if (event.target.closest('button[role="menuitem"]') || event.target.closest('button[data-audio-control]')) {
+        return;
+      }
+      
       if (componentsRef.current && !componentsRef.current.contains(event.target)) {
         // Close all open components
         if (showTrade) {
@@ -571,7 +577,7 @@ const Terminal = ({ isMobile }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showTrade, showTransfer, showClawback, showCreate, showLaunch]); // Add dependencies for all components
+  }, [showTrade, showTransfer, showClawback, showCreate, showLaunch]);
 
   const animateLogo = async (callback) => {
     setIsAnimating(true);
@@ -597,6 +603,26 @@ const Terminal = ({ isMobile }) => {
     }
 
     setHistory(prev => [...prev, { type: 'command', content: command }]);
+
+    const isCurrentlyOpen = (
+      (command === 'launch' && showLaunch) ||
+      (command === 'trade' && showTrade) ||
+      (command === 'transfer' && showTransfer) ||
+      (command === 'clawback' && showClawback) ||
+      (command === 'create' && showCreate)
+    );
+
+    if (isCurrentlyOpen) {
+      // If it's already open, just close it
+      setShowLaunch(false);
+      setShowTrade(false);
+      setShowTransfer(false);
+      setShowClawback(false);
+      setShowCreate(false);
+      setSelectedCommand(null);
+      setHistory(prev => [...prev, { type: 'output', content: `Closing ${command} interface...` }]);
+      return;
+    }
 
     // Close all command interfaces
     setShowLaunch(false);
@@ -721,18 +747,18 @@ const Terminal = ({ isMobile }) => {
   };
 
   const handleLogoClick = () => {
-    if (rose) {
-      navigator.clipboard.writeText(rose).then(
+    if (kiru) {
+      navigator.clipboard.writeText(kiru).then(
         () => {
-          showPopUp('Rose address copied to clipboard!');
+          showPopUp('Kiru address copied to clipboard!');
         },
         (err) => {
-          console.error('Failed to copy Rose address: ', err);
-          showPopUp('Failed to copy Rose address');
+          console.error('Failed to copy Kiru address: ', err);
+          showPopUp('Failed to copy Kiru address');
         }
       );
     } else {
-      showPopUp('Rose address not available');
+      showPopUp('Kiru address not available');
     }
   };
 
@@ -781,7 +807,8 @@ const Terminal = ({ isMobile }) => {
     setIsDropdownOpen(false);
   };
 
-  const toggleMute = () => {
+  const toggleMute = (e) => {
+    e.stopPropagation();
     setIsMuted(!isMuted);
   };
 
@@ -789,7 +816,11 @@ const Terminal = ({ isMobile }) => {
     <>
       <GlobalStyle />
       <TerminalContainer onClick={handleContainerClick} isMobile={isMobile}>
-        <AudioButton onClick={toggleMute} visible={controlsVisible}>
+        <AudioButton 
+          onClick={toggleMute} 
+          visible={controlsVisible}
+          data-audio-control
+        >
           {!isMuted ? <FaVolumeUp /> : <FaVolumeMute />}
         </AudioButton>
         <DropdownContainer>
@@ -798,7 +829,7 @@ const Terminal = ({ isMobile }) => {
           </DropdownButton>
           <DropdownContent isOpen={isDropdownOpen}>
             <DropdownItem 
-              href="https://github.com/RedRoseMoney/Rose" 
+              href="https://github.com/Kiru-land/Kiru" 
               target="_blank" 
               rel="noopener noreferrer"
               onClick={closeDropdown}
@@ -807,7 +838,7 @@ const Terminal = ({ isMobile }) => {
               <FaGithub />
             </DropdownItem>
             <DropdownItem 
-              href="https://twitter.com/punkmoneyrose" 
+              href="https://twitter.com/kirutheangel" 
               target="_blank" 
               rel="noopener noreferrer"
               onClick={closeDropdown}
@@ -878,7 +909,7 @@ const Terminal = ({ isMobile }) => {
         <MenuContainer isMobile={isMobile}>
           {renderMenuItems()}
         </MenuContainer>
-        <RoseUsdButton onClick={handleOpenChartModal} isMobile={isMobile}>💹</RoseUsdButton>
+        <kiruUsdButton onClick={handleOpenChartModal} isMobile={isMobile}>💹</kiruUsdButton>
         <BottomBar />
         {/* Wrap all component renders in a div with the ref */}
         <div ref={componentsRef}>

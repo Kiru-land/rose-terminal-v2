@@ -161,7 +161,7 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
     const [amount, setAmount] = useState('');
     const [recipient, setRecipient] = useState('');
     const { showPopUp } = usePopUp();
-    const { signer, rose, roseBalance } = useWeb3();
+    const { signer, kiru, kiruBalance } = useWeb3();
     const executeAudioRef = useRef(new Audio(kirusayok));
     const successAudioRef = useRef(new Audio(kirusayahah));
 
@@ -190,7 +190,7 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
     };
 
     const handleMaxClick = () => {
-        setAmount(parseFloat(roseBalance).toFixed(6) - 0.000001);
+        setAmount(parseFloat(kiruBalance).toFixed(6) - 0.000001);
     };
 
     const handleExecute = async () => {
@@ -204,8 +204,8 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
         const amountInWei = ethers.parseEther(amount);
         const roundedAmount = Math.round(parseFloat(amount) * 1e6) / 1e6;
 
-        if (roundedAmount > roseBalance) {
-            showPopUp(<>Amount greater than balance. <br /> &nbsp; &nbsp; &nbsp; &nbsp; Current rose balance: {roseBalance}🌹</>);
+        if (roundedAmount > kiruBalance) {
+            showPopUp(<>Amount greater than balance. <br /> &nbsp; &nbsp; &nbsp; &nbsp; Current kiru balance: {kiruBalance}🌹</>);
             return;
         }
 
@@ -218,13 +218,13 @@ const Transfer = ({ onClose, animateLogo, setAsyncOutput }) => {
             try {
                 setAsyncOutput(<>Processing transfer of {amount}🌹 to {recipient} ...</>);
 
-                const roseContract = new ethers.Contract(
-                    rose,
+                const kiruContract = new ethers.Contract(
+                    kiru,
                     ['function transfer(address to, uint256 amount) returns (bool)'],
                     signer
                 );
 
-                const tx = await roseContract.transfer(recipient, amountInWei);
+                const tx = await kiruContract.transfer(recipient, amountInWei);
 
                 showPopUp('Transaction sent. Waiting for confirmation...');
 

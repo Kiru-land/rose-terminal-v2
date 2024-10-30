@@ -5,17 +5,17 @@ const Web3Context = createContext();
 
 const LAUNCH_ADDRESS = '0x1234567890123456789012345678901234567890';
 const LAUNCH_ADDRESS_TESTNET = '0x1234567890123456789012345678901234567890';
-const ROSE_TOKEN_ADDRESS = '0x0eA2cA5122381C6A4e79368F08a07Eca46bCe300';
-const ROSE_TOKEN_TESTNET_ADDRESS = '0xfff92F33a08BBeA79FBdb40e7E427641C02E1Aa1';
+const KIRU_TOKEN_ADDRESS = '0x0eA2cA5122381C6A4e79368F08a07Eca46bCe300';
+const KIRU_TOKEN_TESTNET_ADDRESS = '0xfff92F33a08BBeA79FBdb40e7E427641C02E1Aa1';
 
 export const Web3Provider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [balance, setBalance] = useState('0');
-  const [roseBalance, setRoseBalance] = useState('0');
+  const [kiruBalance, setKiruBalance] = useState('0');
   const [provider, setProvider] = useState(null);
   const [chainId, setChainId] = useState(null);
   const [signer, setSigner] = useState(null);
-  const [rose, setRose] = useState(null);
+  const [kiru, setKiru] = useState(null);
   const [launch, setLaunch] = useState(null);
   const [reserve0, setReserve0] = useState('0');
   const [reserve1, setReserve1] = useState('0');
@@ -33,10 +33,10 @@ export const Web3Provider = ({ children }) => {
         const network = await newProvider.getNetwork();
         const newChainId = network.chainId;
 
-        const rose = newChainId === 1n ? ROSE_TOKEN_ADDRESS : newChainId === 17000n ? ROSE_TOKEN_TESTNET_ADDRESS : null;
+        const kiru = newChainId === 1n ? KIRU_TOKEN_ADDRESS : newChainId === 17000n ? KIRU_TOKEN_TESTNET_ADDRESS : null;
         const launch = newChainId === 1n ? LAUNCH_ADDRESS : newChainId === 17000n ? LAUNCH_ADDRESS_TESTNET : null;
-        const roseContract = new ethers.Contract(
-          rose,
+        const kiruContract = new ethers.Contract(
+          kiru,
           [
             'function balanceOf(address) view returns (uint256)',
             'function totalSupply() view returns (uint256)'
@@ -44,18 +44,18 @@ export const Web3Provider = ({ children }) => {
           newProvider
         );
 
-        let roseBalance = '0';
+        let kiruBalance = '0';
         let supply = '0';
         try {
-          roseBalance = await roseContract.balanceOf(address);
-          supply = await roseContract.totalSupply();
+          kiruBalance = await kiruContract.balanceOf(address);
+          supply = await kiruContract.totalSupply();
         } catch (error) {
-          console.error('Error getting Rose balance or supply:', error);
+          console.error('Error getting Kiru balance or supply:', error);
         }
 
         // Add the new function call
         const stateContract = new ethers.Contract(
-          rose,
+          kiru,
           ['function getState() view returns (uint256,uint256,uint256)'],
           newProvider
         );
@@ -73,8 +73,8 @@ export const Web3Provider = ({ children }) => {
         setSigner(newSigner);
         setChainId(newChainId);
         setBalance(ethers.formatEther(balance));
-        setRoseBalance(ethers.formatEther(roseBalance));
-        setRose(rose);
+        setKiruBalance(ethers.formatEther(kiruBalance));
+        setKiru(kiru);
         setLaunch(launch);
         setTotalSupply(ethers.formatEther(supply));
         console.log('Web3 state updated');
@@ -104,10 +104,10 @@ export const Web3Provider = ({ children }) => {
   const disconnectWallet = useCallback(() => {
     setIsConnected(false);
     setBalance('0');
-    setRoseBalance('0');
+    setKiruBalance('0');
     setProvider(null);
     setSigner(null);
-    setRose(null);
+    setKiru(null);
     setChainId(null);
     console.log('Wallet disconnected');
   }, []);
@@ -145,12 +145,12 @@ export const Web3Provider = ({ children }) => {
     <Web3Context.Provider value={{ 
       isConnected, 
       balance, 
-      roseBalance, 
+      kiruBalance, 
       connectWallet, 
       disconnectWallet, 
       provider, 
       signer, 
-      rose, 
+      kiru, 
       chainId,
       reserve0,
       reserve1,

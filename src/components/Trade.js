@@ -251,7 +251,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
   const [quote, setQuote] = useState(null);
   const [isEthOnTop, setIsEthOnTop] = useState(true);
   const { showPopUp } = usePopUp();
-  const { signer, rose, balance: nativeBalance, roseBalance, reserve0, reserve1 } = useWeb3();
+  const { signer, kiru, balance: nativeBalance, kiruBalance, reserve0, reserve1 } = useWeb3();
   const [slippage, setSlippage] = useState(1);
   const [isSliderVisible, setIsSliderVisible] = useState(false);
   const [panelWidth, setPanelWidth] = useState(350);
@@ -276,11 +276,11 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
   }, [updatePanelWidth]);
 
   const getQuote = useCallback(async (inputAmount) => {
-    if (!signer || !rose || !inputAmount) return null;
+    if (!signer || !kiru || !inputAmount) return null;
 
     try {
-      const roseContract = new ethers.Contract(
-        rose,
+      const kiruContract = new ethers.Contract(
+        kiru,
         [
           'function quoteDeposit(uint256 amount) view returns (uint256)',
           'function quoteWithdraw(uint256 amount) view returns (uint256)'
@@ -292,9 +292,9 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       let quoteAmount;
 
       if (isEthOnTop) {
-        quoteAmount = await roseContract.quoteDeposit(amountInWei);
+        quoteAmount = await kiruContract.quoteDeposit(amountInWei);
       } else {
-        quoteAmount = await roseContract.quoteWithdraw(amountInWei);
+        quoteAmount = await kiruContract.quoteWithdraw(amountInWei);
       }
 
       return ethers.formatEther(quoteAmount);
@@ -302,7 +302,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       console.error('Error getting quote:', error);
       return null;
     }
-  }, [signer, rose, isEthOnTop]);
+  }, [signer, kiru, isEthOnTop]);
 
   const debouncedGetQuote = useCallback(
     debounce(async (inputAmount) => {
@@ -402,8 +402,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         try {
           setAsyncOutput(<>Processing deposit of {amount}<FaEthereum /> ...</>);
 
-          const roseContract = new ethers.Contract(
-            rose,
+          const kiruContract = new ethers.Contract(
+            kiru,
             ['function deposit(uint256) payable'],
             signer
           );
@@ -417,7 +417,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
             minQuoteInWei = ethers.parseEther(minQuote.toFixed(18));
           }
           
-          const tx = await roseContract.deposit(minQuoteInWei, {
+          const tx = await kiruContract.deposit(minQuoteInWei, {
             value: amountInWei
           });
 
@@ -455,8 +455,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         ////////////////////////////////////////////////////////////////////
         ///////////////////////////  Withdraw  /////////////////////////////
         ////////////////////////////////////////////////////////////////////
-        if (amountInWei > ethers.parseEther(roseBalance)) {
-          showPopUp(<>Insufficient ROSE balance. <br /> Current balance: {parseFloat(roseBalance).toFixed(6)}🌹</>);
+        if (amountInWei > ethers.parseEther(kiruBalance)) {
+          showPopUp(<>Insufficient KIRU balance. <br /> Current balance: {parseFloat(kiruBalance).toFixed(6)}🌹</>);
           return;
         }
 
@@ -469,8 +469,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         try {
           setAsyncOutput(<>Processing withdrawal of {amount}🌹 ...</>);
 
-          const roseContract = new ethers.Contract(
-            rose,
+          const kiruContract = new ethers.Contract(
+            kiru,
             ['function withdraw(uint256,uint256)'],
             signer
           );
@@ -484,7 +484,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
             minQuoteInWei = ethers.parseEther(minQuote.toFixed(18));
           }
           
-          const tx = await roseContract.withdraw(amountInWei, minQuoteInWei);
+          const tx = await kiruContract.withdraw(amountInWei, minQuoteInWei);
 
           showPopUp('Transaction sent. Waiting for confirmation...');
 
@@ -529,8 +529,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       const maxEth = parseFloat(nativeBalance) - 0.01;
       setAmount(maxEth > 0 ? maxEth.toFixed(6) : '0');
     } else {
-      // Don't format ROSE balance when setting max
-      setAmount(roseBalance);
+      // Don't format KIRU balance when setting max
+      setAmount(kiruBalance);
     }
   };
 

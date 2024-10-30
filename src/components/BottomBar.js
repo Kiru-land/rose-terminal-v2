@@ -76,7 +76,7 @@ const BalanceText = styled.span`
 `;
 
 const BottomBar = () => {
-  const { isConnected, balance, roseBalance, connectWallet, disconnectWallet, totalSupply, reserve0, reserve1 } = useWeb3();
+  const { isConnected, balance, kiruBalance, connectWallet, disconnectWallet, totalSupply, reserve0, reserve1 } = useWeb3();
   const { showPopUp } = usePopUp();
   const [showEth, setShowEth] = useState(false);
   const [marketCap, setMarketCap] = useState('N/A');
@@ -104,7 +104,7 @@ const BottomBar = () => {
 
   const displayBalance = () => {
     if (!isConnected) return '0.0000';
-    const value = showEth ? parseFloat(balance) : parseFloat(roseBalance);
+    const value = showEth ? parseFloat(balance) : parseFloat(kiruBalance);
     if (value < 0.0001) {
       return '<0.0001';
     }
@@ -112,11 +112,11 @@ const BottomBar = () => {
   };
 
   const copyBalance = useCallback(() => {
-    const balanceToCopy = showEth ? balance : roseBalance;
+    const balanceToCopy = showEth ? balance : kiruBalance;
     navigator.clipboard.writeText(balanceToCopy)
       .then(() => showPopUp('Balance copied to clipboard'))
       .catch(err => showPopUp('Failed to copy balance: ' + err.message));
-  }, [showEth, balance, roseBalance, showPopUp]);
+  }, [showEth, balance, kiruBalance, showPopUp]);
 
   const calculateMarketCap = useCallback(async () => {
     setIsLoading(true);
