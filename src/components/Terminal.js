@@ -792,7 +792,7 @@ const Terminal = ({ isMobile }) => {
   const renderMenuItems = () => {
     if (chainId === 17000n) {
       // Holesky Testnet options
-      return ['trade', 'transfer', 'create'].map(command => (
+      return ['trade', 'transfer', 'clawback', 'create'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
