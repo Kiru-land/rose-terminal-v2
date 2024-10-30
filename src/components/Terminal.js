@@ -875,7 +875,7 @@ const Terminal = ({ isMobile }) => {
               <FaTelegram />
             </DropdownItem>
             <DropdownItem 
-              href="https://rose-money.gitbook.io/kiru/" 
+              href="https://kiru.gitbook.io/kiru/" 
               target="_blank" 
               rel="noopener noreferrer"
               onClick={closeDropdown}
