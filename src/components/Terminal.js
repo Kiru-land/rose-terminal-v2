@@ -191,30 +191,33 @@ const DropdownButton = styled.button`
 
 const DropdownContent = styled.div`
   position: absolute;
-  top: -4px;
-  left: 100%;
+  top: 100%;
+  left: -8px;
   background-color: black;
   border-radius: 8px;
   overflow: hidden;
   transition: all 0.3s ease;
   opacity: ${props => props.isOpen ? 1 : 0};
   visibility: ${props => props.isOpen ? 'visible' : 'hidden'};
-  transform: ${props => props.isOpen ? 'translateX(0)' : 'translateX(-10px)'};
+  transform: ${props => props.isOpen ? 'translateY(0)' : 'translateY(-10px)'};
   display: flex;
-  padding: 4px;
-  margin-left: 8px;
+  flex-direction: column;
+  padding: 8px;
+  margin-top: 4px;
+  min-width: 40px;
 `;
 
 const DropdownItem = styled.a`
   color: #00ff00;
-  padding: 12px;
+  padding: 8px;
   text-decoration: none;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background-color 0.3s ease;
   border-radius: 4px;
-  margin: 0 4px;
+  margin: 2px 0;
+  width: 100%;
   
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
