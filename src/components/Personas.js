@@ -71,15 +71,22 @@ const Personas = ({ isVisible }) => {
   ];
 
   const selectRandomPersonaAndText = () => {
-    // Ensure we don't get the same persona and text combination
-    let newPersona, newText;
+    // Get random index excluding current persona
+    const currentPersonaIndex = personas.indexOf(currentPersona);
+    let newPersonaIndex;
     do {
-      newPersona = personas[Math.floor(Math.random() * personas.length)];
-      newText = texts[Math.floor(Math.random() * texts.length)];
-    } while (newPersona === currentPersona && newText === currentText);
+      newPersonaIndex = Math.floor(Math.random() * personas.length);
+    } while (newPersonaIndex === currentPersonaIndex);
+
+    // Get random index excluding current text
+    const currentTextIndex = texts.indexOf(currentText);
+    let newTextIndex;
+    do {
+      newTextIndex = Math.floor(Math.random() * texts.length);
+    } while (newTextIndex === currentTextIndex);
     
-    setCurrentPersona(newPersona);
-    setCurrentText(newText);
+    setCurrentPersona(personas[newPersonaIndex]);
+    setCurrentText(texts[newTextIndex]);
   };
 
   useEffect(() => {
@@ -88,14 +95,20 @@ const Personas = ({ isVisible }) => {
     }
   }, [isVisible]);
 
-  const handleClick = () => {
+  const handleInteraction = (e) => {
+    e.preventDefault(); // Prevent default touch behavior
     selectRandomPersonaAndText();
   };
 
   if (!isVisible || !currentPersona) return null;
 
   return (
-    <PersonaContainer onClick={handleClick}>
+    <PersonaContainer 
+      onClick={handleInteraction}
+      onTouchStart={handleInteraction}
+      role="button"
+      tabIndex={0}
+    >
       <PersonaImage src={currentPersona} alt="Kiru Persona" />
       <PersonaText>{currentText}</PersonaText>
     </PersonaContainer>
