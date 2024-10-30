@@ -97,7 +97,7 @@ const Intro = ({ asciiLogo, onIntroComplete }) => {
         </AsciiPre>
       </AsciiContainer>
       <TextContainer>
-        <p>I've put a little bit of magic in this coin.</p>
+        <p>I've put a little bit of magic into this coin.</p>
       </TextContainer>
     </IntroContainer>
   );
