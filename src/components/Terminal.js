@@ -5,6 +5,7 @@ import { useWeb3 } from '../contexts/Web3Context.js';
 import Prompt from './Prompt.js';
 import BottomBar from './BottomBar.js';
 import asciiArt from '../assets/ascii-art.txt';
+import kiruascii from '../assets/kiruascii.txt';
 import { FaEthereum, FaGithub, FaTwitter, FaBook, FaBars, FaTelegram, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 import Intro from './Intro.js';
 import { usePopUp } from '../contexts/PopUpContext.js';
@@ -18,6 +19,7 @@ import kirusaysmoney from '../assets/kirusaymoney.mp3';
 import kirusayhighway2 from '../assets/kirusayhighway2.mp3';
 import kirusayho from '../assets/kirusayho.mp3';
 import kirusayfriend from '../assets/kirusayfriend.mp3';
+import Personas from './Personas.js';
 
 // Add this global style component
 const GlobalStyle = createGlobalStyle`
@@ -402,6 +404,7 @@ const Terminal = ({ isMobile }) => {
   const [history, setHistory] = useState([]);
   const [asyncOutput, setAsyncOutput] = useState(null);
   const [asciiLogo, setAsciiLogo] = useState('');
+  const [kiruAscii, setKiruAscii] = useState('');
   const [isAnimating, setIsAnimating] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [showTrade, setShowTrade] = useState(false);
@@ -424,6 +427,7 @@ const Terminal = ({ isMobile }) => {
   const createAudioRef = useRef(new Audio(kirusayho));
   const clawbackAudioRef = useRef(new Audio(kirusayfriend));
   const [audioInitialized, setAudioInitialized] = useState(false);
+  const [isAnyComponentOpen, setIsAnyComponentOpen] = useState(false);
 
   const { isConnected, signer, provider, balance: nativeBalance, kiruBalance, chainId, kiru, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
@@ -435,6 +439,10 @@ const Terminal = ({ isMobile }) => {
     fetch(asciiArt)
       .then(response => response.text())
       .then(text => setAsciiLogo(text));
+    
+    fetch(kiruascii)
+      .then(response => response.text())
+      .then(text => setKiruAscii(text));
   }, []);
 
   useEffect(() => {
@@ -578,6 +586,17 @@ const Terminal = ({ isMobile }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showTrade, showTransfer, showClawback, showCreate, showLaunch]);
+
+  useEffect(() => {
+    setIsAnyComponentOpen(
+      showTrade || 
+      showTransfer || 
+      showClawback || 
+      showCreate || 
+      showLaunch || 
+      isChartModalOpen
+    );
+  }, [showTrade, showTransfer, showClawback, showCreate, showLaunch, isChartModalOpen]);
 
   const animateLogo = async (callback) => {
     setIsAnimating(true);
@@ -867,7 +886,7 @@ const Terminal = ({ isMobile }) => {
           </DropdownContent>
         </DropdownContainer>
         {showIntro && (
-          <Intro asciiLogo={asciiLogo} onIntroComplete={handleIntroComplete} />
+          <Intro asciiLogo={kiruAscii} onIntroComplete={handleIntroComplete} />
         )}
         <AsciiArtWrapper>
           <ClickableAsciiArtContainer 
@@ -911,6 +930,7 @@ const Terminal = ({ isMobile }) => {
         </MenuContainer>
         <kiruUsdButton onClick={handleOpenChartModal} isMobile={isMobile}>💹</kiruUsdButton>
         <BottomBar />
+        <Personas isVisible={!isAnyComponentOpen} />
         {/* Wrap all component renders in a div with the ref */}
         <div ref={componentsRef}>
           {showTrade && (
