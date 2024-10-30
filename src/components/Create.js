@@ -111,7 +111,7 @@ const ArrowButton = styled.button`
 `;
 
 const TextInput = styled.input`
-  width: 100%;
+  flex: 1;
   padding: 10px;
   border: none;
   background-color: rgba(0, 255, 0, 0.1);
@@ -122,7 +122,6 @@ const TextInput = styled.input`
   text-align: left;
   font-family: inherit;
   height: 60px;
-  margin: 15px 0;
 
   &::placeholder {
     font-size: 15px;
@@ -337,14 +336,16 @@ const SizeLabel = styled.span`
 `;
 
 const HelpButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
   background: none;
   border: none;
   color: #00ff00;
   cursor: pointer;
-  z-index: 1001;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  width: 40px;
   
   &:hover {
     color: #ffffff;
@@ -352,17 +353,21 @@ const HelpButton = styled.button`
 `;
 
 const HelpMenu = styled.div`
-  position: absolute;
-  top: 40px;
-  right: 10px;
-  background-color: rgba(0, 0, 0, 0.95);
-  border: 1px solid #00ff00;
-  border-radius: 10px;
-  padding: 15px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.9);
   color: #00ff00;
+  padding: 15px;
+  border-radius: 15px;
+  font-size: 12px;
+  width: 300px;
+  max-width: calc(100% - 40px);
   z-index: 1001;
-  width: 200px;
-  box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+  line-height: 1.4;
+  border: 1px solid rgba(0, 255, 0, 0.3);
 
   ul {
     list-style: none;
@@ -376,6 +381,13 @@ const HelpMenu = styled.div`
     align-items: center;
     gap: 10px;
   }
+`;
+
+const InputWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 `;
 
 const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
@@ -606,17 +618,6 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
 
   return (
     <CreateContainer width={panelWidth}>
-      <HelpButton onClick={() => setShowHelp(!showHelp)}>
-        <FaInfoCircle size={20} />
-      </HelpButton>
-      {showHelp && (
-        <HelpMenu>
-          <ul>
-            <li>🖊️ Write text inside the input box</li>
-            <li>✊ Drag the text to move it around</li>
-          </ul>
-        </HelpMenu>
-      )}
       <ControlsContainer>
         <SliderContainer>
           <SizeLabel>{fontSize}px</SizeLabel>
@@ -693,14 +694,28 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
             </Draggable>
           )}
         </DraggableContainer>
-        <TextInput 
-          type="text" 
-          value={text} 
-          onChange={handleTextChange}
-          placeholder="Kiru says:" 
-        />
+        <InputWrapper>
+          <TextInput 
+            type="text" 
+            value={text} 
+            onChange={handleTextChange}
+            placeholder="Kiru says:" 
+          />
+          <HelpButton onClick={() => setShowHelp(!showHelp)}>
+            <FaInfoCircle size={20} />
+          </HelpButton>
+        </InputWrapper>
       </InputContainer>
       <DownloadButton onClick={handleDownload}> <FaDownload /> </DownloadButton>
+      {showHelp && (
+        <HelpMenu>
+          <ul>
+            <li>🖊️ write what's on your mind</li>
+            <li>✊ grab the text to move it around</li>
+            <li>👇 double-tap to delete text</li>
+          </ul>
+        </HelpMenu>
+      )}
     </CreateContainer>
   );
 };
