@@ -69,9 +69,50 @@ const TextContainer = styled.div`
   }
 `;
 
+const glitterAnimation = keyframes`
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+`;
+
+const GlitterContainer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1001;
+`;
+
+const Glitter = styled.div`
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  opacity: 0;
+  animation: ${glitterAnimation} ${props => props.duration}s infinite;
+  animation-delay: ${props => props.delay}s;
+  top: ${props => props.top}%;
+  left: ${props => props.left}%;
+  box-shadow: 0 0 3px #ffffff;
+`;
+
 const Intro = ({ asciiLogo, onIntroComplete }) => {
   const [scale, setScale] = useState(1);
   const preRef = useRef(null);
+  const [glitterCount, setGlitterCount] = useState(50);
+  const maxGlitters = 50;
+
+  const glitters = useMemo(() => {
+    return Array.from({ length: maxGlitters }, (_, i) => ({
+      key: i,
+      delay: Math.random() * 1,
+      duration: 0.3 + Math.random() * 1,
+      top: 20 + Math.random() * 60,
+      left: 20 + Math.random() * 60,
+    }));
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -96,6 +137,17 @@ const Intro = ({ asciiLogo, onIntroComplete }) => {
           {asciiLogo}
         </AsciiPre>
       </AsciiContainer>
+      <GlitterContainer>
+        {glitters.slice(0, glitterCount).map(glitter => (
+          <Glitter
+            key={glitter.key}
+            delay={glitter.delay}
+            duration={glitter.duration}
+            top={glitter.top}
+            left={glitter.left}
+          />
+        ))}
+      </GlitterContainer>
       <TextContainer>
         <p>I've put a little bit of magic into this coin.</p>
       </TextContainer>
