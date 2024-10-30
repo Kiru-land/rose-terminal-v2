@@ -51,6 +51,7 @@ const PersonaText = styled.div`
 const Personas = ({ isVisible }) => {
   const [currentPersona, setCurrentPersona] = useState(null);
   const [currentText, setCurrentText] = useState('');
+  const [touchStarted, setTouchStarted] = useState(false);
 
   const personas = [angel0, angel1, angel2, angel3, angel4, angel5, angel6, angel7, angel8, angel9, angel10];
   const texts = [
@@ -95,17 +96,33 @@ const Personas = ({ isVisible }) => {
     }
   }, [isVisible]);
 
-  const handleInteraction = (e) => {
-    e.preventDefault(); // Prevent default touch behavior
+  const handleClick = (e) => {
+    // Only handle click if it wasn't initiated by a touch
+    if (!touchStarted) {
+      selectRandomPersonaAndText();
+    }
+  };
+
+  const handleTouchStart = (e) => {
+    e.preventDefault();
+    setTouchStarted(true);
     selectRandomPersonaAndText();
+  };
+
+  const handleTouchEnd = () => {
+    // Reset touch state after a short delay
+    setTimeout(() => {
+      setTouchStarted(false);
+    }, 100);
   };
 
   if (!isVisible || !currentPersona) return null;
 
   return (
     <PersonaContainer 
-      onClick={handleInteraction}
-      onTouchStart={handleInteraction}
+      onClick={handleClick}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       role="button"
       tabIndex={0}
     >
