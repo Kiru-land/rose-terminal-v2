@@ -14,4 +14,4 @@ export default async function handler(req, res) {
     console.error('Proxy error:', error.response?.data || error.message);
     res.status(error.response?.status || 500).json({ error: 'An error occurred while fetching price data' });
   }
-}
+}//
