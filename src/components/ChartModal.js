@@ -80,7 +80,7 @@ const ChartModal = ({ onClose }) => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const response = await axios.get('/api/proxy/get-rose-price?timeframe=1h');
+        const response = await axios.get(process.env.API_BASE_URL + '/api/proxy/get-rose-price?timeframe=1h');
         if (response.data.success && Array.isArray(response.data.data)) {
           const formattedData = response.data.data.map((item) => ({
             time: item.timestamp,
