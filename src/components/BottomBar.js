@@ -75,6 +75,13 @@ const BalanceText = styled.span`
   }
 `;
 
+const formatNumberToShort = (number) => {
+  if (number >= 1e9) return (Math.floor(number / 1e8) / 10).toFixed(1) + 'B';
+  if (number >= 1e6) return (Math.floor(number / 1e5) / 10).toFixed(1) + 'M';
+  if (number >= 1e3) return (Math.floor(number / 1e2) / 10).toFixed(1) + 'K';
+  return Math.floor(number).toString();
+};
+
 const BottomBar = () => {
   const { isConnected, balance, kiruBalance, connectWallet, disconnectWallet, totalSupply, reserve0, reserve1 } = useWeb3();
   const { showPopUp } = usePopUp();
@@ -103,12 +110,12 @@ const BottomBar = () => {
   };
 
   const displayBalance = () => {
-    if (!isConnected) return '0.0000';
+    if (!isConnected) return '0';
     const value = showEth ? parseFloat(balance) : parseFloat(kiruBalance);
     if (value < 0.0001) {
       return '<0.0001';
     }
-    return value.toFixed(4);
+    return formatNumberToShort(value);
   };
 
   const copyBalance = useCallback(() => {
@@ -129,12 +136,7 @@ const BottomBar = () => {
       const ethPrice = await getEthPrice();
       const mc = (parseFloat(reserve0) / parseFloat(reserve1) * parseFloat(totalSupply)) * ethPrice;
       
-      const formattedMc = new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(mc);
-
-      setMarketCap(formattedMc);
+      setMarketCap(formatNumberToShort(mc));
       setMarketCapError(null);
     } catch (error) {
       console.error('Error calculating market cap:', error);
