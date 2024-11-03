@@ -61,7 +61,7 @@ const Personas = ({ isVisible }) => {
   const texts = [
     "Welcome to Kiru's realm!",
     "Ready to create something wonderful? Just click on create!",
-    "Connect your wallet. It's here, at the bottom!",
+    "Connect your wallet. Right here at the bottom!",
     "Got a question? Come ask on Telegram!",
     "Did you know that Kiru sprinkled little magics on this coin?",
     "Kiru is watching over all of us",
