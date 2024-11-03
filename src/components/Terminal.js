@@ -10,7 +10,6 @@ import { FaEthereum, FaGithub, FaTwitter, FaBook, FaBars, FaTelegram, FaVolumeUp
 import Intro from './Intro.js';
 import { usePopUp } from '../contexts/PopUpContext.js';
 import Trade from './Trade.js';
-import Transfer from './Transfer.js';
 import Clawback from './Clawback.js';
 import ChartModal from './ChartModal.js';
 import Create from './Create.js';
@@ -429,8 +428,6 @@ const Terminal = ({ isMobile }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [showTrade, setShowTrade] = useState(false);
-  const [showTransfer, setShowTransfer] = useState(false);
-  const [showLaunch, setShowLaunch] = useState(false);
   const [showClawback, setShowClawback] = useState(false);
   const [selectedCommand, setSelectedCommand] = useState(null);
   const [isChartModalOpen, setIsChartModalOpen] = useState(false);
@@ -444,7 +441,6 @@ const Terminal = ({ isMobile }) => {
   const timeoutRef = useRef(null);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const tradeAudioRef = useRef(new Audio(kirusaysmoney));
-  const transferAudioRef = useRef(new Audio(kirusayhighway2));
   const createAudioRef = useRef(new Audio(kirusayho));
   const clawbackAudioRef = useRef(new Audio(kirusayfriend));
   const [audioInitialized, setAudioInitialized] = useState(false);
@@ -572,19 +568,13 @@ const Terminal = ({ isMobile }) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Stop if we clicked on a menu button
       if (event.target.closest('button[role="menuitem"]') || event.target.closest('button[data-audio-control]')) {
         return;
       }
       
       if (componentsRef.current && !componentsRef.current.contains(event.target)) {
-        // Close all open components
         if (showTrade) {
           setShowTrade(false);
-          setSelectedCommand(null);
-        }
-        if (showTransfer) {
-          setShowTransfer(false);
           setSelectedCommand(null);
         }
         if (showClawback) {
@@ -595,10 +585,6 @@ const Terminal = ({ isMobile }) => {
           setShowCreate(false);
           setSelectedCommand(null);
         }
-        if (showLaunch) {
-          setShowLaunch(false);
-          setSelectedCommand(null);
-        }
       }
     };
 
@@ -606,18 +592,16 @@ const Terminal = ({ isMobile }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showTrade, showTransfer, showClawback, showCreate, showLaunch]);
+  }, [showTrade, showClawback, showCreate]);
 
   useEffect(() => {
     setIsAnyComponentOpen(
       showTrade || 
-      showTransfer || 
       showClawback || 
       showCreate || 
-      showLaunch || 
       isChartModalOpen
     );
-  }, [showTrade, showTransfer, showClawback, showCreate, showLaunch, isChartModalOpen]);
+  }, [showTrade, showClawback, showCreate, isChartModalOpen]);
 
   const animateLogo = async (callback) => {
     setIsAnimating(true);
@@ -629,7 +613,7 @@ const Terminal = ({ isMobile }) => {
   };
 
   const handleMenuClick = (command) => {
-    if (!isConnected && command !== 'clawback' && command !== 'launch' && command !== 'create') {
+    if (!isConnected && command !== 'clawback' && command !== 'create') {
       setHistory(prev => [...prev, { type: 'output', content: 'Please connect your wallet.' }]);
       return;
     }
@@ -645,18 +629,14 @@ const Terminal = ({ isMobile }) => {
     setHistory(prev => [...prev, { type: 'command', content: command }]);
 
     const isCurrentlyOpen = (
-      (command === 'launch' && showLaunch) ||
       (command === 'trade' && showTrade) ||
-      (command === 'transfer' && showTransfer) ||
       (command === 'clawback' && showClawback) ||
       (command === 'create' && showCreate)
     );
 
     if (isCurrentlyOpen) {
       // If it's already open, just close it
-      setShowLaunch(false);
       setShowTrade(false);
-      setShowTransfer(false);
       setShowClawback(false);
       setShowCreate(false);
       setSelectedCommand(null);
@@ -665,29 +645,12 @@ const Terminal = ({ isMobile }) => {
     }
 
     // Close all command interfaces
-    setShowLaunch(false);
     setShowTrade(false);
-    setShowTransfer(false);
     setShowClawback(false);
     setShowCreate(false);
 
     let output = '';
     switch (command) {
-      case 'launch':
-        if (showLaunch) {
-          setShowLaunch(false);
-          setSelectedCommand(null);
-          output = 'Closing launch interface...';
-        } else {
-          setShowLaunch(true);
-          setShowTrade(false);
-          setShowTransfer(false);
-          setShowClawback(false);
-          setShowCreate(false);
-          setSelectedCommand('launch');
-          output = 'Opening launch interface...';
-        }
-        break;
       case 'trade':
         if (showTrade) {
           setShowTrade(false);
@@ -695,29 +658,11 @@ const Terminal = ({ isMobile }) => {
           output = 'Closing trade interface...';
         } else {
           setShowTrade(true);
-          setShowLaunch(false);
-          setShowTransfer(false);
           setShowClawback(false);
           setShowCreate(false);
           setSelectedCommand('trade');
           output = 'Opening trade interface...';
           tradeAudioRef.current.play().catch(error => console.error("Trade audio playback failed:", error));
-        }
-        break;
-      case 'transfer':
-        if (showTransfer) {
-          setShowTransfer(false);
-          setSelectedCommand(null);
-          output = 'Closing transfer interface...';
-        } else {
-          setShowTransfer(true);
-          setShowLaunch(false);
-          setShowTrade(false);
-          setShowClawback(false);
-          setShowCreate(false);
-          setSelectedCommand('transfer');
-          output = 'Opening transfer interface...';
-          transferAudioRef.current.play().catch(error => console.error("Transfer audio playback failed:", error));
         }
         break;
       case 'clawback':
@@ -727,9 +672,7 @@ const Terminal = ({ isMobile }) => {
           output = 'Closing clawback interface...';
         } else {
           setShowClawback(true);
-          setShowLaunch(false);
           setShowTrade(false);
-          setShowTransfer(false);
           setShowCreate(false);
           setSelectedCommand('clawback');
           output = 'Opening clawback interface...';
@@ -743,9 +686,7 @@ const Terminal = ({ isMobile }) => {
           output = 'Closing create interface...';
         } else {
           setShowCreate(true);
-          setShowLaunch(false);
           setShowTrade(false);
-          setShowTransfer(false);
           setShowClawback(false);
           setSelectedCommand('create');
           output = 'Opening create interface...';
@@ -813,7 +754,7 @@ const Terminal = ({ isMobile }) => {
   const renderMenuItems = () => {
     if (chainId === 17000n) {
       // Holesky Testnet options
-      return ['trade', 'transfer', 'clawback', 'create'].map(command => (
+      return ['trade', 'clawback', 'create'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -959,13 +900,6 @@ const Terminal = ({ isMobile }) => {
           {showTrade && (
             <Trade 
               onClose={() => setShowTrade(false)} 
-              animateLogo={animateLogo} 
-              setAsyncOutput={setAsyncOutput}
-            />
-          )}
-          {showTransfer && (
-            <Transfer 
-              onClose={() => setShowTransfer(false)} 
               animateLogo={animateLogo} 
               setAsyncOutput={setAsyncOutput}
             />
