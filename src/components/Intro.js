@@ -17,7 +17,7 @@ const IntroContainer = styled.div`
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  z-index: 1000;
+  z-index: 1005;
   cursor: pointer;
 `;
 
@@ -81,7 +81,7 @@ const GlitterContainer = styled.div`
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 1001;
+  z-index: 1004;
 `;
 
 const Glitter = styled.div`
