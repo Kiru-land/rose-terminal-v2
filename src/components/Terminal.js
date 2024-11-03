@@ -15,7 +15,6 @@ import ChartModal from './ChartModal.js';
 import Create from './Create.js';
 import lore1Music from '../assets/lore1.mp3';
 import kirusaysmoney from '../assets/kirusaymoney.mp3';
-import kirusayhighway2 from '../assets/kirusayhighway2.mp3';
 import kirusayho from '../assets/kirusayho.mp3';
 import kirusayfriend from '../assets/kirusayfriend.mp3';
 import Personas from './Personas.js';
@@ -739,7 +738,7 @@ const Terminal = ({ isMobile }) => {
         }
       );
     } else {
-      showPopUp('Kiru address not available');
+      showPopUp('Kiru address not available. Connect your wallet.');
     }
   };
 

@@ -5,7 +5,7 @@ import { usePopUp } from '../contexts/PopUpContext.js';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { FaEthereum } from 'react-icons/fa6';
 import { getEthPrice } from '../utils/getEthPrice.js';
-import kirusayho from '../assets/kirusayho.mp3';
+import kirusayhighway2 from '../assets/kirusayhighway2.mp3';
 
 const BarContainer = styled.div`
   display: flex;
@@ -89,7 +89,7 @@ const BottomBar = () => {
   const [marketCap, setMarketCap] = useState('N/A');
   const [marketCapError, setMarketCapError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const connectAudioRef = useRef(new Audio(kirusayho));
+  const connectAudioRef = useRef(new Audio(kirusayhighway2));
 
   const handleConnect = async () => {
     if (isConnected) {
