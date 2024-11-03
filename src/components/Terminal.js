@@ -374,13 +374,31 @@ const RippleButton = ({ children, onClick, isMobile, isSelected }) => {
   );
 };
 
-const KiruUsdButton = styled.span`
+const KiruUsdButton = styled.button`
   font-family: 'Fira Code', monospace;
+  background: none;
+  border: none;
   color: #00FF00;
-  font-size: 12px;
+  font-size: 16px;
+  padding: 8px;
+  cursor: pointer;
   position: absolute;
-  bottom: 40px;
-  left: 39px;
+  bottom: 60px;
+  left: 30px;
+  z-index: 1000;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  ${props => props.isMobile && `
+    font-size: 18px;  // Larger text for mobile
+  `}
 `;
 
 const ControlButton = styled.button`
@@ -931,7 +949,9 @@ const Terminal = ({ isMobile }) => {
         <MenuContainer isMobile={isMobile}>
           {renderMenuItems()}
         </MenuContainer>
-        <kiruUsdButton onClick={handleOpenChartModal} isMobile={isMobile}>💹</kiruUsdButton>
+        <KiruUsdButton onClick={handleOpenChartModal} isMobile={isMobile}>
+          💹
+        </KiruUsdButton>
         <BottomBar />
         <Personas isVisible={!isAnyComponentOpen} />
         {/* Wrap all component renders in a div with the ref */}
