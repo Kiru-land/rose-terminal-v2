@@ -485,24 +485,55 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
       const scaleX = canvas.width / imageRect.width;
       const scaleY = canvas.height / imageRect.height;
 
+      const wrapText = (ctx, text, x, y, maxWidth, lineHeight) => {
+        const words = text.split(' ');
+        let line = '';
+        let currentY = y;
+
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n] + ' ';
+          const metrics = ctx.measureText(testLine);
+          const testWidth = metrics.width;
+          if (testWidth > maxWidth && n > 0) {
+            ctx.fillText(line.trim(), x, currentY);
+            line = words[n] + ' ';
+            currentY += lineHeight;
+          } else {
+            line = testLine;
+          }
+        }
+        ctx.fillText(line.trim(), x, currentY);
+      };
+
       textElements.forEach((element, index) => {
         const textElement = textRefs.current[index];
         if (!textElement) return;
 
         const textRect = textElement.getBoundingClientRect();
-        const imageRect = imageWrapperRef.current.getBoundingClientRect();
+        const parentRect = imageWrapperRef.current.getBoundingClientRect();
 
-        // Calculate center position relative to the image
-        const relativeX = (textRect.left + textRect.width / 2) - imageRect.left;
-        const relativeY = (textRect.top + textRect.height / 2) - imageRect.top;
+        // Calculate position relative to the image
+        const relativeX = (textRect.left + textRect.width / 2) - parentRect.left;
+        const relativeY = (textRect.top + textRect.height / 2) - parentRect.top;
 
-        // Convert to canvas coordinates
-        const canvasX = relativeX * scaleX;
-        const canvasY = relativeY * scaleY;
+        // Convert to canvas coordinates with both X and Y position adjustments
+        const canvasX = (relativeX * scaleX) - (0.7 * scaleX); // Subtract offset to move text left
+        const canvasY = (relativeY * scaleY) - (12 * scaleY); // Subtract offset to move text up
 
-        const scaledFontSize = Math.round(fontSize * scaleX);
-        ctx.font = `bold ${scaledFontSize}px ${fontFamily}`;
-        ctx.fillStyle = textColor;
+        // Get the computed style of the text element
+        const computedStyle = window.getComputedStyle(textElement);
+        const fontSize = parseInt(computedStyle.fontSize, 10);
+        const fontFamily = computedStyle.fontFamily;
+        const fontWeight = computedStyle.fontWeight;
+        const color = computedStyle.color;
+
+        // Get the width of the text element for maxWidth
+        const textElementWidth = textElement.getBoundingClientRect().width;
+        const maxTextWidth = textElementWidth * scaleX;
+
+        // Set font properties
+        ctx.font = `${fontWeight} ${Math.round(fontSize * scaleX)}px ${fontFamily}`;
+        ctx.fillStyle = color;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
@@ -510,8 +541,11 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
         ctx.shadowOffsetY = 2 * scaleY;
         ctx.shadowBlur = 4 * scaleX;
 
-        // Draw text without wrapping
-        ctx.fillText(element.text, canvasX, canvasY);
+        // Calculate line height based on font size
+        const lineHeight = Math.round(fontSize * scaleY * 1.2);
+
+        // Draw wrapped text
+        wrapText(ctx, element.text, canvasX, canvasY, maxTextWidth, lineHeight);
       });
 
       const dataURL = canvas.toDataURL('image/png');
@@ -615,8 +649,8 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
           value={fontFamily} 
           onChange={(e) => setFontFamily(e.target.value)}
         >
-          <option value="Arial">Arial</option>
           <option value="Impact">Impact</option>
+          <option value="Arial">Arial</option>
           <option value="Times New Roman">Times New Roman</option>
         </StyledSelect>
         <ColorPickerContainer className="color-picker-container">
