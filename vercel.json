@@ -1,6 +1,6 @@
 {
     "functions": {
-      "api/eligible/set-address-communities.js": {
+      "api/proxy/set-address-communities.js": {
         "maxDuration": 300
     }
   }
