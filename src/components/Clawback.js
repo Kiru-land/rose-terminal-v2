@@ -337,7 +337,7 @@ const FullScreenOverlay = styled.div`
 `;
 
 const KiruGif = styled.img`
-  width: 70vw;
+  width: 60vw;
   height: auto;
   object-fit: contain;
 `;
