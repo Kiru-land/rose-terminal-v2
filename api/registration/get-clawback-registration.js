@@ -1,5 +1,5 @@
-import { authMiddleware } from '../auth/auth';
-import { clawbackKV } from '../../config';
+import { authMiddleware } from '../auth/auth.js';
+import { clawbackKV } from '../../config.js';
 
 /**
  * @api {get} /api/registration/check-clawback-registration Check Clawback Registration
