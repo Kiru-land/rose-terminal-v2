@@ -434,26 +434,47 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
     setAllocation(null);
     const newAddress = e.target.value;
     setAddress(newAddress);
+    
     if (ethers.isAddress(newAddress)) {
       try {
+        console.log(`[Clawback] Checking eligibility for address: ${newAddress}`);
         const response = await axios.get('/api/proxy/get-address-communities', {
           params: { address: newAddress }
         });
         
+        console.log(`[Clawback] API response for ${newAddress}:`, response.data);
+        
         const active = response.data.communities.map(p => p.toLowerCase());
+        console.log(`[Clawback] Active communities for ${newAddress}:`, active);
+        
         setActiveProjects(active);
         const isEligible = active.length > 0;
         setAllocation(isEligible);
         
         if (isEligible) {
-          eligibleAudioRef.current.play().catch(error => console.error("Eligible audio playback failed:", error));
+          console.log(`[Clawback] Address ${newAddress} is eligible with ${active.length} communities`);
+          eligibleAudioRef.current.play().catch(error => {
+            console.error("[Clawback] Eligible audio playback failed:", error);
+          });
+        } else {
+          console.log(`[Clawback] Address ${newAddress} is not eligible`);
         }
       } catch (error) {
-        console.error('Error fetching active communities:', error);
+        console.error('[Clawback] Error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+          config: {
+            url: error.config?.url,
+            params: error.config?.params
+          }
+        });
+        
         setActiveProjects([]);
         setAllocation(false);
       }
     } else {
+      console.log(`[Clawback] Invalid address format: ${newAddress}`);
       setActiveProjects([]);
       setAllocation(null);
     }
