@@ -334,11 +334,10 @@ const FullScreenOverlay = styled.div`
   align-items: center;
   z-index: 9999;
   overflow: hidden;
-  transform: scale(1.1);
 `;
 
 const KiruGif = styled.img`
-  width: 100vw;
+  width: 90vw;
   height: auto;
   object-fit: contain;
 `;
