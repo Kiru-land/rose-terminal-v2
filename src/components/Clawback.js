@@ -336,9 +336,11 @@ const FullScreenOverlay = styled.div`
 `;
 
 const KiruGif = styled.img`
-  max-width: 80vw;
-  max-height: 80vh;
+  max-width: 250vw;
+  max-height: 250vh;
   object-fit: contain;
+  width: auto;
+  height: auto;
 `;
 
 const WelcomeMessage = styled.div`
@@ -346,7 +348,7 @@ const WelcomeMessage = styled.div`
   font-size: 24px;
   margin-top: 20px;
   text-align: center;
-  font-family: 'fira code';
+  font-family: 'Fira Code';
   text-shadow: 0 0 10px #00ff00;
 
   @media (max-width: 600px) {
