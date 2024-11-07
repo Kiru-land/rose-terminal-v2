@@ -333,14 +333,14 @@ const FullScreenOverlay = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 9999;
+  overflow: hidden;
+  transform: scale(2.5);
 `;
 
 const KiruGif = styled.img`
-  max-width: 250vw;
-  max-height: 250vh;
-  object-fit: contain;
-  width: auto;
+  width: 100vw;
   height: auto;
+  object-fit: contain;
 `;
 
 const WelcomeMessage = styled.div`
