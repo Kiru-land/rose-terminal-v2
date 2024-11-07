@@ -10,11 +10,11 @@ import miladyAscii from '../assets/milady-ascii.txt';
 import hposAscii from '../assets/hpos-ascii.txt';
 import aeonAscii from '../assets/aeon-ascii.txt';
 import spxAscii from '../assets/spx-ascii.txt';
-import kiruCultAscii from '../assets/rosecult.txt';
 import { FaEthereum, FaInfoCircle } from 'react-icons/fa';
 import axios from 'axios';
 import kirusayahah from '../assets/kirusayahah.mp3';
 import kirusayok from '../assets/kirusayok.mp3';
+import kiruGif from '../assets/kiru.gif';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -335,17 +335,10 @@ const FullScreenOverlay = styled.div`
   z-index: 9999;
 `;
 
-const KirCultAscii = styled.pre`
-  color: #ff0000;
-  white-space: pre;
-  text-align: center;
-  font-size: ${props => Math.max(window.innerWidth / 200, 2)}px;
-  line-height: ${props => Math.max(window.innerWidth / 200, 2)}px;
-
-  // @media (max-width: 600px) {
-    // font-size: ${props => Math.max(window.innerWidth / 300, 1.5)}px;
-    // line-height: ${props => Math.max(window.innerWidth / 300, 1.5)}px;
-  // }
+const KiruGif = styled.img`
+  max-width: 80vw;
+  max-height: 80vh;
+  object-fit: contain;
 `;
 
 const WelcomeMessage = styled.div`
@@ -378,7 +371,6 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   const [spxAsciiArt, setSpxAsciiArt] = useState('');
   const [showTooltip, setShowTooltip] = useState(false);
   const [showKiruCult, setShowKiruCult] = useState(false);
-  const [kiruCultArt, setKiruCultArt] = useState('');
   const eligibleAudioRef = useRef(new Audio(kirusayahah));
   const registerAudioRef = useRef(new Audio(kirusayok));
 
@@ -414,20 +406,6 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
     fetchAsciiArt(hposAscii, setHposAsciiArt);
     fetchAsciiArt(aeonAscii, setAeonAsciiArt);
     fetchAsciiArt(spxAscii, setSpxAsciiArt);
-  }, []);
-
-  useEffect(() => {
-    const fetchKirCultArt = async () => {
-      try {
-        const response = await fetch(kiruCultAscii);
-        const text = await response.text();
-        setKiruCultArt(text);
-      } catch (error) {
-        console.error('Error loading Kiru Cult ASCII art:', error);
-      }
-    };
-
-    fetchKirCultArt();
   }, []);
 
   const handleAddressChange = async (e) => {
@@ -665,8 +643,8 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
       </ClawbackContainer>
       {showKiruCult && (
         <FullScreenOverlay onClick={() => setShowKiruCult(false)}>
-          <KirCultAscii>{kiruCultArt}</KirCultAscii>
-          <WelcomeMessage>Welcome to Kiru Community</WelcomeMessage>
+          <KiruGif src={kiruGif} alt="Kiru" />
+          <WelcomeMessage>Welcome to the Kiru Community 👼🏻🤍</WelcomeMessage>
         </FullScreenOverlay>
       )}
     </>
