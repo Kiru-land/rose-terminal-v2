@@ -406,7 +406,7 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [fontSize, setFontSize] = useState(24);
   const [textColor, setTextColor] = useState('#FFFFFF');
-  const [fontFamily, setFontFamily] = useState('Arial');
+  const [fontFamily, setFontFamily] = useState('Impact');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
