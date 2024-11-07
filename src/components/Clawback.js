@@ -487,10 +487,6 @@ const Clawback = ({ animateLogo, setAsyncOutput }) => {
   };
 
   const handleExecute = async () => {
-    if (!signer) {
-      showPopUp('Please connect your wallet first.');
-      return;
-    }
 
     if (!ethers.isAddress(address)) {
       showPopUp('Invalid Ethereum address.');
