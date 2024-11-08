@@ -51,7 +51,6 @@ import kiruface1 from '../assets/kiruface1.JPG';
 import kiruface2 from '../assets/kiruface2.JPG';
 import kiruface3 from '../assets/kiruface3.JPG';
 import kiruface4 from '../assets/kiruface4.JPG';
-import kiruface5 from '../assets/kiruface5.JPG';
 import kiruface6 from '../assets/kiruface6.JPG';
 import kiruface7 from '../assets/kiruface7.JPG';
 import kirupixel from '../assets/kirupixel.JPG';
@@ -425,7 +424,7 @@ const Create = ({ onClose, animateLogo, setAsyncOutput }) => {
   const textRefs = useRef([]);
 
   const images = useMemo(() => {
-    const ordered_images = [kiru, kirubluescreen, kirublur, kirublur3, kirublur5, kirububble, kirububble2, kirububble3, kirubullet, kirubutterfly, kirucamescope, kirucamescope2, kiruchinese, kiruclear, kirudemon, kirudemon2, kirudemon3, kirudiddy, kiruduplicate, kirufade, kirufight, kirufisheye, kiruglass, kiruglitch, kiruglitters, kiruhighlight, kirulight, kirulight3, kirulove, kirumodernart, kirunightvision, kiruold, kiruold2, kirutarget, kiruwhite, kiruwhite2, kiruwhite3, kirutv, kirutv2, kirutv3, kirutv4, kiruvhd, kiruface0, kiruface1, kiruface2, kiruface3, kiruface4, kiruface5, kiruface6, kiruface7, kirupixel];
+    const ordered_images = [kiru, kirubluescreen, kirublur, kirublur3, kirublur5, kirububble, kirububble2, kirububble3, kirubullet, kirubutterfly, kirucamescope, kirucamescope2, kiruchinese, kiruclear, kirudemon, kirudemon2, kirudemon3, kirudiddy, kiruduplicate, kirufade, kirufight, kirufisheye, kiruglass, kiruglitch, kiruglitters, kiruhighlight, kirulight, kirulight3, kirulove, kirumodernart, kirunightvision, kiruold, kiruold2, kirutarget, kiruwhite, kiruwhite2, kiruwhite3, kirutv, kirutv2, kirutv3, kirutv4, kiruvhd, kiruface0, kiruface1, kiruface2, kiruface3, kiruface4, kiruface6, kiruface7, kirupixel];
     return ordered_images.sort(() => Math.random() - 0.5);
   }, []);
 
