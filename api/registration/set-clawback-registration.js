@@ -53,6 +53,15 @@ export default authMiddleware(async function handler(req, res) {
     }
 
     try {
+      // Check eligibility first
+      const communitiesString = await clawbackKV.get(address);
+      const communities = communitiesString ? communitiesString.split(',') : [];
+      
+      if (!communities.length) {
+        console.log('Address not eligible for registration');
+        return res.status(403).json({ error: 'Address not eligible for registration' });
+      }
+
       console.log('Fetching registered addresses');
       let registeredAddresses = await clawbackKV.get('registered-addresses') || [];
 
