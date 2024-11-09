@@ -87,10 +87,20 @@ export const Web3Provider = ({ children }) => {
   const connectWallet = useCallback(async () => {
     if (typeof window.ethereum !== 'undefined') {
       try {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        setIsConnected(true);
-        await updateWeb3State();
-        return true;
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const accounts = await window.ethereum.request({ 
+          method: 'eth_requestAccounts',
+          params: [] 
+        });
+        
+        if (accounts && accounts.length > 0) {
+          setIsConnected(true);
+          await updateWeb3State();
+          return true;
+        } else {
+          throw new Error('No accounts returned');
+        }
       } catch (error) {
         console.error('Detailed error in connectWallet:', error);
         throw error;
@@ -122,17 +132,19 @@ export const Web3Provider = ({ children }) => {
 
   useEffect(() => {
     if (typeof window.ethereum !== 'undefined') {
-      window.ethereum.on('chainChanged', () => {
-        window.location.reload();
+      window.ethereum.on('chainChanged', (chainId) => {
+        updateWeb3State();
       });
+      
       window.ethereum.on('accountsChanged', (accounts) => {
-        if (accounts.length === 0) {
+        if (!accounts || accounts.length === 0) {
           disconnectWallet();
         } else {
           updateWeb3State();
         }
       });
     }
+
     return () => {
       if (window.ethereum) {
         window.ethereum.removeAllListeners('chainChanged');
