@@ -827,7 +827,7 @@ const Terminal = ({ isMobile }) => {
               <FaTwitter />
             </DropdownItem>
             <DropdownItem
-              href="https://t.me/PunkMoneyRose"
+              href="https://t.me/KiruLand"
               target="_blank"
               rel="noopener noreferrer"
               onClick={closeDropdown}
