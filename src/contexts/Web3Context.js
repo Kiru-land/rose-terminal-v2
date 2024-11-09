@@ -87,22 +87,37 @@ export const Web3Provider = ({ children }) => {
   const connectWallet = useCallback(async () => {
     if (typeof window.ethereum !== 'undefined') {
       try {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // First set up provider and get current chain
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const network = await provider.getNetwork();
+        const currentChainId = network.chainId;
         
+        // Request accounts
         const accounts = await window.ethereum.request({ 
           method: 'eth_requestAccounts',
           params: [] 
         });
         
         if (accounts && accounts.length > 0) {
+          // Set connected first
           setIsConnected(true);
+          
+          // Small delay to ensure connection is established
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          // Update state
           await updateWeb3State();
+          
+          // Store chain ID for comparison
+          setChainId(currentChainId);
+          
           return true;
         } else {
           throw new Error('No accounts returned');
         }
       } catch (error) {
         console.error('Detailed error in connectWallet:', error);
+        setIsConnected(false); // Reset connected state if there's an error
         throw error;
       }
     } else {
@@ -132,9 +147,22 @@ export const Web3Provider = ({ children }) => {
 
   useEffect(() => {
     if (typeof window.ethereum !== 'undefined') {
-      window.ethereum.on('chainChanged', (chainId) => {
-        // Reload the page on chain changes
-        window.location.reload();
+      window.ethereum.on('chainChanged', async (chainId) => {
+        try {
+          // If we're connected, try to update state before reload
+          if (isConnected) {
+            await updateWeb3State();
+            // Small delay to ensure state is updated before reload
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          } else {
+            window.location.reload();
+          }
+        } catch (error) {
+          console.error('Error handling chain change:', error);
+          window.location.reload();
+        }
       });
       
       window.ethereum.on('accountsChanged', (accounts) => {
@@ -152,7 +180,7 @@ export const Web3Provider = ({ children }) => {
         window.ethereum.removeAllListeners('accountsChanged');
       }
     };
-  }, [disconnectWallet, updateWeb3State]);
+  }, [disconnectWallet, updateWeb3State, isConnected]);
 
   return (
     <Web3Context.Provider value={{ 
