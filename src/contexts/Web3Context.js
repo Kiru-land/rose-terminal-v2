@@ -133,7 +133,8 @@ export const Web3Provider = ({ children }) => {
   useEffect(() => {
     if (typeof window.ethereum !== 'undefined') {
       window.ethereum.on('chainChanged', (chainId) => {
-        updateWeb3State();
+        // Reload the page on chain changes
+        window.location.reload();
       });
       
       window.ethereum.on('accountsChanged', (accounts) => {
