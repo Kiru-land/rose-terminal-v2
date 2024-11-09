@@ -79,7 +79,7 @@ const formatNumberToShort = (number) => {
   if (number >= 1e9) return (Math.floor(number / 1e8) / 10).toFixed(1) + 'B';
   if (number >= 1e6) return (Math.floor(number / 1e5) / 10).toFixed(1) + 'M';
   if (number >= 1e3) return (Math.floor(number / 1e2) / 10).toFixed(1) + 'K';
-  return Math.floor(number).toString();
+  return Number(number).toFixed(2);
 };
 
 const BottomBar = () => {
