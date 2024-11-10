@@ -240,7 +240,7 @@ const ArrowIcon = styled.span`
 `;
 
 const PriceImpactText = styled.div`
-  color: ${props => props.impact > 5 ? '#ff4136' : 'rgba(0, 255, 0, 0.6)'};
+  color: rgba(0, 255, 0, 0.6);
   font-size: 12px;
   margin-top: 6px;
   text-align: center;
@@ -461,8 +461,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         }
 
         const numericReserve1 = parseFloat(reserve1);
-        if (parseFloat(amount) > (numericReserve1 / 20)) {
-          showPopUp(`Amount too large, can only sell up to 5% of the pool at a time. Max sell: ${(numericReserve1 / 20).toFixed(6)}👼🏻`);
+        if (parseFloat(amount) > (numericReserve1 / 5)) {
+          showPopUp(`Amount too large, can only sell up to 20% of the pool at a time. Max sell: ${(numericReserve1 / 5).toFixed(6)}👼🏻`);
           return;
         }
 
@@ -524,13 +524,22 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
     setIsEthOnTop(!isEthOnTop);
   };
 
-  const handleMaxClick = () => {
+  const handleMaxClick = async () => {
+    let maxAmount;
     if (isEthOnTop) {
       const maxEth = parseFloat(nativeBalance) - 0.01;
-      setAmount(maxEth > 0 ? maxEth.toFixed(6) : '0');
+      maxAmount = maxEth > 0 ? maxEth.toFixed(6) : '0';
     } else {
-      // Don't format KIRU balance when setting max
-      setAmount(kiruBalance);
+      maxAmount = kiruBalance;
+    }
+    setAmount(maxAmount);
+    
+    // Get quote immediately instead of using debounced version
+    if (maxAmount) {
+      setIsQuoteLoading(true);
+      const newQuote = await getQuote(maxAmount);
+      setQuote(newQuote);
+      setIsQuoteLoading(false);
     }
   };
 
