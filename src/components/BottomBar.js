@@ -24,6 +24,9 @@ const McValue = styled.div`
   position: absolute;
   top: 50%;
   left: 20px;
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const ConnectButton = styled.span`
@@ -90,6 +93,8 @@ const BottomBar = () => {
   const [marketCapError, setMarketCapError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const connectAudioRef = useRef(new Audio(kirusayhighway2));
+  const [showLiquidity, setShowLiquidity] = useState(false);
+  const [liquidity, setLiquidity] = useState('N/A');
 
   const handleConnect = async () => {
     if (isConnected) {
@@ -125,22 +130,26 @@ const BottomBar = () => {
       .catch(err => showPopUp('Failed to copy balance: ' + err.message));
   }, [showEth, balance, kiruBalance, showPopUp]);
 
-  const calculateMarketCap = useCallback(async () => {
+  const calculateValues = useCallback(async () => {
     setIsLoading(true);
     try {
       if (!reserve0 || !reserve1 || !totalSupply) {
         setMarketCap('N/A');
+        setLiquidity('N/A');
         return;
       }
 
       const ethPrice = await getEthPrice();
       const mc = (parseFloat(reserve0) / parseFloat(reserve1) * parseFloat(totalSupply)) * ethPrice;
+      const liq = parseFloat(reserve0) * 2 * ethPrice;
       
       setMarketCap(formatNumberToShort(mc));
+      setLiquidity(formatNumberToShort(liq));
       setMarketCapError(null);
     } catch (error) {
-      console.error('Error calculating market cap:', error);
+      console.error('Error calculating values:', error);
       setMarketCap('N/A');
+      setLiquidity('N/A');
       setMarketCapError('Ø');
     } finally {
       setIsLoading(false);
@@ -148,19 +157,24 @@ const BottomBar = () => {
   }, [reserve0, reserve1, totalSupply]);
 
   useEffect(() => {
-    calculateMarketCap();
-  }, [calculateMarketCap]);
+    calculateValues();
+  }, [calculateValues]);
+
+  const toggleMcLiq = () => {
+    setShowLiquidity(!showLiquidity);
+  };
 
   return (
     <BarContainer>
-      <McValue>
-        mc: {isLoading ? (
+      <McValue onClick={toggleMcLiq}>
+        {showLiquidity ? 'liq: ' : 'mc: '}
+        {isLoading ? (
           'Loading...'
         ) : marketCapError ? (
           <span style={{ color: '#00ff00' }}>{marketCapError}</span>
         ) : (
           <>
-            ${marketCap}
+            ${showLiquidity ? liquidity : marketCap}
           </>
         )}
       </McValue>
