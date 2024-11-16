@@ -10,7 +10,7 @@ import { FaEthereum, FaGithub, FaTwitter, FaBook, FaBars, FaTelegram, FaVolumeUp
 import Intro from './Intro.js';
 import { usePopUp } from '../contexts/PopUpContext.js';
 import Trade from './Trade.js';
-import Clawback from './Clawback.js';
+import Bond from './Bond.js';
 import ChartModal from './ChartModal.js';
 import Create from './Create.js';
 import lore1Music from '../assets/lore1.mp3';
@@ -427,7 +427,7 @@ const Terminal = ({ isMobile }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [showTrade, setShowTrade] = useState(false);
-  const [showClawback, setShowClawback] = useState(false);
+  const [showBond, setShowBond] = useState(false);
   const [selectedCommand, setSelectedCommand] = useState(null);
   const [isChartModalOpen, setIsChartModalOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
@@ -576,8 +576,8 @@ const Terminal = ({ isMobile }) => {
           setShowTrade(false);
           setSelectedCommand(null);
         }
-        if (showClawback) {
-          setShowClawback(false);
+        if (showBond) {
+          setShowBond(false);
           setSelectedCommand(null);
         }
         if (showCreate) {
@@ -591,16 +591,16 @@ const Terminal = ({ isMobile }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showTrade, showClawback, showCreate]);
+  }, [showTrade, showBond, showCreate]);
 
   useEffect(() => {
     setIsAnyComponentOpen(
       showTrade || 
-      showClawback || 
+      showBond || 
       showCreate || 
       isChartModalOpen
     );
-  }, [showTrade, showClawback, showCreate, isChartModalOpen]);
+  }, [showTrade, showBond, showCreate, isChartModalOpen]);
 
   const animateLogo = async (callback) => {
     setIsAnimating(true);
@@ -612,7 +612,7 @@ const Terminal = ({ isMobile }) => {
   };
 
   const handleMenuClick = (command) => {
-    if (!isConnected && command !== 'clawback' && command !== 'create') {
+    if (!isConnected && command !== 'create') {
       setHistory(prev => [...prev, { type: 'output', content: 'Please connect your wallet.' }]);
       return;
     }
@@ -629,23 +629,21 @@ const Terminal = ({ isMobile }) => {
 
     const isCurrentlyOpen = (
       (command === 'trade' && showTrade) ||
-      (command === 'clawback' && showClawback) ||
+      (command === 'bond' && showBond) ||
       (command === 'create' && showCreate)
     );
 
     if (isCurrentlyOpen) {
-      // If it's already open, just close it
       setShowTrade(false);
-      setShowClawback(false);
+      setShowBond(false);
       setShowCreate(false);
       setSelectedCommand(null);
       setHistory(prev => [...prev, { type: 'output', content: `Closing ${command} interface...` }]);
       return;
     }
 
-    // Close all command interfaces
     setShowTrade(false);
-    setShowClawback(false);
+    setShowBond(false);
     setShowCreate(false);
 
     let output = '';
@@ -657,25 +655,25 @@ const Terminal = ({ isMobile }) => {
           output = 'Closing trade interface...';
         } else {
           setShowTrade(true);
-          setShowClawback(false);
+          setShowBond(false);
           setShowCreate(false);
           setSelectedCommand('trade');
           output = 'Opening trade interface...';
           tradeAudioRef.current.play().catch(error => console.error("Trade audio playback failed:", error));
         }
         break;
-      case 'clawback':
-        if (showClawback) {
-          setShowClawback(false);
+      case 'bond':
+        if (showBond) {
+          setShowBond(false);
           setSelectedCommand(null);
-          output = 'Closing clawback interface...';
+          output = 'Closing bond interface...';
         } else {
-          setShowClawback(true);
+          setShowBond(true);
           setShowTrade(false);
           setShowCreate(false);
-          setSelectedCommand('clawback');
-          output = 'Opening clawback interface...';
-          clawbackAudioRef.current.play().catch(error => console.error("Clawback audio playback failed:", error));
+          setSelectedCommand('bond');
+          output = 'Opening bond interface...';
+          clawbackAudioRef.current.play().catch(error => console.error("Bond audio playback failed:", error));
         }
         break;
       case 'create':
@@ -686,7 +684,7 @@ const Terminal = ({ isMobile }) => {
         } else {
           setShowCreate(true);
           setShowTrade(false);
-          setShowClawback(false);
+          setShowBond(false);
           setSelectedCommand('create');
           output = 'Opening create interface...';
           createAudioRef.current.play().catch(error => console.error("Create audio playback failed:", error));
@@ -753,7 +751,7 @@ const Terminal = ({ isMobile }) => {
   const renderMenuItems = () => {
     if (chainId === 17000n) {
       // Holesky Testnet options
-      return ['trade', 'clawback', 'create'].map(command => (
+      return ['trade', 'bond', 'create'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -765,7 +763,7 @@ const Terminal = ({ isMobile }) => {
       ));
     } else {
       // Mainnet options
-      return ['trade','clawback', 'create'].map(command => (
+      return ['trade', 'bond', 'create'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -903,9 +901,9 @@ const Terminal = ({ isMobile }) => {
               setAsyncOutput={setAsyncOutput}
             />
           )}
-          {showClawback && (
-            <Clawback 
-              onClose={() => setShowClawback(false)} 
+          {showBond && (
+            <Bond 
+              onClose={() => setShowBond(false)} 
               animateLogo={animateLogo} 
               setAsyncOutput={setAsyncOutput}
             />

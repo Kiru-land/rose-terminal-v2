@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 
 const Web3Context = createContext();
 
-const LAUNCH_ADDRESS = '0x1234567890123456789012345678901234567890';
+const BOND_ADDRESS = '0x75F87cEab6d7a62562Ccc1Cf2B9c393C62505464';
 const LAUNCH_ADDRESS_TESTNET = '0x1234567890123456789012345678901234567890';
 const KIRU_TOKEN_ADDRESS = '0xe04d4E49Fd4BCBcE2784cca8B80CFb35A4C01da2';
 const KIRU_TOKEN_TESTNET_ADDRESS = '0xfff92F33a08BBeA79FBdb40e7E427641C02E1Aa1';
@@ -16,7 +16,7 @@ export const Web3Provider = ({ children }) => {
   const [chainId, setChainId] = useState(null);
   const [signer, setSigner] = useState(null);
   const [kiru, setKiru] = useState(null);
-  const [launch, setLaunch] = useState(null);
+  const [bond, setLaunch] = useState(null);
   const [reserve0, setReserve0] = useState('0');
   const [reserve1, setReserve1] = useState('0');
   const [alpha, setAlpha] = useState('0');
@@ -34,7 +34,7 @@ export const Web3Provider = ({ children }) => {
         const newChainId = network.chainId;
 
         const kiru = newChainId === 1n ? KIRU_TOKEN_ADDRESS : newChainId === 17000n ? KIRU_TOKEN_TESTNET_ADDRESS : null;
-        const launch = newChainId === 1n ? LAUNCH_ADDRESS : newChainId === 17000n ? LAUNCH_ADDRESS_TESTNET : null;
+        const bond = newChainId === 1n ? BOND_ADDRESS : newChainId === 17000n ? LAUNCH_ADDRESS_TESTNET : null;
         const kiruContract = new ethers.Contract(
           kiru,
           [
@@ -75,7 +75,7 @@ export const Web3Provider = ({ children }) => {
         setBalance(ethers.formatEther(balance));
         setKiruBalance(ethers.formatEther(kiruBalance));
         setKiru(kiru);
-        setLaunch(launch);
+        setLaunch(bond);
         setTotalSupply(ethers.formatEther(supply));
         console.log('Web3 state updated');
       } catch (error) {
@@ -167,7 +167,7 @@ export const Web3Provider = ({ children }) => {
       reserve0,
       reserve1,
       alpha,
-      launch,
+      bond,
       totalSupply
     }}>
       {children}
