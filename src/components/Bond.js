@@ -91,7 +91,11 @@ const Input = styled.input`
 `;
 
 const QuoteText = styled.p`
-  color: ${props => props.isLoading ? 'rgba(0, 255, 0, 0.5)' : '#00ff00'};
+  color: ${props => {
+    if (props.isLoading) return 'rgba(0, 255, 0, 0.5)';
+    if (props.isMaxed) return 'rgba(0, 255, 0, 0.5)';  // Dimmed for max ETH message
+    return '#00ff00';
+  }};
   font-size: ${props => props.isLoading ? '15px' : '16px'};
   text-align: left;
   margin: 0;
@@ -285,6 +289,10 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
 
   const getQuote = useCallback(async (inputAmount) => {
     if (!signer || !kiru || !inputAmount) return null;
+    
+    if (parseFloat(inputAmount) > 1) {
+      return 'max 1ETH';
+    }
 
     try {
       const kiruContract = new ethers.Contract(
@@ -298,7 +306,6 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
       const baseQuoteValue = parseFloat(ethers.formatEther(quoteAmount));
       
       setBaseQuote(baseQuoteValue);
-      
       return baseQuoteValue.toString();
     } catch (error) {
       console.error('Error getting quote:', error);
@@ -362,25 +369,39 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
       try {
         setAsyncOutput(<>Processing bond of {amount}<FaEthereum /> ...</>);
 
+        // Calculate half of the input amount
+        const halfAmountInWei = amountInWei / 2n;
+        
+        // Get quote for half amount
+        const kiruContract = new ethers.Contract(
+          kiru,
+          ['function quoteDeposit(uint256 amount) view returns (uint256)'],
+          signer
+        );
+        const halfQuoteAmount = await kiruContract.quoteDeposit(halfAmountInWei);
+
         const bondContract = new ethers.Contract(
           bond,
           ['function bond(uint256,uint256,uint256) payable'],
           signer
         );
 
-        // Calculate minimum output with slippage
-        const minQuote = parseFloat(quote) * (100 - slippage) / 100;
-        let minQuoteInWei;
-        if (minQuote < 1e-18) {
-          minQuoteInWei = 1n;
-        } else {
-          minQuoteInWei = ethers.parseEther(minQuote.toFixed(18));
-        }
+        // Apply slippage to all parameters
+        const slippageFactor = (100 - slippage) / 100;
+        
+        // For first parameter: half of the quote with slippage
+        const minHalfQuote = parseFloat(ethers.formatEther(halfQuoteAmount)) * slippageFactor;
+        
+        // For second parameter: half of input amount with slippage
+        const minHalfAmount = parseFloat(amount) / 2 * slippageFactor;
+        
+        // For third parameter: half quote with slippage
+        const minHalfQuoteAmount = minHalfQuote * slippageFactor;
 
         const tx = await bondContract.bond(
-          minQuoteInWei, // outMin
-          0n,           // amount0Min
-          0n,           // amount1Min
+          ethers.parseEther(minHalfQuote.toString()),      // outMin (half quote with slippage)
+          ethers.parseEther(minHalfAmount.toString()),     // amount0Min (half of input ETH with slippage)
+          ethers.parseEther(minHalfQuoteAmount.toString()), // amount1Min (half quote with slippage)
           { value: amountInWei }
         );
 
@@ -390,7 +411,7 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
 
         successAudioRef.current.play().catch(error => console.error("Success audio playback failed:", error));
 
-        setAsyncOutput(<>Bonded {quote}👼🏻. You successfully bonded with Kiru 💚</>);
+        setAsyncOutput(<>Bonded {quote}👼🏻</>);
         showPopUp(<>Successfully bonded {amount}<FaEthereum /> for {quote}👼🏻</>);
       } catch (error) {
         console.error('Error during bond:', error);
@@ -434,11 +455,16 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
           👼🏻
         </IconButton>
         <Panel>
-          <QuoteText isLoading={!quote && amount !== ''}>
+          <QuoteText 
+            isLoading={!quote && amount !== ''} 
+            isMaxed={quote === 'max 1ETH'}
+          >
             {amount 
-              ? (quote 
-                  ? parseFloat(quote).toFixed(10) 
-                  : 'loading quote...') 
+              ? (quote === 'max 1ETH' 
+                  ? quote 
+                  : quote 
+                    ? parseFloat(quote).toFixed(10) 
+                    : 'loading quote...') 
               : ''}
           </QuoteText>
         </Panel>
@@ -463,7 +489,7 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
         </SliderRow>
       </SliderContainer>
       
-      {amount && (
+      {amount && quote !== 'max 1ETH' && (
         <>
           <BonusText>
             + {baseQuote ? (baseQuote * 0.2).toFixed(10) : '...'} 👼🏻
@@ -478,7 +504,9 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
 
       <ExecuteButton 
         onClick={handleExecute} 
-        disabled={!amount || (maxKiru && baseQuote && baseQuote * 1.2 > parseFloat(maxKiru))}
+        disabled={!amount || 
+                  quote === 'max 1ETH' || 
+                  (maxKiru && baseQuote && baseQuote * 1.2 > parseFloat(maxKiru))}
       >
         Bond
       </ExecuteButton>
