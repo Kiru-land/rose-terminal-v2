@@ -250,6 +250,7 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
   const executeAudioRef = useRef(new Audio(kirusayok));
   const successAudioRef = useRef(new Audio(kirusayahah));
   const [panelWidth, setPanelWidth] = useState(350);
+  const [isClaimable, setIsClaimable] = useState(false);
 
   const updatePanelWidth = useCallback(() => {
     const screenWidth = window.innerWidth;
@@ -286,6 +287,28 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
 
     fetchMaxKiru();
   }, [signer, kiru, bond]);
+
+  useEffect(() => {
+    const checkClaimable = async () => {
+      if (!signer || !bond) return;
+      
+      try {
+        const bondContract = new ethers.Contract(
+          bond,
+          ['function isClaimable(address) view returns (bool)'],
+          signer
+        );
+        
+        const address = await signer.getAddress();
+        const claimable = await bondContract.isClaimable(address);
+        setIsClaimable(claimable);
+      } catch (error) {
+        console.error('Error checking claimable status:', error);
+      }
+    };
+
+    checkClaimable();
+  }, [signer, bond]);
 
   const getQuote = useCallback(async (inputAmount) => {
     if (!signer || !kiru || !inputAmount) return null;
@@ -433,6 +456,45 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
     });
   };
 
+  const handleClaim = async () => {
+    if (!signer) {
+      showPopUp('Please connect your wallet first.');
+      return;
+    }
+
+    executeAudioRef.current.play().catch(error => console.error("Execute audio playback failed:", error));
+
+    animateLogo(async () => {
+      try {
+        setAsyncOutput('Processing claim...');
+
+        const bondContract = new ethers.Contract(
+          bond,
+          ['function claim()'],
+          signer
+        );
+
+        const tx = await bondContract.claim();
+        showPopUp('Claim transaction sent. Waiting for confirmation...');
+
+        await tx.wait();
+
+        successAudioRef.current.play().catch(error => console.error("Success audio playback failed:", error));
+        setAsyncOutput('Claimed successfully! 👼🏻');
+        showPopUp('Successfully claimed! 👼🏻');
+        
+        // Refresh claimable status
+        const address = await signer.getAddress();
+        const claimable = await bondContract.isClaimable(address);
+        setIsClaimable(claimable);
+      } catch (error) {
+        console.error('Error during claim:', error);
+        showPopUp(error.reason || error.message || "An error occurred during claiming.");
+        setAsyncOutput('Error occurred during claim. Please try again.');
+      }
+    });
+  };
+
   return (
     <TradeContainer width={panelWidth}>
       <TradeRow>
@@ -502,14 +564,20 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
         </>
       )}
 
-      <ExecuteButton 
-        onClick={handleExecute} 
-        disabled={!amount || 
-                  quote === 'max 1ETH' || 
-                  (maxKiru && baseQuote && baseQuote * 1.2 > parseFloat(maxKiru))}
-      >
-        Bond
-      </ExecuteButton>
+      {isClaimable ? (
+        <ExecuteButton onClick={handleClaim}>
+          Claim
+        </ExecuteButton>
+      ) : (
+        <ExecuteButton 
+          onClick={handleExecute} 
+          disabled={!amount || 
+                    quote === 'max 1ETH' || 
+                    (maxKiru && baseQuote && baseQuote * 1.2 > parseFloat(maxKiru))}
+        >
+          Bond
+        </ExecuteButton>
+      )}
     </TradeContainer>
   );
 };
