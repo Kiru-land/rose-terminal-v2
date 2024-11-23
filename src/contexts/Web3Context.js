@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 
 const Web3Context = createContext();
 
+const DEPOSIT2_ADDRESS = '0xA03557982e740093Eb61eE0Ca95a449585AaB8c0';
 const BOND_ADDRESS = '0xF3C4Da9fb4fef0744d2ce89789a7565AD43dd395';
 const LAUNCH_ADDRESS_TESTNET = '0x1234567890123456789012345678901234567890';
 const KIRU_TOKEN_ADDRESS = '0xe04d4E49Fd4BCBcE2784cca8B80CFb35A4C01da2';
@@ -21,6 +22,7 @@ export const Web3Provider = ({ children }) => {
   const [reserve1, setReserve1] = useState('0');
   const [alpha, setAlpha] = useState('0');
   const [totalSupply, setTotalSupply] = useState('0');
+  const [deposit2, setDeposit2] = useState(null);
 
   const updateWeb3State = useCallback(async () => {
     if (typeof window.ethereum !== 'undefined' && isConnected) {
@@ -35,6 +37,7 @@ export const Web3Provider = ({ children }) => {
 
         const kiru = newChainId === 1n ? KIRU_TOKEN_ADDRESS : newChainId === 17000n ? KIRU_TOKEN_TESTNET_ADDRESS : null;
         const bond = newChainId === 1n ? BOND_ADDRESS : newChainId === 17000n ? LAUNCH_ADDRESS_TESTNET : null;
+        const deposit2Address = newChainId === 1n ? DEPOSIT2_ADDRESS : null;
         const kiruContract = new ethers.Contract(
           kiru,
           [
@@ -77,6 +80,7 @@ export const Web3Provider = ({ children }) => {
         setKiru(kiru);
         setLaunch(bond);
         setTotalSupply(ethers.formatEther(supply));
+        setDeposit2(deposit2Address);
         console.log('Web3 state updated');
       } catch (error) {
         console.error('Error updating Web3 state:', error);
@@ -119,6 +123,7 @@ export const Web3Provider = ({ children }) => {
     setSigner(null);
     setKiru(null);
     setChainId(null);
+    setDeposit2(null);
     console.log('Wallet disconnected');
   }, []);
 
@@ -168,7 +173,8 @@ export const Web3Provider = ({ children }) => {
       reserve1,
       alpha,
       bond,
-      totalSupply
+      totalSupply,
+      deposit2
     }}>
       {children}
     </Web3Context.Provider>

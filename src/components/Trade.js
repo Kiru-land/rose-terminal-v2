@@ -251,7 +251,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
   const [quote, setQuote] = useState(null);
   const [isEthOnTop, setIsEthOnTop] = useState(true);
   const { showPopUp } = usePopUp();
-  const { signer, kiru, balance: nativeBalance, kiruBalance, reserve0, reserve1 } = useWeb3();
+  const { signer, kiru, deposit2, balance: nativeBalance, kiruBalance, reserve0, reserve1 } = useWeb3();
   const [slippage, setSlippage] = useState(1);
   const [isSliderVisible, setIsSliderVisible] = useState(false);
   const [panelWidth, setPanelWidth] = useState(350);
@@ -276,7 +276,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
   }, [updatePanelWidth]);
 
   const getQuote = useCallback(async (inputAmount) => {
-    if (!signer || !kiru || !inputAmount) return null;
+    if (!signer || !kiru || !deposit2 || !inputAmount) return null;
 
     try {
       const kiruContract = new ethers.Contract(
@@ -288,11 +288,17 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         signer
       );
 
+      const deposit2Contract = new ethers.Contract(
+        deposit2,
+        ['function quoteDeposit(uint256 amount) view returns (uint256)'],
+        signer
+      );
+
       const amountInWei = ethers.parseEther(inputAmount);
       let quoteAmount;
 
       if (isEthOnTop) {
-        quoteAmount = await kiruContract.quoteDeposit(amountInWei);
+        quoteAmount = await deposit2Contract.quoteDeposit(amountInWei);
       } else {
         quoteAmount = await kiruContract.quoteWithdraw(amountInWei);
       }
@@ -302,7 +308,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       console.error('Error getting quote:', error);
       return null;
     }
-  }, [signer, kiru, isEthOnTop]);
+  }, [signer, kiru, deposit2, isEthOnTop]);
 
   const debouncedGetQuote = useCallback(
     debounce(async (inputAmount) => {
@@ -402,14 +408,29 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         try {
           setAsyncOutput(<>Processing deposit of {amount}<FaEthereum /> ...</>);
 
-          const kiruContract = new ethers.Contract(
-            kiru,
-            ['function deposit(uint256) payable'],
+          const deposit2Contract = new ethers.Contract(
+            deposit2,
+            [
+              'function deposit(uint256) payable',
+              'function beta() view returns (uint256)'
+            ],
             signer
           );
 
+          // Get beta and calculate adjusted amount
+          const beta = await deposit2Contract.beta();
+          const adjustedAmount = amountInWei - (amountInWei / beta);
+
+          // Get the kiru quote for the transaction parameter
+          const kiruContract = new ethers.Contract(
+            kiru,
+            ['function quoteDeposit(uint256 amount) view returns (uint256)'],
+            signer
+          );
+          const kiruQuote = await kiruContract.quoteDeposit(adjustedAmount);
+
           // Update: Handle very small values
-          const minQuote = parseFloat(quote) * (100 - slippage) / 100;
+          const minQuote = parseFloat(kiruQuote) * (100 - slippage) / 100;
           let minQuoteInWei;
           if (minQuote < 1e-18) {
             minQuoteInWei = 1n; // Set to 1 wei if the value is too small
@@ -417,8 +438,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
             minQuoteInWei = ethers.parseEther(minQuote.toFixed(18));
           }
           
-          const tx = await kiruContract.deposit(minQuoteInWei, {
-            value: amountInWei
+          const tx = await deposit2Contract.deposit(minQuoteInWei, {
+            value: adjustedAmount
           });
 
           showPopUp('Transaction sent. Waiting for confirmation...');
