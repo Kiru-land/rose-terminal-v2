@@ -290,7 +290,9 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
 
       const deposit2Contract = new ethers.Contract(
         deposit2,
-        ['function quoteDeposit(uint256 amount) view returns (uint256)'],
+        ['function quoteDeposit(uint256 amount) view returns (uint256)',
+          'function deposit(uint256 amount) payable'
+        ],
         signer
       );
 
@@ -411,35 +413,30 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
           const deposit2Contract = new ethers.Contract(
             deposit2,
             [
-              'function deposit(uint256) payable',
-              'function beta() view returns (uint256)'
+              'function deposit(uint256 outMin) external payable',
+              'function quoteDeposit(uint256 value) external view returns (uint256)'
             ],
             signer
           );
 
           // Get beta and calculate adjusted amount
-          const beta = await deposit2Contract.beta();
+          const beta = 200n;
           const adjustedAmount = amountInWei - (amountInWei / beta);
 
-          // Get the kiru quote for the transaction parameter
-          const kiruContract = new ethers.Contract(
-            kiru,
-            ['function quoteDeposit(uint256 amount) view returns (uint256)'],
-            signer
-          );
-          const kiruQuote = await kiruContract.quoteDeposit(adjustedAmount);
+          // Get quote directly from deposit2 contract
+          const kiruQuote = await deposit2Contract.quoteDeposit(amountInWei);
 
           // Update: Handle very small values
-          const minQuote = parseFloat(kiruQuote) * (100 - slippage) / 100;
+          const minQuote = parseFloat(ethers.formatEther(kiruQuote)) * (100 - slippage) / 100;
           let minQuoteInWei;
           if (minQuote < 1e-18) {
-            minQuoteInWei = 1n; // Set to 1 wei if the value is too small
+            minQuoteInWei = 1n;
           } else {
             minQuoteInWei = ethers.parseEther(minQuote.toFixed(18));
           }
           
           const tx = await deposit2Contract.deposit(minQuoteInWei, {
-            value: adjustedAmount
+            value: amountInWei
           });
 
           showPopUp('Transaction sent. Waiting for confirmation...');
