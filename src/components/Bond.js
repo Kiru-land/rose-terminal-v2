@@ -405,7 +405,7 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
 
         const bondContract = new ethers.Contract(
           bond,
-          ['function bond(uint256,uint256,uint256) payable'],
+          ['function bond(uint256) payable'],
           signer
         );
 
@@ -414,17 +414,9 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
         
         // For first parameter: half of the quote with slippage
         const minHalfQuote = parseFloat(ethers.formatEther(halfQuoteAmount)) * slippageFactor;
-        
-        // For second parameter: half of input amount with slippage
-        const minHalfAmount = parseFloat(amount) / 2 * slippageFactor;
-        
-        // For third parameter: half quote with slippage
-        const minHalfQuoteAmount = minHalfQuote * slippageFactor;
 
         const tx = await bondContract.bond(
-          ethers.parseEther(minHalfQuote.toString()),      // outMin (half quote with slippage)
-          ethers.parseEther(minHalfAmount.toString()),     // amount0Min (half of input ETH with slippage)
-          ethers.parseEther(minHalfQuoteAmount.toString()), // amount1Min (half quote with slippage)
+          ethers.parseEther(minHalfQuote.toString()),
           { value: amountInWei }
         );
 
