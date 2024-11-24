@@ -313,10 +313,6 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
   const getQuote = useCallback(async (inputAmount) => {
     if (!signer || !kiru || !inputAmount) return null;
     
-    if (parseFloat(inputAmount) > 1) {
-      return 'max 1ETH';
-    }
-
     try {
       const kiruContract = new ethers.Contract(
         kiru,
@@ -543,7 +539,7 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
         </SliderRow>
       </SliderContainer>
       
-      {amount && quote !== 'max 1ETH' && (
+      {amount && quote && (
         <>
           <BonusText>
             + {baseQuote ? (baseQuote * 0.2).toFixed(10) : '...'} 👼🏻
@@ -564,7 +560,6 @@ const Bond = ({ animateLogo, setAsyncOutput }) => {
         <ExecuteButton 
           onClick={handleExecute} 
           disabled={!amount || 
-                    quote === 'max 1ETH' || 
                     (maxKiru && baseQuote && baseQuote * 1.2 > parseFloat(maxKiru))}
         >
           Bond
