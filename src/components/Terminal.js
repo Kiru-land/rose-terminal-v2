@@ -18,6 +18,7 @@ import kirusaysmoney from '../assets/kirusaymoney.mp3';
 import kirusayho from '../assets/kirusayho.mp3';
 import kirusayfriend from '../assets/kirusayfriend.mp3';
 import Personas from './Personas.js';
+import Dashboard from './Dashboard.js';
 
 // Add this global style component
 const GlobalStyle = createGlobalStyle`
@@ -419,6 +420,38 @@ const AudioButton = styled(ControlButton)`
   z-index: 1002;  // Ensure it's above other elements
 `;
 
+const ButtonContainer = styled.div`
+  position: absolute;
+  bottom: 60px;
+  left: 30px;
+  z-index: 1000;
+  display: flex;
+  gap: 10px;
+`;
+
+const MetricButton = styled.button`
+  font-family: 'Fira Code', monospace;
+  background: none;
+  border: none;
+  color: #00FF00;
+  font-size: 16px;
+  padding: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  ${props => props.isMobile && `
+    font-size: 18px;
+  `}
+`;
+
 const Terminal = ({ isMobile }) => {
   const [history, setHistory] = useState([]);
   const [asyncOutput, setAsyncOutput] = useState(null);
@@ -444,6 +477,7 @@ const Terminal = ({ isMobile }) => {
   const clawbackAudioRef = useRef(new Audio(kirusayfriend));
   const [audioInitialized, setAudioInitialized] = useState(false);
   const [isAnyComponentOpen, setIsAnyComponentOpen] = useState(false);
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
 
   const { isConnected, signer, provider, balance: nativeBalance, kiruBalance, chainId, kiru, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
@@ -751,7 +785,7 @@ const Terminal = ({ isMobile }) => {
   const renderMenuItems = () => {
     if (chainId === 17000n) {
       // Holesky Testnet options
-      return ['trade', 'bond', 'create'].map(command => (
+      return ['trade', 'create'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -763,7 +797,7 @@ const Terminal = ({ isMobile }) => {
       ));
     } else {
       // Mainnet options
-      return ['trade', 'bond', 'create'].map(command => (
+      return ['trade', 'create'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -887,6 +921,14 @@ const Terminal = ({ isMobile }) => {
         <MenuContainer isMobile={isMobile}>
           {renderMenuItems()}
         </MenuContainer>
+        <ButtonContainer>
+          <MetricButton onClick={handleOpenChartModal} isMobile={isMobile}>
+            💹
+          </MetricButton>
+          <MetricButton onClick={() => setIsDashboardOpen(true)} isMobile={isMobile}>
+            📊
+          </MetricButton>
+        </ButtonContainer>
         <KiruUsdButton onClick={handleOpenChartModal} isMobile={isMobile}>
           💹
         </KiruUsdButton>
@@ -916,6 +958,7 @@ const Terminal = ({ isMobile }) => {
             />
           )}
           {isChartModalOpen && <ChartModal onClose={handleCloseChartModal} />}
+          {isDashboardOpen && <Dashboard onClose={() => setIsDashboardOpen(false)} />}
         </div>
       </TerminalContainer>
     </>
