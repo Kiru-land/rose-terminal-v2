@@ -239,7 +239,7 @@ const MaxOutText = styled.div`
 
 // Add this constant at the top level
 const BOND_ABI = [
-  'function isClaimable(address) view returns (bool)',
+  'function hasClaimable(address) view returns (bool)',
   'function claim()'
 ];
 
@@ -249,7 +249,7 @@ const Claim = ({ animateLogo, setAsyncOutput }) => {
   const executeAudioRef = useRef(new Audio(kirusayok));
   const successAudioRef = useRef(new Audio(kirusayahah));
   const [panelWidth, setPanelWidth] = useState(350);
-  const [isClaimable, setIsClaimable] = useState(false);
+  const [hasClaimable, setIsClaimable] = useState(false);
 
   // Keep the panel width logic
   const updatePanelWidth = useCallback(() => {
@@ -276,7 +276,7 @@ const Claim = ({ animateLogo, setAsyncOutput }) => {
         );
         
         const address = await signer.getAddress();
-        const claimable = await bondContract.isClaimable(address);
+        const claimable = await bondContract.hasClaimable(address);
         setIsClaimable(claimable);
       } catch (error) {
         console.error('Error checking claimable status:', error);
@@ -315,7 +315,7 @@ const Claim = ({ animateLogo, setAsyncOutput }) => {
         
         // Refresh claimable status
         const address = await signer.getAddress();
-        const claimable = await bondContract.isClaimable(address);
+        const claimable = await bondContract.hasClaimable(address);
         setIsClaimable(claimable);
       } catch (error) {
         console.error('Error during claim:', error);
@@ -329,7 +329,7 @@ const Claim = ({ animateLogo, setAsyncOutput }) => {
     <TradeContainer width={panelWidth}>
       <ExecuteButton 
         onClick={handleClaim} 
-        disabled={!isClaimable}
+        disabled={!hasClaimable}
       >
         Claim
       </ExecuteButton>
