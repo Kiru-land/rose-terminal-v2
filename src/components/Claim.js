@@ -237,6 +237,12 @@ const MaxOutText = styled.div`
   text-align: center;
 `;
 
+// Add this constant at the top level
+const BOND_ABI = [
+  'function isClaimable(address) view returns (bool)',
+  'function claim()'
+];
+
 const Claim = ({ animateLogo, setAsyncOutput }) => {
   const { showPopUp } = usePopUp();
   const { signer, bond } = useWeb3();
@@ -265,7 +271,7 @@ const Claim = ({ animateLogo, setAsyncOutput }) => {
       try {
         const bondContract = new ethers.Contract(
           bond,
-          ['function isClaimable(address) view returns (bool)'],
+          BOND_ABI,  // Use the full ABI
           signer
         );
         
@@ -294,7 +300,7 @@ const Claim = ({ animateLogo, setAsyncOutput }) => {
 
         const bondContract = new ethers.Contract(
           bond,
-          ['function claim()'],
+          BOND_ABI,  // Use the same full ABI
           signer
         );
 
