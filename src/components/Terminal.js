@@ -19,6 +19,7 @@ import kirusayho from '../assets/kirusayho.mp3';
 import kirusayfriend from '../assets/kirusayfriend.mp3';
 import Personas from './Personas.js';
 import Dashboard from './Dashboard.js';
+import Claim from './Claim.js';
 
 // Add this global style component
 const GlobalStyle = createGlobalStyle`
@@ -478,6 +479,7 @@ const Terminal = ({ isMobile }) => {
   const [audioInitialized, setAudioInitialized] = useState(false);
   const [isAnyComponentOpen, setIsAnyComponentOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [showClaim, setShowClaim] = useState(false);
 
   const { isConnected, signer, provider, balance: nativeBalance, kiruBalance, chainId, kiru, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
@@ -632,9 +634,10 @@ const Terminal = ({ isMobile }) => {
       showTrade || 
       showBond || 
       showCreate || 
+      showClaim || 
       isChartModalOpen
     );
-  }, [showTrade, showBond, showCreate, isChartModalOpen]);
+  }, [showTrade, showBond, showCreate, showClaim, isChartModalOpen]);
 
   const animateLogo = async (callback) => {
     setIsAnimating(true);
@@ -679,6 +682,7 @@ const Terminal = ({ isMobile }) => {
     setShowTrade(false);
     setShowBond(false);
     setShowCreate(false);
+    setShowClaim(false);
 
     let output = '';
     switch (command) {
@@ -722,6 +726,21 @@ const Terminal = ({ isMobile }) => {
           setSelectedCommand('create');
           output = 'Opening create interface...';
           createAudioRef.current.play().catch(error => console.error("Create audio playback failed:", error));
+        }
+        break;
+      case 'claim':
+        if (showClaim) {
+          setShowClaim(false);
+          setSelectedCommand(null);
+          output = 'Closing claim interface...';
+        } else {
+          setShowClaim(true);
+          setShowTrade(false);
+          setShowBond(false);
+          setShowCreate(false);
+          setSelectedCommand('claim');
+          output = 'Opening claim interface...';
+          clawbackAudioRef.current.play().catch(error => console.error("Claim audio playback failed:", error));
         }
         break;
       default:
@@ -785,7 +804,7 @@ const Terminal = ({ isMobile }) => {
   const renderMenuItems = () => {
     if (chainId === 17000n) {
       // Holesky Testnet options
-      return ['trade', 'create'].map(command => (
+      return ['trade', 'claim', 'create'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -797,7 +816,7 @@ const Terminal = ({ isMobile }) => {
       ));
     } else {
       // Mainnet options
-      return ['trade', 'create'].map(command => (
+      return ['trade', 'claim', 'create'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -953,6 +972,13 @@ const Terminal = ({ isMobile }) => {
           {showCreate && (
             <Create 
               onClose={() => setShowCreate(false)} 
+              animateLogo={animateLogo} 
+              setAsyncOutput={setAsyncOutput}
+            />
+          )}
+          {showClaim && (
+            <Claim 
+              onClose={() => setShowClaim(false)} 
               animateLogo={animateLogo} 
               setAsyncOutput={setAsyncOutput}
             />
