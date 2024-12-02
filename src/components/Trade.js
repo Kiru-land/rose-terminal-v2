@@ -251,7 +251,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
   const [quote, setQuote] = useState(null);
   const [isEthOnTop, setIsEthOnTop] = useState(true);
   const { showPopUp } = usePopUp();
-  const { signer, kiru, deposit2, balance: nativeBalance, kiruBalance, reserve0, reserve1 } = useWeb3();
+  const { signer, kiru, balance: nativeBalance, kiruBalance, reserve0, reserve1 } = useWeb3();
   const [slippage, setSlippage] = useState(1);
   const [isSliderVisible, setIsSliderVisible] = useState(false);
   const [panelWidth, setPanelWidth] = useState(350);
@@ -276,7 +276,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
   }, [updatePanelWidth]);
 
   const getQuote = useCallback(async (inputAmount) => {
-    if (!signer || !kiru || !deposit2 || !inputAmount) return null;
+    if (!signer || !kiru || !inputAmount) return null;
 
     try {
       const kiruContract = new ethers.Contract(
@@ -288,19 +288,11 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         signer
       );
 
-      const deposit2Contract = new ethers.Contract(
-        deposit2,
-        ['function quoteDeposit(uint256 amount) view returns (uint256)',
-          'function deposit(uint256 amount) payable'
-        ],
-        signer
-      );
-
       const amountInWei = ethers.parseEther(inputAmount);
       let quoteAmount;
 
       if (isEthOnTop) {
-        quoteAmount = await deposit2Contract.quoteDeposit(amountInWei);
+        quoteAmount = await kiruContract.quoteDeposit(amountInWei);
       } else {
         quoteAmount = await kiruContract.quoteWithdraw(amountInWei);
       }
@@ -310,7 +302,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       console.error('Error getting quote:', error);
       return null;
     }
-  }, [signer, kiru, deposit2, isEthOnTop]);
+  }, [signer, kiru, isEthOnTop]);
 
   const debouncedGetQuote = useCallback(
     debounce(async (inputAmount) => {
@@ -410,8 +402,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         try {
           setAsyncOutput(<>Processing deposit of {amount}<FaEthereum /> ...</>);
 
-          const deposit2Contract = new ethers.Contract(
-            deposit2,
+          const kiruContract = new ethers.Contract(
+            kiru,
             [
               'function deposit(uint256 outMin) external payable',
               'function quoteDeposit(uint256 value) external view returns (uint256)'
@@ -419,12 +411,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
             signer
           );
 
-          // Get beta and calculate adjusted amount
-          const beta = 200n;
-          const adjustedAmount = amountInWei - (amountInWei / beta);
-
-          // Get quote directly from deposit2 contract
-          const kiruQuote = await deposit2Contract.quoteDeposit(amountInWei);
+          // Get quote directly from kiru contract
+          const kiruQuote = await kiruContract.quoteDeposit(amountInWei);
 
           // Update: Handle very small values
           const minQuote = parseFloat(ethers.formatEther(kiruQuote)) * (100 - slippage) / 100;
@@ -434,8 +422,8 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
           } else {
             minQuoteInWei = ethers.parseEther(minQuote.toFixed(18));
           }
-          
-          const tx = await deposit2Contract.deposit(minQuoteInWei, {
+
+          const tx = await kiruContract.deposit(minQuoteInWei, {
             value: amountInWei
           });
 
@@ -455,17 +443,17 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         } catch (error) {
           console.error('Error during deposit:', error);
           let errorMessage = "An error occurred during the transaction.";
-          
+
           if (error.reason) {
             errorMessage = error.reason;
           } else if (error.message) {
             errorMessage = error.message;
           }
-          
+
           if (errorMessage.toLowerCase().includes('rejected')) {
             errorMessage = "User rejected the request";
           }
-          
+
           showPopUp(errorMessage);
           setAsyncOutput('Error occurred during deposit. Please try again.');
         }
@@ -501,7 +489,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
           } else {
             minQuoteInWei = ethers.parseEther(minQuote.toFixed(18));
           }
-          
+
           const tx = await kiruContract.withdraw(amountInWei, minQuoteInWei);
 
           showPopUp('Transaction sent. Waiting for confirmation...');
@@ -520,17 +508,17 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         } catch (error) {
           console.error('Error during withdrawal:', error);
           let errorMessage = "An error occurred during the transaction.";
-          
+
           if (error.reason) {
             errorMessage = error.reason;
           } else if (error.message) {
             errorMessage = error.message;
           }
-          
+
           if (errorMessage.toLowerCase().includes('rejected')) {
             errorMessage = "User rejected the request";
           }
-          
+
           showPopUp(errorMessage);
           setAsyncOutput('Error occurred during withdrawal. Please try again.');
         }
@@ -551,7 +539,7 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       maxAmount = kiruBalance;
     }
     setAmount(maxAmount);
-    
+
     // Get quote immediately instead of using debounced version
     if (maxAmount) {
       setIsQuoteLoading(true);
@@ -569,11 +557,11 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         </IconButton>
         <Panel>
           <InputWrapper>
-            <Input 
-              type="text" 
-              value={amount} 
-              onChange={handleAmountChange} 
-              onKeyPress={handleKeyPress} 
+            <Input
+              type="text"
+              value={amount}
+              onChange={handleAmountChange}
+              onKeyPress={handleKeyPress}
               placeholder="Enter amount"
             />
             <MaxButton onClick={handleMaxClick}>max</MaxButton>
@@ -586,10 +574,10 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
         </IconButton>
         <Panel>
           <QuoteText isLoading={!quote && amount !== ''}>
-            {amount 
-              ? (quote 
-                  ? parseFloat(quote).toFixed(10) 
-                  : 'loading quote...') 
+            {amount
+              ? (quote
+                ? parseFloat(quote).toFixed(10)
+                : 'loading quote...')
               : ''}
           </QuoteText>
         </Panel>
@@ -616,14 +604,14 @@ const Trade = ({ animateLogo, setAsyncOutput }) => {
       {amount && (
         <PriceImpactText impact={priceImpact || 0}>
           Price Impact: {
-            isQuoteLoading || priceImpact === null 
-              ? '...' 
+            isQuoteLoading || priceImpact === null
+              ? '...'
               : priceImpact.toFixed(2) + '%'
           }
         </PriceImpactText>
       )}
-      <ExecuteButton 
-        onClick={handleExecute} 
+      <ExecuteButton
+        onClick={handleExecute}
         disabled={!amount}
       >
         Execute
