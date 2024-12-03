@@ -19,7 +19,7 @@ import kirusayho from '../assets/kirusayho.mp3';
 import kirusayfriend from '../assets/kirusayfriend.mp3';
 import Personas from './Personas.js';
 import Dashboard from './Dashboard.js';
-import Claim from './Claim.js';
+import Press from './Press.js';
 
 // Add this global style component
 const GlobalStyle = createGlobalStyle`
@@ -479,7 +479,8 @@ const Terminal = ({ isMobile }) => {
   const [audioInitialized, setAudioInitialized] = useState(false);
   const [isAnyComponentOpen, setIsAnyComponentOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
-  const [showClaim, setShowClaim] = useState(false);
+  const [showFlappyBird, setShowFlappyBird] = useState(false);
+  const [showPress, setShowPress] = useState(false);
 
   const { isConnected, signer, provider, balance: nativeBalance, kiruBalance, chainId, kiru, reserve0, reserve1, alpha } = useWeb3();
   const { showPopUp } = usePopUp();
@@ -620,6 +621,10 @@ const Terminal = ({ isMobile }) => {
           setShowCreate(false);
           setSelectedCommand(null);
         }
+        if (showPress) {
+          setShowPress(false);
+          setSelectedCommand(null);
+        }
       }
     };
 
@@ -627,17 +632,18 @@ const Terminal = ({ isMobile }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showTrade, showBond, showCreate]);
+  }, [showTrade, showBond, showCreate, showPress]);
 
   useEffect(() => {
     setIsAnyComponentOpen(
       showTrade || 
       showBond || 
       showCreate || 
-      showClaim || 
+      showPress || 
+      showFlappyBird || 
       isChartModalOpen
     );
-  }, [showTrade, showBond, showCreate, showClaim, isChartModalOpen]);
+  }, [showTrade, showBond, showCreate, showPress, showFlappyBird, isChartModalOpen]);
 
   const animateLogo = async (callback) => {
     setIsAnimating(true);
@@ -667,13 +673,15 @@ const Terminal = ({ isMobile }) => {
     const isCurrentlyOpen = (
       (command === 'trade' && showTrade) ||
       (command === 'bond' && showBond) ||
-      (command === 'create' && showCreate)
+      (command === 'create' && showCreate) ||
+      (command === 'play' && showPress)
     );
 
     if (isCurrentlyOpen) {
       setShowTrade(false);
       setShowBond(false);
       setShowCreate(false);
+      setShowPress(false);
       setSelectedCommand(null);
       setHistory(prev => [...prev, { type: 'output', content: `Closing ${command} interface...` }]);
       return;
@@ -682,8 +690,7 @@ const Terminal = ({ isMobile }) => {
     setShowTrade(false);
     setShowBond(false);
     setShowCreate(false);
-    setShowClaim(false);
-
+    setShowPress(false);
     let output = '';
     switch (command) {
       case 'trade':
@@ -695,6 +702,7 @@ const Terminal = ({ isMobile }) => {
           setShowTrade(true);
           setShowBond(false);
           setShowCreate(false);
+          setShowPress(false);
           setSelectedCommand('trade');
           output = 'Opening trade interface...';
           tradeAudioRef.current.play().catch(error => console.error("Trade audio playback failed:", error));
@@ -709,6 +717,7 @@ const Terminal = ({ isMobile }) => {
           setShowBond(true);
           setShowTrade(false);
           setShowCreate(false);
+          setShowPress(false);
           setSelectedCommand('bond');
           output = 'Opening bond interface...';
           clawbackAudioRef.current.play().catch(error => console.error("Bond audio playback failed:", error));
@@ -723,24 +732,24 @@ const Terminal = ({ isMobile }) => {
           setShowCreate(true);
           setShowTrade(false);
           setShowBond(false);
+          setShowPress(false);
           setSelectedCommand('create');
           output = 'Opening create interface...';
           createAudioRef.current.play().catch(error => console.error("Create audio playback failed:", error));
         }
         break;
-      case 'claim':
-        if (showClaim) {
-          setShowClaim(false);
+      case 'play':
+        if (showPress) {
+          setShowPress(false);
           setSelectedCommand(null);
-          output = 'Closing claim interface...';
+          output = 'Closing play interface...';
         } else {
-          setShowClaim(true);
+          setShowPress(true);
           setShowTrade(false);
           setShowBond(false);
           setShowCreate(false);
-          setSelectedCommand('claim');
-          output = 'Opening claim interface...';
-          clawbackAudioRef.current.play().catch(error => console.error("Claim audio playback failed:", error));
+          setSelectedCommand('play');
+          output = 'Opening play interface...';
         }
         break;
       default:
@@ -804,7 +813,7 @@ const Terminal = ({ isMobile }) => {
   const renderMenuItems = () => {
     if (chainId === 17000n) {
       // Holesky Testnet options
-      return ['trade', 'claim', 'create'].map(command => (
+      return ['trade', 'create', 'play'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -816,7 +825,7 @@ const Terminal = ({ isMobile }) => {
       ));
     } else {
       // Mainnet options
-      return ['trade', 'claim', 'create'].map(command => (
+      return ['trade', 'create', 'play'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -976,11 +985,10 @@ const Terminal = ({ isMobile }) => {
               setAsyncOutput={setAsyncOutput}
             />
           )}
-          {showClaim && (
-            <Claim 
-              onClose={() => setShowClaim(false)} 
-              animateLogo={animateLogo} 
-              setAsyncOutput={setAsyncOutput}
+          {showPress && (
+            <Press 
+              onClose={() => setShowPress(false)}
+              isMobile={isMobile}
             />
           )}
           {isChartModalOpen && <ChartModal onClose={handleCloseChartModal} />}

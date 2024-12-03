@@ -8,6 +8,7 @@ const BOND_ADDRESS = '0x8e24A4Fe3ad0801A185943e8138Ad389690c5dB5';
 const LAUNCH_ADDRESS_TESTNET = '0x1234567890123456789012345678901234567890';
 const KIRU_TOKEN_ADDRESS = '0xe04d4E49Fd4BCBcE2784cca8B80CFb35A4C01da2';
 const KIRU_TOKEN_TESTNET_ADDRESS = '0xfff92F33a08BBeA79FBdb40e7E427641C02E1Aa1';
+const PRESS_BUTTON_ADDRESS = '0x1234567890123456789012345678901234567890';
 
 export const Web3Provider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -23,6 +24,7 @@ export const Web3Provider = ({ children }) => {
   const [alpha, setAlpha] = useState('0');
   const [totalSupply, setTotalSupply] = useState('0');
   const [deposit2, setDeposit2] = useState(null);
+  const [pressButton, setPressButton] = useState(null);
 
   const updateWeb3State = useCallback(async () => {
     if (typeof window.ethereum !== 'undefined' && isConnected) {
@@ -72,6 +74,8 @@ export const Web3Provider = ({ children }) => {
           console.error('Error getting state:', error);
         }
 
+        const pressButtonAddress = newChainId === 1n ? PRESS_BUTTON_ADDRESS : null;
+
         setProvider(newProvider);
         setSigner(newSigner);
         setChainId(newChainId);
@@ -81,6 +85,7 @@ export const Web3Provider = ({ children }) => {
         setLaunch(bond);
         setTotalSupply(ethers.formatEther(supply));
         setDeposit2(deposit2Address);
+        setPressButton(pressButtonAddress);
         console.log('Web3 state updated');
       } catch (error) {
         console.error('Error updating Web3 state:', error);
@@ -174,7 +179,8 @@ export const Web3Provider = ({ children }) => {
       alpha,
       bond,
       totalSupply,
-      deposit2
+      deposit2,
+      pressButton,
     }}>
       {children}
     </Web3Context.Provider>
