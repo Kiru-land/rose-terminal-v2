@@ -675,9 +675,7 @@ const Press = ({ isMobile }) => {
           onTouchMove={(e) => e.preventDefault()}
           onContextMenu={(e) => e.preventDefault()}
           isMobile={isMobile}
-        >
-          press
-        </RoundButton>
+        />
       </ButtonWrapper>
       <CopyButton onClick={copyReferralLink} isMobile={isMobile}>
         referral
