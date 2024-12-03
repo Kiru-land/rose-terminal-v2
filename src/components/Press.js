@@ -3,6 +3,7 @@ import styled, { keyframes } from 'styled-components';
 import { ethers } from 'ethers';
 import { useWeb3 } from '../contexts/Web3Context.js';
 import { usePopUp } from '../contexts/PopUpContext.js';
+import bs58 from 'bs58'; // Import bs58 library
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -570,8 +571,16 @@ const Press = ({ isMobile }) => {
         signer
       );
 
-      // Decode the referral code back to address (optional, depends on your contract logic)
-      const decodedReferral = referralParam ? atob(referralParam) : '';
+      // Decode the referral code back to address
+      let decodedReferral = '';
+      if (referralParam) {
+        try {
+          const bytes = bs58.decode(referralParam);
+          decodedReferral = ethers.getAddress(ethers.hexlify(bytes));
+        } catch (error) {
+          console.error('Invalid referral code:', error);
+        }
+      }
 
       const tx = await contract.press(decodedReferral, {
         value: ethers.parseEther(amount.toString())

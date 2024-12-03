@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ethers } from 'ethers';
+import bs58 from 'bs58'; // Import bs58 library
 
 const Web3Context = createContext();
 
@@ -169,8 +170,12 @@ export const Web3Provider = ({ children }) => {
       if (!signer) return;
       try {
         const address = await signer.getAddress();
-        // Simple encoding of the address (you can use a more secure method)
-        const code = btoa(address);
+        // Encode the address bytes using base58
+        const addressBytes = ethers.getAddress(address).substring(2); // Remove '0x'
+        const bytes = ethers.hexlify(`0x${addressBytes}`);
+        const uint8Array = ethers.getBytes(bytes);
+        const code = bs58.encode(uint8Array); // Base58 encode
+
         setReferralCode(code);
       } catch (error) {
         console.error('Error generating referral code:', error);
