@@ -401,29 +401,21 @@ const TimeValue = styled.div`
 
 const CopyButton = styled.button`
   position: absolute;
-  bottom: 5px;
-  right: 8px;
+  bottom: 8px;
+  right: 20px;
   padding: 0;
   background-color: transparent;
   color: #00ff00;
   border: none;
   cursor: pointer;
   font-family: inherit;
-  font-size: ${props => (props.isMobile ? '10px' : '12px')};
+  font-size: ${props => (props.isMobile ? '9px' : '11px')};
   text-decoration: underline;
   transition: color 0.2s;
 
   &:hover {
     color: #00cc00;
   }
-`;
-
-const CopyMessage = styled.div`
-  position: absolute;
-  bottom: 25px;
-  right: 8px;
-  color: #00ff00;
-  font-size: ${props => (props.isMobile ? '10px' : '12px')};
 `;
 
 const Press = ({ isMobile }) => {
@@ -438,7 +430,6 @@ const Press = ({ isMobile }) => {
   const [speed, setSpeed] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [referralParam, setReferralParam] = useState('');
-  const [copySuccess, setCopySuccess] = useState('');
 
   useEffect(() => {
     // Extract referral code from URL
@@ -616,8 +607,7 @@ const Press = ({ isMobile }) => {
     navigator.clipboard
       .writeText(referralLink)
       .then(() => {
-        setCopySuccess('Link copied!');
-        setTimeout(() => setCopySuccess(''), 2000);
+        showPopUp('Referral link copied!');
       })
       .catch((error) => {
         console.error('Failed to copy referral link:', error);
@@ -683,7 +673,6 @@ const Press = ({ isMobile }) => {
       <CopyButton onClick={copyReferralLink} isMobile={isMobile}>
         referral
       </CopyButton>
-      {copySuccess && <CopyMessage isMobile={isMobile}>{copySuccess}</CopyMessage>}
     </PressContainer>
   );
 };
