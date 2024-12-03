@@ -20,8 +20,8 @@ const PressContainer = styled.div`
   z-index: 1000;
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   animation: ${fadeIn} 0.3s ease-out;
-  width: ${props => props.isMobile ? '300px' : '500px'};
-  max-width: 90vw;
+  width: ${props => props.isMobile ? '300px' : '600px'};
+  max-width: 100vw;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -35,6 +35,7 @@ const ComponentsWrapper = styled.div`
   margin-bottom: auto;
   padding-bottom: ${props => props.isMobile ? '20px' : '30px'};
   margin-top: 0;
+  width: ${props => props.isMobile ? '80%' : '70%'};
 `;
 
 const pulse = keyframes`
@@ -77,8 +78,14 @@ const rippleWave = keyframes`
 
 const ButtonWrapper = styled.div`
   position: relative;
-  width: ${props => props.isMobile ? '220px' : '280px'};
-  height: ${props => props.isMobile ? '220px' : '280px'};
+  width: ${props => {
+    if (props.isMobile) return '220px';
+    return 'min(280px, 45vw)';
+  }};
+  height: ${props => {
+    if (props.isMobile) return '220px';
+    return 'min(280px, 45vw)';
+  }};
 `;
 
 const OuterGlow = styled.div`
@@ -120,8 +127,14 @@ const SoundWave = styled.div`
   position: absolute;
   top: 50%;
   left: 50%;
-  width: ${props => props.isMobile ? '220px' : '280px'};
-  height: ${props => props.isMobile ? '220px' : '280px'};
+  width: ${props => {
+    if (props.isMobile) return '220px';
+    return 'min(280px, 45vw)';
+  }};
+  height: ${props => {
+    if (props.isMobile) return '220px';
+    return 'min(280px, 45vw)';
+  }};
   border-radius: 50%;
   background: radial-gradient(
     circle,
@@ -134,13 +147,22 @@ const SoundWave = styled.div`
 `;
 
 const RoundButton = styled.button`
-  width: ${props => props.isMobile ? '220px' : '280px'};
-  height: ${props => props.isMobile ? '220px' : '280px'};
+  width: ${props => {
+    if (props.isMobile) return '220px';
+    return 'min(280px, 45vw)';
+  }};
+  height: ${props => {
+    if (props.isMobile) return '220px';
+    return 'min(280px, 45vw)';
+  }};
   border-radius: 50%;
   background: linear-gradient(145deg, #000000, #111111);
   border: none;
   color: #00ff00;
-  font-size: ${props => props.isMobile ? '28px' : '32px'};
+  font-size: ${props => {
+    if (props.isMobile) return '28px';
+    return 'min(32px, 5vw)';
+  }};
   cursor: pointer;
   transition: all 0.15s ease;
   font-family: inherit;
@@ -280,11 +302,11 @@ const RoundButton = styled.button`
 const StatsSection = styled.div`
   display: flex;
   gap: ${props => props.isMobile ? '8px' : '15px'};
-  padding: ${props => props.isMobile ? '8px' : '10px'};
+  padding: ${props => props.isMobile ? '8px' : '5px'};
   background-color: rgba(0, 255, 0, 0.05);
   border-radius: 15px;
-  margin-top: ${props => props.isMobile ? '8px' : '10px'};
-  width: ${props => props.isMobile ? '100%' : '90%'};
+  margin-top: ${props => props.isMobile ? '8px' : '5px'};
+  width: ${props => props.isMobile ? '100%' : '120%'};
   
   @media (max-width: 600px) {
     flex-direction: row;
