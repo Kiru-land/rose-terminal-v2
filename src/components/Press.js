@@ -21,7 +21,7 @@ const PressContainer = styled.div`
   z-index: 1000;
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
   animation: ${fadeIn} 0.3s ease-out;
-  width: ${props => props.isMobile ? '300px' : '600px'};
+  width: ${props => props.isMobile ? '300px' : '500px'};
   max-width: 100vw;
   max-height: 90vh;
   display: flex;

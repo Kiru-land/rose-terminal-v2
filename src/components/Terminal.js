@@ -674,7 +674,7 @@ const Terminal = ({ isMobile }) => {
       (command === 'trade' && showTrade) ||
       (command === 'bond' && showBond) ||
       (command === 'create' && showCreate) ||
-      (command === 'play' && showPress)
+      (command === 'press' && showPress)
     );
 
     if (isCurrentlyOpen) {
@@ -738,18 +738,18 @@ const Terminal = ({ isMobile }) => {
           createAudioRef.current.play().catch(error => console.error("Create audio playback failed:", error));
         }
         break;
-      case 'play':
+      case 'press':
         if (showPress) {
           setShowPress(false);
           setSelectedCommand(null);
-          output = 'Closing play interface...';
+          output = 'Closing press interface...';
         } else {
           setShowPress(true);
           setShowTrade(false);
           setShowBond(false);
           setShowCreate(false);
-          setSelectedCommand('play');
-          output = 'Opening play interface...';
+          setSelectedCommand('press');
+          output = 'Opening press interface...';
         }
         break;
       default:
@@ -813,7 +813,7 @@ const Terminal = ({ isMobile }) => {
   const renderMenuItems = () => {
     if (chainId === 17000n) {
       // Holesky Testnet options
-      return ['trade', 'create', 'play'].map(command => (
+      return ['trade', 'create', 'press'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
@@ -825,7 +825,7 @@ const Terminal = ({ isMobile }) => {
       ));
     } else {
       // Mainnet options
-      return ['trade', 'create', 'play'].map(command => (
+      return ['trade', 'create', 'press'].map(command => (
         <RippleButton
           key={command}
           onClick={() => handleMenuClick(command)}
