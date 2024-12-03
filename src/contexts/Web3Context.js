@@ -25,6 +25,7 @@ export const Web3Provider = ({ children }) => {
   const [totalSupply, setTotalSupply] = useState('0');
   const [deposit2, setDeposit2] = useState(null);
   const [pressButton, setPressButton] = useState(null);
+  const [referralCode, setReferralCode] = useState('');
 
   const updateWeb3State = useCallback(async () => {
     if (typeof window.ethereum !== 'undefined' && isConnected) {
@@ -163,6 +164,25 @@ export const Web3Provider = ({ children }) => {
     };
   }, [disconnectWallet, updateWeb3State]);
 
+  useEffect(() => {
+    const generateReferralCode = async () => {
+      if (!signer) return;
+      try {
+        const address = await signer.getAddress();
+        // Simple encoding of the address (you can use a more secure method)
+        const code = btoa(address);
+        setReferralCode(code);
+      } catch (error) {
+        console.error('Error generating referral code:', error);
+      }
+    };
+    generateReferralCode();
+  }, [signer]);
+
+  const getReferralLink = () => {
+    return `${window.location.origin}?ref=${referralCode}`;
+  };
+
   return (
     <Web3Context.Provider value={{ 
       isConnected, 
@@ -181,6 +201,8 @@ export const Web3Provider = ({ children }) => {
       totalSupply,
       deposit2,
       pressButton,
+      referralCode,
+      getReferralLink,
     }}>
       {children}
     </Web3Context.Provider>

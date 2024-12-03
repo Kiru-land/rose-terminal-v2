@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useContext } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { ethers } from 'ethers';
 import { useWeb3 } from '../contexts/Web3Context.js';
@@ -399,17 +399,55 @@ const TimeValue = styled.div`
   text-align: center;
 `;
 
+const CopyButton = styled.button`
+  position: absolute;
+  bottom: 5px;
+  right: 8px;
+  padding: 0;
+  background-color: transparent;
+  color: #00ff00;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: ${props => (props.isMobile ? '10px' : '12px')};
+  text-decoration: underline;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #00cc00;
+  }
+`;
+
+const CopyMessage = styled.div`
+  position: absolute;
+  bottom: 25px;
+  right: 8px;
+  color: #00ff00;
+  font-size: ${props => (props.isMobile ? '10px' : '12px')};
+`;
+
 const Press = ({ isMobile }) => {
   const [amount, setAmount] = useState(0.01);
   const [highScore, setHighScore] = useState(0);
   const [bucketValue, setBucketValue] = useState('0');
   const [waves, setWaves] = useState([]);
-  const { signer, pressButton, ethPrice } = useWeb3();
+  const { signer, pressButton, ethPrice, referralCode, getReferralLink } = useWeb3();
   const { showPopUp } = usePopUp();
   const [balance, setBalance] = useState('0');
   const [pressTime, setPressTime] = useState(0);
   const [speed, setSpeed] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [referralParam, setReferralParam] = useState('');
+  const [copySuccess, setCopySuccess] = useState('');
+
+  useEffect(() => {
+    // Extract referral code from URL
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setReferralParam(ref);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -530,7 +568,7 @@ const Press = ({ isMobile }) => {
       const contract = new ethers.Contract(
         pressButton,
         [
-          'function press() payable',
+          'function press(string referralCode) payable',
           'function totalClicks() view returns (uint256)',
           'function bucket() view returns (uint256)',
           'function pressooor() view returns (address)',
@@ -541,7 +579,10 @@ const Press = ({ isMobile }) => {
         signer
       );
 
-      const tx = await contract.press({
+      // Decode the referral code back to address (optional, depends on your contract logic)
+      const decodedReferral = referralParam ? atob(referralParam) : '';
+
+      const tx = await contract.press(decodedReferral, {
         value: ethers.parseEther(amount.toString())
       });
 
@@ -569,8 +610,23 @@ const Press = ({ isMobile }) => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  // Function to copy the referral link
+  const copyReferralLink = () => {
+    const referralLink = getReferralLink();
+    navigator.clipboard
+      .writeText(referralLink)
+      .then(() => {
+        setCopySuccess('Link copied!');
+        setTimeout(() => setCopySuccess(''), 2000);
+      })
+      .catch((error) => {
+        console.error('Failed to copy referral link:', error);
+        showPopUp('Failed to copy referral link.');
+      });
+  };
+
   return (
-    <PressContainer width={isMobile ? 300 : 400} isMobile={isMobile}>
+    <PressContainer isMobile={isMobile}>
       <ComponentsWrapper isMobile={isMobile}>
         <StatsSection isMobile={isMobile}>
           <StatCard isMobile={isMobile}>
@@ -624,6 +680,10 @@ const Press = ({ isMobile }) => {
           press
         </RoundButton>
       </ButtonWrapper>
+      <CopyButton onClick={copyReferralLink} isMobile={isMobile}>
+        referral
+      </CopyButton>
+      {copySuccess && <CopyMessage isMobile={isMobile}>{copySuccess}</CopyMessage>}
     </PressContainer>
   );
 };
