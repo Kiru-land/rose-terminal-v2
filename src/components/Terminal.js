@@ -20,6 +20,7 @@ import kirusayfriend from '../assets/kirusayfriend.mp3';
 import Personas from './Personas.js';
 import Dashboard from './Dashboard.js';
 import Claim from './Claim.js';
+import rikuGif from '../assets/riku.GIF';
 
 // Add this global style component
 const GlobalStyle = createGlobalStyle`
@@ -451,6 +452,107 @@ const MetricButton = styled.button`
   ${props => props.isMobile && `
     font-size: 18px;
   `}
+`;
+
+const sparkleKeyframes = keyframes`
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1); }
+`;
+
+const floatKeyframes = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+`;
+
+const AnnouncementContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+  padding: 10px;
+  background: rgba(0, 255, 0, 0.1);
+  border-radius: 10px;
+  max-width: 400px;
+  margin: 20px auto;
+  position: relative;
+  overflow: hidden;
+  animation: ${floatKeyframes} 3s ease-in-out infinite;
+
+  @media (max-width: 480px) {
+    max-width: 90%;
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+`;
+
+const Sparkle = styled.div`
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background-color: #00ff00;
+  border-radius: 50%;
+  animation: ${sparkleKeyframes} 1.5s ease-in-out infinite;
+  opacity: 0;
+  pointer-events: none;
+  top: ${props => props.top}%;
+  left: ${props => props.left}%;
+  animation-delay: ${props => props.delay}s;
+`;
+
+const SparkleWrapper = ({ children }) => {
+  // Create 10 sparkles with random positions
+  const sparkles = Array.from({ length: 10 }, (_, i) => ({
+    id: i,
+    top: Math.random() * 100,
+    left: Math.random() * 100,
+    delay: Math.random() * 2
+  }));
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {sparkles.map(sparkle => (
+        <Sparkle
+          key={sparkle.id}
+          top={sparkle.top}
+          left={sparkle.left}
+          delay={sparkle.delay}
+        />
+      ))}
+      {children}
+    </div>
+  );
+};
+
+const AnnouncementText = styled.div`
+  color: #00ff00;
+  font-size: 14px;
+  margin-right: 15px;
+  word-break: break-all;
+  
+  @media (max-width: 480px) {
+    margin-right: 0;
+    font-size: 12px;
+  }
+`;
+
+const ClickableAddress = styled.span`
+  cursor: pointer;
+  text-decoration: underline;
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const RikuGif = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+
+  @media (max-width: 480px) {
+    width: 35px;
+    height: 35px;
+  }
 `;
 
 const Terminal = ({ isMobile }) => {
@@ -897,6 +999,7 @@ const Terminal = ({ isMobile }) => {
             </DropdownItem>
           </DropdownContent>
         </DropdownContainer>
+        
         {showIntro && (
           <Intro asciiLogo={kiruAscii} onIntroComplete={handleIntroComplete} />
         )}
@@ -913,6 +1016,23 @@ const Terminal = ({ isMobile }) => {
             </GlitterContainer>
           )}
         </AsciiArtWrapper>
+
+        <AnnouncementContainer>
+          <SparkleWrapper>
+            <AnnouncementText>
+              RIKU is live on Solana!<br />
+              CA: <ClickableAddress onClick={() => {
+                navigator.clipboard.writeText('FYzUxHQzRuWrxXRNqv3ufFU9WHT5vBJnJHz1Kam5pump')
+                  .then(() => showPopUp('Address copied to clipboard!'))
+                  .catch(() => showPopUp('Failed to copy address'));
+              }}>
+                FYzUxHQzRuWrxXRNqv3ufFU9WHT5vBJnJHz1Kam5pump
+              </ClickableAddress>
+            </AnnouncementText>
+          </SparkleWrapper>
+          <RikuGif src={rikuGif} alt="Riku" />
+        </AnnouncementContainer>
+
         <OutputDiv ref={outputRef}>
           {history.map((item, index) => (
             <div key={index}>
